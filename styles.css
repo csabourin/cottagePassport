@@ -393,29 +393,6 @@ textarea:focus-visible {
 }
 
 /* ══════════════════════════════════════════════════════════
-   CAMERA PANEL
-   ══════════════════════════════════════════════════════════ */
-.camera-panel {
-  margin-top: 0.85rem;
-  padding: 0.9rem;
-  border-radius: 8px;
-  background: #ede5d0;
-  border: 1px dashed #b09a6e;
-}
-.camera-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-video, canvas {
-  width: 100%;
-  margin-top: 0.65rem;
-  border-radius: 5px;
-  border: 2px solid #8a7a5a;
-  background: #000;
-}
-
-/* ══════════════════════════════════════════════════════════
    TOKEN OUTPUT
    ══════════════════════════════════════════════════════════ */
 textarea#tokenOutput {
@@ -512,4 +489,39 @@ textarea#tokenOutput {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+.dev-readable {
+  backdrop-filter: blur(1.5px);
+  background-color: rgba(255, 249, 236, 0.95);
+}
+
+select {
+  width: 100%;
+  border: 1.5px solid #9d8c72;
+  background: #fffcf5;
+  border-radius: 5px;
+  padding: 0.6rem 0.75rem;
+  margin-top: 0.3rem;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 14, 30, 0.74);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-card {
+  max-width: 640px;
+  width: 100%;
+  background: #fff6e5;
+  border: 2px solid var(--passport-gold);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  padding: 1.2rem;
 }
