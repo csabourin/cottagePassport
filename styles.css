@@ -1,0 +1,212 @@
+:root {
+  --bg-paper: #f9f0df;
+  --paper-shadow: rgba(30, 24, 18, 0.25);
+  --ink: #2c2420;
+  --accent: #b22f2f;
+  --accent-2: #2f5f46;
+  --focus: #0e63b8;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+.plaid-bg {
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, #253340 0 14px, #1b262f 14px 28px),
+    repeating-linear-gradient(90deg, transparent 0 18px, rgba(174, 50, 45, 0.38) 18px 22px, transparent 22px 42px),
+    repeating-linear-gradient(0deg, transparent 0 20px, rgba(255, 255, 255, 0.06) 20px 22px, transparent 22px 44px);
+  z-index: -1;
+}
+
+.booklet {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.booklet-header {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 0.85rem;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  opacity: 0.95;
+}
+
+.booklet-header h1 {
+  margin: 0.2rem 0;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+}
+
+.booklet-header p { margin: 0.2rem 0; }
+
+.page-card {
+  background: var(--bg-paper);
+  border: 2px solid #cdbb95;
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 0.8rem;
+  box-shadow: 0 4px 16px var(--paper-shadow);
+}
+
+.status-card {
+  border-left: 8px solid var(--accent-2);
+  font-weight: 600;
+}
+
+.hidden { display: none; }
+.muted { color: #5f554c; }
+.error { color: #8a1111; margin-top: 0.3rem; }
+
+label { display: block; font-weight: 700; margin-top: 0.5rem; }
+input, textarea, button, a { font: inherit; }
+
+input, textarea {
+  width: 100%;
+  border: 1px solid #8d7f71;
+  background: #fffdf8;
+  border-radius: 10px;
+  padding: 0.6rem;
+  margin-top: 0.3rem;
+}
+
+button, a {
+  border: 1px solid #5b4f45;
+  background: #fff;
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 0.58rem 0.85rem;
+  margin-top: 0.6rem;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button:hover, a:hover { background: #f2ece3; }
+
+.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+#mailtoLink {
+  background: var(--accent-2);
+  color: #fff;
+  border-color: var(--accent-2);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.location-display {
+  margin: 0.2rem 0 0.8rem;
+  font-weight: 700;
+}
+
+.location-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.45rem;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+
+.location-list button {
+  width: 100%;
+  text-align: left;
+}
+
+.camera-panel {
+  margin-top: 0.7rem;
+  padding: 0.8rem;
+  border-radius: 12px;
+  background: #efe5d2;
+  border: 1px dashed #a98f64;
+}
+
+.camera-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+video, canvas {
+  width: 100%;
+  margin-top: 0.65rem;
+  border-radius: 10px;
+  border: 1px solid #7e6f64;
+  background: #000;
+}
+
+.token-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.small-note {
+  margin-top: 0.45rem;
+  font-size: 0.86rem;
+}
+
+.passport-heading-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.leaf { font-size: 1.5rem; }
+
+.stamp-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.stamp-slot {
+  border: 1px dashed #b9ab94;
+  border-radius: 10px;
+  background: #fff9ef;
+  min-height: 60px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 0.82rem;
+  padding: 0.35rem;
+}
+
+.stamp-slot.collected {
+  border: 1px solid var(--accent);
+  background: #ffeceb;
+}
+
+@media (max-width: 700px) {
+  .stamp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
