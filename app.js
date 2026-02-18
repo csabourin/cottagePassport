@@ -245,13 +245,17 @@ async function renderStampGrid() {
 }
 
 function setStatus(message) {
-  el("statusSection").textContent = message;
+  const status = el("statusSection");
+  if (status) status.textContent = message;
 }
 
 function setResult(token, mailto) {
-  el("tokenOutput").value = token;
-  el("mailtoLink").href = mailto;
-  el("resultSection").classList.remove("hidden");
+  const tokenOutput = el("tokenOutput");
+  const mailtoLink = el("mailtoLink");
+  const result = el("resultSection");
+  if (tokenOutput) tokenOutput.value = token;
+  if (mailtoLink) mailtoLink.href = mailto;
+  if (result) result.classList.remove("hidden");
 }
 
 async function handleCollectSubmit(event) {
@@ -311,19 +315,19 @@ async function handleCollectSubmit(event) {
 }
 
 function bindActions() {
-  el("collectForm").addEventListener("submit", (e) => handleCollectSubmit(e).catch((err) => setStatus(err.message)));
-  el("startCameraBtn").addEventListener("click", () => startCamera().catch((err) => setStatus(`Camera error: ${err.message}`)));
-  el("captureBtn").addEventListener("click", () => {
+  el("collectForm")?.addEventListener("submit", (e) => handleCollectSubmit(e).catch((err) => setStatus(err.message)));
+  el("startCameraBtn")?.addEventListener("click", () => startCamera().catch((err) => setStatus(`Camera error: ${err.message}`)));
+  el("captureBtn")?.addEventListener("click", () => {
     try { captureFrame(); stopCamera(); } catch (err) { setStatus(err.message); }
   });
-  el("stopCameraBtn").addEventListener("click", stopCamera);
-  el("copyTokenBtn").addEventListener("click", async () => {
+  el("stopCameraBtn")?.addEventListener("click", stopCamera);
+  el("copyTokenBtn")?.addEventListener("click", async () => {
     const text = el("tokenOutput").value;
     if (!text) return;
     await navigator.clipboard.writeText(text);
     setStatus("Token copied to clipboard");
   });
-  el("shareBtn").addEventListener("click", async () => {
+  el("shareBtn")?.addEventListener("click", async () => {
     const text = el("tokenOutput").value;
     if (!text || !navigator.share) {
       setStatus("Web Share not available");
@@ -331,7 +335,7 @@ function bindActions() {
     }
     await navigator.share({ title: CONFIG.appName, text });
   });
-  el("decryptBtn").addEventListener("click", async () => {
+  el("decryptBtn")?.addEventListener("click", async () => {
     try {
       const parsed = await decryptToken(el("devTokenInput").value.trim());
       el("decryptOutput").textContent = JSON.stringify(parsed, null, 2);
@@ -363,20 +367,20 @@ async function loadLocationState() {
   const token = getQrTokenFromUrl();
   const validUuidLike = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(token);
   if (!token || !validUuidLike) {
-    el("locationPicker").classList.remove("hidden");
+    el("locationPicker")?.classList.remove("hidden");
     setStatus("Missing or invalid QR token. Choose a location for testing.");
     return;
   }
 
   const location = getLocationByQrToken(token);
   if (!location) {
-    el("locationPicker").classList.remove("hidden");
+    el("locationPicker")?.classList.remove("hidden");
     setStatus("QR token not allowlisted. Choose a location for testing.");
     return;
   }
 
   currentLocation = location;
-  el("collectSection").classList.remove("hidden");
+  el("collectSection")?.classList.remove("hidden");
   el("locationDisplay").textContent = `${location.locationId}. ${location.name} — ${location.tagline || ""}`;
 
   const existingStamp = await hasStamp(location.locationId);
@@ -404,8 +408,8 @@ async function loadLocationState() {
 
 async function init() {
   document.title = CONFIG.appName;
-  el("appName").textContent = CONFIG.appName;
-  el("appTagline").textContent = CONFIG.headerText;
+  if (el("appName")) el("appName").textContent = CONFIG.appName;
+  if (el("appTagline")) el("appTagline").textContent = CONFIG.headerText;
   document.documentElement.style.setProperty("--accent", CONFIG.theme.accent);
   document.documentElement.style.setProperty("--accent-2", CONFIG.theme.accent2);
 
@@ -415,7 +419,7 @@ async function init() {
   renderLocationPicker();
   await loadLocationState();
   const count = await getStampCount();
-  el("prizeMessage").textContent = `${count}/30 collected — ${getPrizeMessage(count)}`;
+  if (el("prizeMessage")) el("prizeMessage").textContent = `${count}/30 collected — ${getPrizeMessage(count)}`;
   await renderStampGrid();
 }
 

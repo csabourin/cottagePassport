@@ -8,70 +8,64 @@
   </head>
   <body>
     <div class="plaid-bg" aria-hidden="true"></div>
-    <main class="app" id="appRoot">
-      <header class="app-header">
+
+    <main class="booklet" id="appRoot">
+      <header class="booklet-header">
+        <p class="eyebrow">Canadian Cottage Adventure</p>
         <h1 id="appName"></h1>
         <p id="appTagline"></p>
       </header>
 
-      <section class="card note" aria-live="polite">
-        <p>
-          Camera works on HTTPS or localhost. QR token allowlisting is hard to guess but not fully secure without backend verification.
-        </p>
-      </section>
+      <section class="page-card status-card" id="statusSection" aria-live="polite"></section>
 
-      <section id="statusSection" class="card" aria-live="polite"></section>
-
-      <section id="locationPicker" class="card hidden" aria-labelledby="locationPickerHeading">
-        <h2 id="locationPickerHeading">Choose a location (test mode)</h2>
+      <section id="locationPicker" class="page-card hidden" aria-labelledby="locationPickerHeading">
+        <h2 id="locationPickerHeading">Start your journey</h2>
+        <p class="muted">We couldn't match this scan. Pick a stop to continue your passport trail.</p>
         <ul id="locationList" class="location-list"></ul>
       </section>
 
-      <section id="collectSection" class="card hidden" aria-labelledby="collectHeading">
-        <h2 id="collectHeading">Collect stamp</h2>
-        <p id="locationDisplay"></p>
+      <section id="collectSection" class="page-card hidden" aria-labelledby="collectHeading">
+        <h2 id="collectHeading">Collect this stamp</h2>
+        <p id="locationDisplay" class="location-display"></p>
 
         <form id="collectForm" novalidate>
-          <label for="emailInput">Email address</label>
+          <label for="emailInput">Your email</label>
           <input id="emailInput" name="email" type="email" required autocomplete="email" />
           <p id="emailError" class="error hidden">Please enter a valid email address.</p>
 
-          <div class="camera-controls">
-            <button type="button" id="startCameraBtn">Start camera</button>
-            <button type="button" id="captureBtn">Capture</button>
-            <button type="button" id="stopCameraBtn">Stop camera</button>
+          <div class="camera-panel">
+            <div class="camera-controls">
+              <button type="button" id="startCameraBtn">Open camera</button>
+              <button type="button" id="captureBtn">Capture</button>
+              <button type="button" id="stopCameraBtn">Close camera</button>
+            </div>
+            <video id="cameraPreview" autoplay playsinline muted></video>
+            <canvas id="captureCanvas" width="320" height="240"></canvas>
+            <p class="muted">Camera works on HTTPS or localhost.</p>
           </div>
 
-          <video id="cameraPreview" autoplay playsinline muted></video>
-          <canvas id="captureCanvas" width="320" height="240"></canvas>
-
-          <button type="submit" id="collectBtn">Generate stamp token</button>
+          <button type="submit" id="collectBtn" class="primary">Save stamp token</button>
         </form>
       </section>
 
-      <section id="resultSection" class="card hidden" aria-labelledby="resultHeading">
-        <h2 id="resultHeading">Stamp token</h2>
+      <section id="resultSection" class="page-card hidden" aria-labelledby="resultHeading">
+        <h2 id="resultHeading">Your stamp token</h2>
         <p id="prizeMessage"></p>
         <textarea id="tokenOutput" rows="5" readonly></textarea>
         <div class="token-actions">
           <button id="copyTokenBtn" type="button">Copy token</button>
-          <a id="mailtoLink" href="#">Send email</a>
+          <a id="mailtoLink" href="#">Send by email</a>
           <button id="shareBtn" type="button">Share</button>
         </div>
       </section>
 
-      <section class="card" aria-labelledby="passportHeading">
-        <h2 id="passportHeading">Passport stamps</h2>
+      <section class="page-card" aria-labelledby="passportHeading">
+        <div class="passport-heading-wrap">
+          <h2 id="passportHeading">Stamp booklet</h2>
+          <span class="leaf" aria-hidden="true">🍁</span>
+        </div>
         <div id="stampGrid" class="stamp-grid" role="list"></div>
       </section>
-
-      <details class="card">
-        <summary>Developer tools</summary>
-        <label for="devTokenInput">Encrypted token</label>
-        <textarea id="devTokenInput" rows="4"></textarea>
-        <button id="decryptBtn" type="button">Decrypt token</button>
-        <pre id="decryptOutput"></pre>
-      </details>
     </main>
 
     <script src="app.js"></script>
