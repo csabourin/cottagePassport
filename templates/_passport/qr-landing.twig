@@ -1,0 +1,33 @@
+{% set signedQr = craft.app.request.getParam('q') %}
+
+<section class="page-card dev-readable">
+  <h2>Server-side validation check</h2>
+  <p class="muted">This request does not store geolocation data. It only verifies signature + UUID + 500m geofence.</p>
+  <button type="button" id="serverCheckBtn" class="primary">Validate this scan</button>
+  <pre id="serverCheckOutput"></pre>
+</section>
+
+<script>
+  document.getElementById('serverCheckBtn')?.addEventListener('click', async () => {
+    const out = document.getElementById('serverCheckOutput');
+    if (!navigator.geolocation) {
+      out.textContent = 'Geolocation unavailable.';
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const response = await fetch('{{ actionUrl('cottagepassport/validation/checkin') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          signedQr: '{{ signedQr|e('js') }}',
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        }),
+      });
+      out.textContent = JSON.stringify(await response.json(), null, 2);
+    }, () => {
+      out.textContent = 'Please allow geolocation to validate this QR.';
+    }, { enableHighAccuracy: true });
+  });
+</script>

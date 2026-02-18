@@ -9,6 +9,19 @@
   <body>
     <div class="plaid-bg" aria-hidden="true"></div>
 
+    <div id="disclaimerModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="disclaimerHeading">
+      <div class="modal-card">
+        <h2 id="disclaimerHeading">Friendly legal-ish disclaimer</h2>
+        <p>
+          Welcome to our very serious and absolutely fun cottage contest. Your passport is saved on your phone.
+          We do <strong>not</strong> keep your geolocation history, we only verify you're near the right stop (within 500m)
+          to keep the game fair and reduce creative cheating.
+        </p>
+        <p class="muted">Questions? Ask us anytime and we'll respond with polite business enthusiasm.</p>
+        <button type="button" class="primary">I understand, let's collect stamps</button>
+      </div>
+    </div>
+
     <main class="booklet" id="appRoot">
       <header class="booklet-header">
         <p class="header-govt" aria-hidden="true">Government of Canada &nbsp;·&nbsp; Gouvernement du Canada</p>
@@ -20,15 +33,15 @@
         <p class="header-passport-label" aria-hidden="true">Passport &nbsp;·&nbsp; Passeport</p>
       </header>
 
-      <section class="page-card status-card" id="statusSection" aria-live="polite"></section>
+      <section class="page-card status-card dev-readable" id="statusSection" aria-live="polite"></section>
 
-      <section id="locationPicker" class="page-card hidden" aria-labelledby="locationPickerHeading">
+      <section id="locationPicker" class="page-card hidden dev-readable" aria-labelledby="locationPickerHeading">
         <h2 id="locationPickerHeading">Start your journey</h2>
         <p class="muted">We couldn't match this scan. Pick a stop to continue your passport trail.</p>
         <ul id="locationList" class="location-list"></ul>
       </section>
 
-      <section id="collectSection" class="page-card hidden" aria-labelledby="collectHeading">
+      <section id="collectSection" class="page-card hidden dev-readable" aria-labelledby="collectHeading">
         <h2 id="collectHeading">Collect this stamp</h2>
         <p id="locationDisplay" class="location-display"></p>
 
@@ -36,32 +49,16 @@
           <label for="emailInput">Your email</label>
           <input id="emailInput" name="email" type="email" required autocomplete="email" />
           <p id="emailError" class="error hidden">Please enter a valid email address.</p>
-
-          <div class="camera-panel">
-            <div class="camera-controls">
-              <button type="button" id="startCameraBtn">Open camera</button>
-              <button type="button" id="captureBtn">Capture</button>
-              <button type="button" id="stopCameraBtn">Close camera</button>
-            </div>
-            <video id="cameraPreview" autoplay playsinline muted></video>
-            <canvas id="captureCanvas" width="320" height="240"></canvas>
-            <p class="muted">Camera works on HTTPS or localhost.</p>
-          </div>
-
-          <button type="submit" id="collectBtn" class="primary">Save stamp token</button>
+          <button type="submit" id="collectBtn" class="primary">Validate location & collect stamp</button>
         </form>
       </section>
 
-      <section id="resultSection" class="page-card hidden" aria-labelledby="resultHeading">
-        <h2 id="resultHeading">Stamp saved</h2>
+      <section id="resultSection" class="page-card hidden dev-readable" aria-labelledby="resultHeading">
+        <h2 id="resultHeading">Stamp validated</h2>
         <p id="prizeMessage"></p>
-        <div class="token-actions">
-          <a id="mailtoLink" href="#">Send by email</a>
-          <p id="emailHelp" class="muted small-note">Your encrypted token is included in the email draft.</p>
-        </div>
       </section>
 
-      <section class="page-card" aria-labelledby="passportHeading">
+      <section class="page-card dev-readable" aria-labelledby="passportHeading">
         <div class="passport-heading-wrap">
           <h2 id="passportHeading">Stamp booklet</h2>
           <span class="leaf" aria-hidden="true">🍁</span>
@@ -70,6 +67,7 @@
       </section>
     </main>
 
+    <script src="valid-uuids.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
