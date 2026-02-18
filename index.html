@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cottage Passport</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="plaid-bg" aria-hidden="true"></div>
+
+    <main class="booklet" id="appRoot">
+      <header class="booklet-header">
+        <p class="eyebrow">Canadian Cottage Adventure</p>
+        <h1 id="appName"></h1>
+        <p id="appTagline"></p>
+      </header>
+
+      <section class="page-card status-card" id="statusSection" aria-live="polite"></section>
+
+      <section id="locationPicker" class="page-card hidden" aria-labelledby="locationPickerHeading">
+        <h2 id="locationPickerHeading">Start your journey</h2>
+        <p class="muted">We couldn't match this scan. Pick a stop to continue your passport trail.</p>
+        <ul id="locationList" class="location-list"></ul>
+      </section>
+
+      <section id="collectSection" class="page-card hidden" aria-labelledby="collectHeading">
+        <h2 id="collectHeading">Collect this stamp</h2>
+        <p id="locationDisplay" class="location-display"></p>
+
+        <form id="collectForm" novalidate>
+          <label for="emailInput">Your email</label>
+          <input id="emailInput" name="email" type="email" required autocomplete="email" />
+          <p id="emailError" class="error hidden">Please enter a valid email address.</p>
+
+          <div class="camera-panel">
+            <div class="camera-controls">
+              <button type="button" id="startCameraBtn">Open camera</button>
+              <button type="button" id="captureBtn">Capture</button>
+              <button type="button" id="stopCameraBtn">Close camera</button>
+            </div>
+            <video id="cameraPreview" autoplay playsinline muted></video>
+            <canvas id="captureCanvas" width="320" height="240"></canvas>
+            <p class="muted">Camera works on HTTPS or localhost.</p>
+          </div>
+
+          <button type="submit" id="collectBtn" class="primary">Save stamp token</button>
+        </form>
+      </section>
+
+      <section id="resultSection" class="page-card hidden" aria-labelledby="resultHeading">
+        <h2 id="resultHeading">Your stamp token</h2>
+        <p id="prizeMessage"></p>
+        <textarea id="tokenOutput" rows="5" readonly></textarea>
+        <div class="token-actions">
+          <button id="copyTokenBtn" type="button">Copy token</button>
+          <a id="mailtoLink" href="#">Send by email</a>
+          <button id="shareBtn" type="button">Share</button>
+        </div>
+      </section>
+
+      <section class="page-card" aria-labelledby="passportHeading">
+        <div class="passport-heading-wrap">
+          <h2 id="passportHeading">Stamp booklet</h2>
+          <span class="leaf" aria-hidden="true">🍁</span>
+        </div>
+        <div id="stampGrid" class="stamp-grid" role="list"></div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
