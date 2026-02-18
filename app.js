@@ -136,8 +136,15 @@ async function renderStampGrid() {
 function showDisclaimerOnce() {
   const modal = el("disclaimerModal");
   if (!modal || localStorage.getItem("passportDisclaimerAccepted") === "1") return;
+
+  const acceptBtn = el("disclaimerAcceptBtn") || modal.querySelector("button");
+  if (!acceptBtn) {
+    setStatus("Disclaimer could not be acknowledged because the accept button is missing.");
+    return;
+  }
+
   modal.classList.remove("hidden");
-  modal.querySelector("button")?.addEventListener("click", () => {
+  acceptBtn.addEventListener("click", () => {
     localStorage.setItem("passportDisclaimerAccepted", "1");
     modal.classList.add("hidden");
   }, { once: true });
@@ -153,6 +160,11 @@ function renderLocationPicker() {
     btn.type = "button";
     btn.textContent = `${loc.locationId}. ${loc.name}`;
     btn.addEventListener("click", () => {
+      if (!loc.qrToken) {
+        setStatus(`Location ${loc.locationId} cannot be opened because it has no QR token configured.`);
+        return;
+      }
+
       const url = new URL(window.location.href);
       url.searchParams.set("q", loc.qrToken);
       window.location.href = url.toString();
@@ -165,14 +177,22 @@ function renderLocationPicker() {
 async function loadLocationState() {
   const qr = parseSignedQr(getQrTokenFromUrl());
   if (!qr) {
-    el("locationPicker")?.classList.remove("hidden");
-    return setStatus("Missing/invalid QR URL. Choose a stop for testing.");
+    if (isDevtools) {
+      el("locationPicker")?.classList.remove("hidden");
+      return setStatus("Missing/invalid QR URL. Choose a stop for testing.");
+    }
+    return setStatus("Sorry — you must be on site to tag a location. Please scan an official stop QR code.");
   }
+
   const location = getLocationByUuid(qr.uuid);
   if (!location) {
-    el("locationPicker")?.classList.remove("hidden");
-    return setStatus("QR UUID not allowlisted.");
+    if (isDevtools) {
+      el("locationPicker")?.classList.remove("hidden");
+      return setStatus("QR UUID not allowlisted.");
+    }
+    return setStatus("Sorry — this QR code is not valid for the Cottage Passport event.");
   }
+
   currentLocation = location;
   el("collectSection")?.classList.remove("hidden");
   text("locationDisplay", `${location.locationId}. ${location.name} — ${location.tagline}`);
@@ -237,12 +257,26 @@ function bindDevtoolsSimulation() {
   });
 }
 
+function bindGlobalErrorHandling() {
+  window.addEventListener("error", (event) => {
+    const message = event?.error?.message || event?.message || "Unexpected runtime error.";
+    setStatus(`Error: ${message}`);
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason = event?.reason;
+    const message = reason?.message || (typeof reason === "string" ? reason : "Unhandled async error.");
+    setStatus(`Error: ${message}`);
+  });
+}
+
 async function init() {
   document.title = CONFIG.appName;
   text("appName", CONFIG.appName);
   text("appTagline", CONFIG.headerText);
+  bindGlobalErrorHandling();
   await initDB();
-  renderLocationPicker();
+  if (isDevtools) renderLocationPicker();
   bindDevtoolsSimulation();
   showDisclaimerOnce();
   await loadLocationState();
