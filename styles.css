@@ -163,6 +163,11 @@ video, canvas {
   gap: 0.4rem;
 }
 
+.small-note {
+  margin-top: 0.45rem;
+  font-size: 0.86rem;
+}
+
 .passport-heading-wrap {
   display: flex;
   align-items: center;

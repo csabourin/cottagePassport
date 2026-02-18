@@ -13,6 +13,7 @@ Time: {TIMESTAMP}
 Email: {EMAIL}
 Device: {DEVICE_ID}
 QR token: {QR_TOKEN}
+Coordinates: {GEO_COORDS}
 
 Encrypted token:
 {TOKEN}
@@ -249,13 +250,31 @@ function setStatus(message) {
   if (status) status.textContent = message;
 }
 
-function setResult(token, mailto) {
-  const tokenOutput = el("tokenOutput");
+function setResult(mailto) {
   const mailtoLink = el("mailtoLink");
   const result = el("resultSection");
-  if (tokenOutput) tokenOutput.value = token;
   if (mailtoLink) mailtoLink.href = mailto;
   if (result) result.classList.remove("hidden");
+}
+
+async function getCurrentGeolocation() {
+  if (!navigator.geolocation) {
+    return { latitude: null, longitude: null, accuracy: null, capturedAt: null, error: "unsupported" };
+  }
+
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({
+        latitude: Number(pos.coords.latitude.toFixed(6)),
+        longitude: Number(pos.coords.longitude.toFixed(6)),
+        accuracy: Math.round(pos.coords.accuracy),
+        capturedAt: new Date(pos.timestamp).toISOString(),
+        error: null
+      }),
+      (err) => resolve({ latitude: null, longitude: null, accuracy: null, capturedAt: null, error: err.message || "unavailable" }),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  });
 }
 
 async function handleCollectSubmit(event) {
@@ -268,13 +287,15 @@ async function handleCollectSubmit(event) {
   if (!valid) return;
 
   const deviceId = await getOrCreateDeviceId();
+  const geo = await getCurrentGeolocation();
   const payload = {
     email,
     locationId: currentLocation.locationId,
     locationName: currentLocation.name,
     qrToken: currentLocation.qrToken,
     ts: new Date().toISOString(),
-    deviceId
+    deviceId,
+    geolocation: geo
   };
 
   const token = await encryptPayload(payload);
@@ -302,12 +323,20 @@ async function handleCollectSubmit(event) {
     EMAIL: payload.email,
     TOKEN: lastTokenRecord.token,
     DEVICE_ID: payload.deviceId,
-    QR_TOKEN: currentLocation.qrToken
+    QR_TOKEN: currentLocation.qrToken,
+    GEO_COORDS: geo.latitude != null ? `${geo.latitude}, ${geo.longitude} (±${geo.accuracy}m)` : "Not available"
   };
   const subject = renderTemplate(CONFIG.emailSubjectTemplate, tplData);
   const body = renderTemplate(CONFIG.emailBodyTemplate, tplData);
   const mailto = buildMailto(payload.email, subject, body);
-  setResult(lastTokenRecord.token, mailto);
+  setResult(mailto);
+
+  const help = el("emailHelp");
+  if (help) {
+    help.textContent = geo.latitude != null
+      ? `Token and geolocation (${geo.latitude}, ${geo.longitude}) are included in your email draft.`
+      : "Token included. Geolocation was unavailable or permission was denied.";
+  }
 
   const count = await getStampCount();
   el("prizeMessage").textContent = `${count}/30 collected — ${getPrizeMessage(count)}`;
@@ -318,23 +347,13 @@ function bindActions() {
   el("collectForm")?.addEventListener("submit", (e) => handleCollectSubmit(e).catch((err) => setStatus(err.message)));
   el("startCameraBtn")?.addEventListener("click", () => startCamera().catch((err) => setStatus(`Camera error: ${err.message}`)));
   el("captureBtn")?.addEventListener("click", () => {
-    try { captureFrame(); stopCamera(); } catch (err) { setStatus(err.message); }
+    try {
+      captureFrame();
+      stopCamera();
+      setStatus("Photo captured.");
+    } catch (err) { setStatus(err.message); }
   });
   el("stopCameraBtn")?.addEventListener("click", stopCamera);
-  el("copyTokenBtn")?.addEventListener("click", async () => {
-    const text = el("tokenOutput").value;
-    if (!text) return;
-    await navigator.clipboard.writeText(text);
-    setStatus("Token copied to clipboard");
-  });
-  el("shareBtn")?.addEventListener("click", async () => {
-    const text = el("tokenOutput").value;
-    if (!text || !navigator.share) {
-      setStatus("Web Share not available");
-      return;
-    }
-    await navigator.share({ title: CONFIG.appName, text });
-  });
   el("decryptBtn")?.addEventListener("click", async () => {
     try {
       const parsed = await decryptToken(el("devTokenInput").value.trim());
@@ -395,10 +414,11 @@ async function loadLocationState() {
       EMAIL: lastTokenRecord.email,
       TOKEN: lastTokenRecord.token,
       DEVICE_ID: deviceId,
-      QR_TOKEN: location.qrToken
+      QR_TOKEN: location.qrToken,
+      GEO_COORDS: "Saved in encrypted token"
     };
     setStatus(`Stamp already collected on ${existingStamp.firstCollectedAt}`);
-    setResult(lastTokenRecord.token, buildMailto(lastTokenRecord.email,
+    setResult(buildMailto(lastTokenRecord.email,
       renderTemplate(CONFIG.emailSubjectTemplate, tplData),
       renderTemplate(CONFIG.emailBodyTemplate, tplData)));
   } else {
