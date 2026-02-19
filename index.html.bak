@@ -20,8 +20,9 @@
         <h2 id="disclaimerHeading">Friendly legal-ish disclaimer</h2>
         <p>
           Welcome to our very serious and absolutely fun cottage contest. Your
-          passport is saved on your phone. Scan the QR code at each stop to
-          collect your stamps. Collect five and you could win a prize!
+          passport is saved on your phone. We do <strong>not</strong> keep your
+          geolocation history, we only verify you're near the right stop (within
+          550m) to keep the game fair and reduce creative cheating.
         </p>
         <p class="muted">
           Questions? Ask us anytime and we'll respond with polite business
@@ -60,9 +61,35 @@
         class="page-card hidden dev-readable"
         aria-labelledby="collectHeading"
       >
-        <h2 id="collectHeading">Stamp collected!</h2>
+        <h2 id="collectHeading">Collect this stamp</h2>
         <p id="locationDisplay" class="location-display"></p>
-        <p id="collectMessage"></p>
+
+        <form id="collectForm" novalidate>
+          <label for="emailInput">Your email</label>
+          <input
+            id="emailInput"
+            name="email"
+            type="email"
+            required
+            autocomplete="email"
+          />
+          <p id="emailError" class="error hidden">
+            Please enter a valid email address.
+          </p>
+          <button type="submit" id="collectBtn" class="primary">
+            Validate location & collect stamp
+          </button>
+        </form>
+      </section>
+
+      <section
+        id="resultSection"
+        class="page-card hidden dev-readable"
+        aria-labelledby="resultHeading"
+      >
+        <h2 id="resultHeading">Stamp validated</h2>
+        <p id="prizeMessage"></p>
+        <a id="progressMailtoLink" class="hidden" href="#">send my progress</a>
       </section>
 
       <section class="page-card dev-readable" aria-labelledby="passportHeading">
@@ -73,42 +100,6 @@
         <div id="stampGrid" class="stamp-grid" role="list"></div>
       </section>
     </main>
-
-    <div
-      id="drawModal"
-      class="modal-overlay hidden"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="drawHeading"
-    >
-      <div class="modal-card draw-modal-card">
-        <div class="draw-crest" aria-hidden="true">🍁</div>
-        <h2 id="drawHeading">Congratulations!</h2>
-        <p>
-          You've collected <strong id="drawStampCount">5</strong> stamps!
-          You are now eligible for our prize draw.
-          Enter your email below and we'll be in touch if you win!
-        </p>
-        <form id="drawEmailForm" novalidate>
-          <label for="drawEmailInput">Your email</label>
-          <input
-            id="drawEmailInput"
-            name="email"
-            type="email"
-            required
-            autocomplete="email"
-            placeholder="you@example.com"
-          />
-          <p id="drawEmailError" class="error hidden">
-            Please enter a valid email address.
-          </p>
-          <button type="submit" class="primary">Enter the draw</button>
-        </form>
-        <button id="drawDismissBtn" type="button" class="draw-dismiss">
-          Maybe later
-        </button>
-      </div>
-    </div>
 
     <script src="app.js"></script>
   </body>
