@@ -10,8 +10,14 @@ if ($uriPath !== '/' && is_file($fullPath)) {
     return false;
 }
 
+if (isset($_GET['action'])) {
+    require __DIR__ . '/index.php';
+    return true;
+}
+
 switch ($uriPath) {
     case '/':
+        header('Cache-Control: no-cache');
         require __DIR__ . '/index.html';
         break;
 
@@ -32,12 +38,6 @@ switch ($uriPath) {
         break;
 
     default:
-        // API entrypoint (e.g., /?action=resolve or any unknown dynamic route).
-        if (isset($_GET['action'])) {
-            require __DIR__ . '/index.php';
-            break;
-        }
-
         http_response_code(404);
         header('Content-Type: text/plain; charset=utf-8');
         echo "Not Found";
