@@ -14,13 +14,13 @@ if ($isProduction && in_array($uriPath, $blockedInProduction, true)) {
     return true;
 }
 
-if ($uriPath !== '/' && is_file($fullPath)) {
-    return false;
-}
-
 if (isset($_GET['action'])) {
     require __DIR__ . '/index.php';
     return true;
+}
+
+if ($uriPath !== '/' && is_file($fullPath)) {
+    return false;
 }
 
 switch ($uriPath) {
