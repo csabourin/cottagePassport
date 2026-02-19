@@ -9,7 +9,6 @@ const UUID_RE = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9
 let db;
 let currentLocation;
 let validationEmail = "";
-let activeToken = "";
 
 const el = (id) => document.getElementById(id);
 const text = (id, value) => { const node = el(id); if (node) node.textContent = value; };
@@ -30,6 +29,23 @@ async function initDB() {
 
 function reqP(req) { return new Promise((resolve, reject) => { req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
 function store(name, mode = "readonly") { return db.transaction(name, mode).objectStore(name); }
+
+function getTokenMetaKey(locationId, email) {
+  return `secure-token:${locationId}:${email.toLowerCase()}`;
+}
+
+async function readStoredToken(locationId, email) {
+  const entry = await reqP(store("meta").get(getTokenMetaKey(locationId, email)));
+  return entry?.value || "";
+}
+
+async function writeStoredToken(locationId, email, token) {
+  await reqP(store("meta", "readwrite").put({
+    key: getTokenMetaKey(locationId, email),
+    value: token,
+    updatedAt: new Date().toISOString()
+  }));
+}
 
 function setStatus(message) { text("statusSection", message); }
 
@@ -119,7 +135,6 @@ function showDisclaimerOnce() {
 
 async function loadLocationState() {
   const rawToken = getQrTokenFromUrl();
-  activeToken = rawToken;
   const qr = parseSignedQr(rawToken);
   if (!qr) {
     renderProgressMailto("");
@@ -171,6 +186,29 @@ async function validateCollectOnServer(email, geo) {
   return body;
 }
 
+async function getSecureProgressToken(email) {
+  const cached = await readStoredToken(currentLocation.locationId, email);
+  if (cached) return cached;
+
+  const response = await fetch("?action=register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({
+      uuid: currentLocation.qrToken,
+      email
+    })
+  });
+  const body = await response.json().catch(() => ({}));
+
+  if (!response.ok || !body.success || typeof body.token !== "string" || body.token.trim() === "") {
+    throw new Error(body.error || "Could not create secure progress token.");
+  }
+
+  const secureToken = body.token.trim();
+  await writeStoredToken(currentLocation.locationId, email, secureToken);
+  return secureToken;
+}
+
 async function handleSubmit(e) {
   e.preventDefault();
   const email = (el("emailInput")?.value || "").trim();
@@ -181,10 +219,11 @@ async function handleSubmit(e) {
   const geo = await getCurrentGeolocation();
   const result = await validateCollectOnServer(email, geo);
   await saveStamp(email, geo, result.distance);
+  const secureToken = await getSecureProgressToken(email);
 
   el("resultSection")?.classList.remove("hidden");
   text("prizeMessage", `Stamp accepted at ${Math.round(result.distance)}m from target.`);
-  renderProgressMailto(activeToken);
+  renderProgressMailto(secureToken);
   setStatus("Stamp validated and saved on this device.");
   await renderStampGrid();
 }
