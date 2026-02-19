@@ -5,7 +5,15 @@ declare(strict_types=1);
 $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $fullPath = __DIR__ . $uriPath;
 
-// Let PHP serve existing files (assets, html, js, css, generator/index.php, etc.).
+$isProduction = getenv('REPLIT_DEPLOYMENT') !== false;
+$blockedInProduction = ['/devtools', '/devtools.html', '/devtools.js'];
+if ($isProduction && in_array($uriPath, $blockedInProduction, true)) {
+    http_response_code(404);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "Not Found";
+    return true;
+}
+
 if ($uriPath !== '/' && is_file($fullPath)) {
     return false;
 }

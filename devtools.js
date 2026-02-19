@@ -73,7 +73,15 @@ function getLocationByUuid(uuid) {
   return CONFIG.locations.find((l) => l.qrToken === uuid) || null;
 }
 
+function getGeoSimulation() {
+  try { return JSON.parse(localStorage.getItem("passportGeoSim") || "{}"); } catch { return {}; }
+}
+
 async function getCurrentGeolocation() {
+  const sim = getGeoSimulation();
+  if (sim.enabled && Number.isFinite(sim.lat) && Number.isFinite(sim.lng)) {
+    return { latitude: sim.lat, longitude: sim.lng, accuracy: sim.accuracy || 5, simulated: true };
+  }
   if (!navigator.geolocation) throw new Error("Geolocation is not available in this browser.");
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(
@@ -97,32 +105,36 @@ async function renderStampGrid() {
   }
 }
 
-function showDisclaimerOnce() {
-  const modal = el("disclaimerModal");
-  if (!modal || localStorage.getItem("passportDisclaimerAccepted") === "1") return;
-
-  const acceptBtn = el("disclaimerAcceptBtn") || modal.querySelector("button");
-  if (!acceptBtn) {
-    setStatus("Disclaimer could not be acknowledged because the accept button is missing.");
-    return;
-  }
-
-  modal.classList.remove("hidden");
-  acceptBtn.addEventListener("click", () => {
-    localStorage.setItem("passportDisclaimerAccepted", "1");
-    modal.classList.add("hidden");
-  }, { once: true });
+function renderLocationPicker() {
+  const ul = el("locationList");
+  if (!ul) return;
+  ul.innerHTML = "";
+  CONFIG.locations.forEach((loc) => {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = `${loc.locationId}. ${loc.name}`;
+    btn.addEventListener("click", () => {
+      const url = new URL(window.location.href);
+      url.searchParams.set("q", loc.qrToken);
+      window.location.href = url.toString();
+    });
+    li.appendChild(btn);
+    ul.appendChild(li);
+  });
 }
 
 async function loadLocationState() {
   const qr = parseSignedQr(getQrTokenFromUrl());
   if (!qr) {
-    return setStatus("Sorry — you must be on site to tag a location. Please scan an official stop QR code.");
+    el("locationPicker")?.classList.remove("hidden");
+    return setStatus("Missing/invalid QR URL. Choose a stop for testing.");
   }
 
   const location = getLocationByUuid(qr.uuid);
   if (!location) {
-    return setStatus("Sorry — this QR code is not valid for the Cottage Passport event.");
+    el("locationPicker")?.classList.remove("hidden");
+    return setStatus("QR UUID not allowlisted.");
   }
 
   currentLocation = location;
@@ -176,9 +188,34 @@ async function handleSubmit(e) {
   await saveStamp(email, geo, result.distance);
 
   el("resultSection")?.classList.remove("hidden");
-  text("prizeMessage", `Stamp accepted at ${Math.round(result.distance)}m from target.`);
+  text("prizeMessage", `Stamp accepted at ${Math.round(result.distance)}m from target${geo.simulated ? " (simulated devtools geolocation)." : "."}`);
   setStatus("Stamp validated and saved on this device.");
   await renderStampGrid();
+}
+
+function bindDevtoolsSimulation() {
+  const panel = el("devGeoPanel");
+  if (!panel) return;
+  panel.classList.remove("hidden");
+  const locationSelect = el("simLocation");
+  CONFIG.locations.forEach((loc) => {
+    const opt = document.createElement("option");
+    opt.value = String(loc.locationId);
+    opt.textContent = `${loc.locationId}. ${loc.name}`;
+    locationSelect?.appendChild(opt);
+  });
+  el("simInRadiusBtn")?.addEventListener("click", () => {
+    localStorage.setItem("passportGeoSim", JSON.stringify({ enabled: true, lat: 45.4272254, lng: -75.6942809, accuracy: 3 }));
+    setStatus(`Devtools geolocation set inside ${CONFIG.geofenceMeters}m radius.`);
+  });
+  el("simOutRadiusBtn")?.addEventListener("click", () => {
+    localStorage.setItem("passportGeoSim", JSON.stringify({ enabled: true, lat: 45.4372254, lng: -75.6842809, accuracy: 3 }));
+    setStatus("Devtools geolocation set outside radius (~1km+).\n");
+  });
+  el("simClearBtn")?.addEventListener("click", () => {
+    localStorage.removeItem("passportGeoSim");
+    setStatus("Devtools geolocation simulation cleared.");
+  });
 }
 
 function bindGlobalErrorHandling() {
@@ -201,10 +238,12 @@ async function init() {
   text("appName", CONFIG.appName);
   text("appTagline", CONFIG.headerText);
   await initDB();
-  showDisclaimerOnce();
+  renderLocationPicker();
+  bindDevtoolsSimulation();
   await loadLocationState();
   await renderStampGrid();
   el("collectForm")?.addEventListener("submit", (e) => handleSubmit(e).catch((err) => setStatus(err.message)));
+  setStatus(`Devtools mode: use geolocation simulation controls to test in/out of ${CONFIG.geofenceMeters}m geofence.`);
 }
 
 init().catch((err) => setStatus(`Initialization failed: ${err.message}`));
