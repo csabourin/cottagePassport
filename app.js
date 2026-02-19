@@ -29,7 +29,13 @@ async function initDB() {
 function reqP(req) { return new Promise((resolve, reject) => { req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
 function store(name, mode = "readonly") { return db.transaction(name, mode).objectStore(name); }
 
-function setStatus(message) { text("statusSection", message); }
+function setStatus(message) {
+  const section = el("statusSection");
+  if (!section) return;
+  const drawBtn = section.querySelector("#enterDrawBtn");
+  section.textContent = message;
+  if (drawBtn) section.appendChild(drawBtn);
+}
 
 // ── Encryption helpers (Web Crypto API) ──
 
@@ -184,13 +190,34 @@ async function collectCurrentStamp() {
 
 // ── Draw eligibility modal (5+ stamps) ──
 
+function showDrawButton() {
+  const section = el("statusSection");
+  if (!section || section.querySelector("#enterDrawBtn")) return;
+  const btn = document.createElement("button");
+  btn.id = "enterDrawBtn";
+  btn.className = "primary";
+  btn.textContent = "Enter the draw";
+  btn.addEventListener("click", async () => {
+    const count = await countCollectedStamps();
+    text("drawStampCount", String(count));
+    const modal = el("drawModal");
+    if (modal) modal.classList.remove("hidden");
+  });
+  section.appendChild(btn);
+}
+
 async function checkDrawEligibility() {
   const count = await countCollectedStamps();
   if (count < 5) return;
   if (localStorage.getItem("passportDrawEmailSubmitted") === "1") return;
-  if (localStorage.getItem("passportDrawDismissed") === "1") return;
 
   text("drawStampCount", String(count));
+
+  if (localStorage.getItem("passportDrawDismissed") === "1") {
+    showDrawButton();
+    return;
+  }
+
   const modal = el("drawModal");
   if (modal) modal.classList.remove("hidden");
 }
@@ -216,6 +243,8 @@ function bindDrawModal() {
 
       localStorage.setItem("passportDrawEmailSubmitted", "1");
       if (modal) modal.classList.add("hidden");
+      const drawBtn = el("enterDrawBtn");
+      if (drawBtn) drawBtn.remove();
       setStatus("You're in the draw! Good luck!");
     });
   }
@@ -224,6 +253,7 @@ function bindDrawModal() {
     dismissBtn.addEventListener("click", () => {
       localStorage.setItem("passportDrawDismissed", "1");
       if (modal) modal.classList.add("hidden");
+      showDrawButton();
     });
   }
 }
@@ -304,6 +334,9 @@ async function init() {
       setStatus(`Error: ${err.message}`);
     }
   });
+
+  // Show draw button for returning visitors who previously dismissed
+  await checkDrawEligibility();
 }
 
 init().catch((err) => setStatus(`Initialization failed: ${err.message}`));
