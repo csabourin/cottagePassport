@@ -10,7 +10,7 @@ channel = "stable-25_05"
 [userenv.development]
 COTTAGE_AES_KEY = "dev-placeholder-aes-key"
 COTTAGE_HMAC_SECRET = "dev-placeholder-hmac-secret"
-COTTAGE_VALIDATION_EMAIL = "test@example.com"
+COTTAGE_VALIDATION_EMAIL = "christian.sabourin@ncc-ccn.ca"
 COTTAGE_ADMIN_KEY = "dev-admin-key"
 COTTAGE_TOKEN_EXPIRY_DAYS = "7"
 
