@@ -27,7 +27,7 @@ class Module extends BaseModule
         }
 
         $payload = json_decode($payloadJson, true);
-        if (!is_array($payload) || empty($payload['uuid']) || !preg_match('/^[a-f0-9-]{36}$/i', $payload['uuid'])) {
+        if (!is_array($payload) || empty($payload['uuid']) || !preg_match('/^[a-f0-9]{8}$/i', $payload['uuid'])) {
             return ['ok' => false, 'reason' => 'QR payload is missing a valid UUID.'];
         }
 
