@@ -1,9 +1,9 @@
 <?php
 $validUuids = require __DIR__ . '/../config/valid-qr-uuids.php';
 
-$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'https';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$defaultBase = $scheme . '://' . $host . '/index.html';
+$defaultBase = $scheme . '://' . $host . '/';
 
 $baseUrlInput = trim((string)($_GET['base'] ?? $defaultBase));
 $baseUrl = filter_var($baseUrlInput, FILTER_VALIDATE_URL) ? $baseUrlInput : $defaultBase;
