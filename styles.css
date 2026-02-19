@@ -550,7 +550,7 @@ textarea#tokenOutput {
 
 /* Stamp content in collected slot — large emoji, thin text */
 .stamp-slot.collected .stamp-content {
-  font-size: 1.6rem;
+  font-size: 3.5rem;
   line-height: 1.2;
 }
 
