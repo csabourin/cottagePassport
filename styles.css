@@ -576,3 +576,9 @@ select {
   border: none;
   box-shadow: none;
 }
+
+/* Enter-the-draw button inside status card */
+#enterDrawBtn {
+  display: block;
+  margin-top: 0.6rem;
+}
