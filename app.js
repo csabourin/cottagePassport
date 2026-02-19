@@ -8,7 +8,6 @@ const CONFIG = {
 const UUID_RE = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 let db;
 let currentLocation;
-let validationEmail = "";
 
 const el = (id) => document.getElementById(id);
 const text = (id, value) => { const node = el(id); if (node) node.textContent = value; };
@@ -30,24 +29,39 @@ async function initDB() {
 function reqP(req) { return new Promise((resolve, reject) => { req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
 function store(name, mode = "readonly") { return db.transaction(name, mode).objectStore(name); }
 
-function getTokenMetaKey(locationId, email) {
-  return `secure-token:${locationId}:${email.toLowerCase()}`;
-}
+function setStatus(message) { text("statusSection", message); }
 
-async function readStoredToken(locationId, email) {
-  const entry = await reqP(store("meta").get(getTokenMetaKey(locationId, email)));
-  return entry?.value || "";
-}
+// ── Encryption helpers (Web Crypto API) ──
 
-async function writeStoredToken(locationId, email, token) {
+async function getOrCreateEncryptionKey() {
+  const existing = await reqP(store("meta").get("encryption-key"));
+  if (existing?.value) {
+    return crypto.subtle.importKey("jwk", existing.value, { name: "AES-GCM" }, true, ["encrypt", "decrypt"]);
+  }
+
+  const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+  const jwk = await crypto.subtle.exportKey("jwk", key);
   await reqP(store("meta", "readwrite").put({
-    key: getTokenMetaKey(locationId, email),
-    value: token,
+    key: "encryption-key",
+    value: jwk,
     updatedAt: new Date().toISOString()
   }));
+  return key;
 }
 
-function setStatus(message) { text("statusSection", message); }
+async function encryptToken(data) {
+  const key = await getOrCreateEncryptionKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encoded = new TextEncoder().encode(JSON.stringify(data));
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
+
+  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.length);
+  return btoa(String.fromCharCode(...combined));
+}
+
+// ── App config ──
 
 async function loadAppConfig() {
   const res = await fetch("?action=locations", { headers: { Accept: "application/json" } });
@@ -60,7 +74,6 @@ async function loadAppConfig() {
   CONFIG.appName = data.appName || CONFIG.appName;
   CONFIG.headerText = data.headerText || CONFIG.headerText;
   CONFIG.geofenceMeters = Number.isFinite(data.geofenceMeters) ? data.geofenceMeters : CONFIG.geofenceMeters;
-  validationEmail = (data.validationEmail || "").trim();
   CONFIG.locations = data.locations
     .filter((loc) => Number.isInteger(loc.locationId) && UUID_RE.test(loc.uuid || ""))
     .map((loc) => ({
@@ -92,16 +105,7 @@ function getLocationByUuid(uuid) {
   return CONFIG.locations.find((l) => l.qrToken === uuid) || null;
 }
 
-async function getCurrentGeolocation() {
-  if (!navigator.geolocation) throw new Error("Geolocation is not available in this browser.");
-  return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracy: pos.coords.accuracy || 0, simulated: false }),
-      () => reject(new Error("Geolocation permission denied. Enable location to collect a stamp.")),
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
-  });
-}
+// ── Stamp grid ──
 
 async function renderStampGrid() {
   const grid = el("stampGrid");
@@ -116,9 +120,122 @@ async function renderStampGrid() {
   }
 }
 
-function showDisclaimerOnce() {
+// ── Count collected stamps ──
+
+async function countCollectedStamps() {
+  let count = 0;
+  for (const loc of CONFIG.locations) {
+    const stamp = await reqP(store("stamps").get(loc.locationId));
+    if (stamp) count++;
+  }
+  return count;
+}
+
+// ── Save stamp + encrypted token ──
+
+async function saveStamp(location) {
+  const now = new Date().toISOString();
+
+  await reqP(store("stamps", "readwrite").put({
+    locationId: location.locationId,
+    collectedAt: now
+  }));
+
+  const tokenData = {
+    uuid: location.qrToken,
+    locationId: location.locationId,
+    collectedAt: now,
+    nonce: crypto.getRandomValues(new Uint8Array(8)).join("")
+  };
+  const encryptedToken = await encryptToken(tokenData);
+
+  await reqP(store("meta", "readwrite").put({
+    key: `encrypted-token:${location.locationId}`,
+    value: encryptedToken,
+    updatedAt: now
+  }));
+}
+
+// ── Collect stamp for current location ──
+
+async function collectCurrentStamp() {
+  if (!currentLocation) return;
+
+  const existing = await reqP(store("stamps").get(currentLocation.locationId));
+  if (existing) {
+    el("collectSection")?.classList.remove("hidden");
+    text("locationDisplay", `${currentLocation.locationId}. ${currentLocation.name} — ${currentLocation.tagline}`);
+    text("collectMessage", "You already collected this stamp!");
+    setStatus(`Already collected at ${currentLocation.name}.`);
+    await renderStampGrid();
+    await checkDrawEligibility();
+    return;
+  }
+
+  await saveStamp(currentLocation);
+
+  el("collectSection")?.classList.remove("hidden");
+  text("locationDisplay", `${currentLocation.locationId}. ${currentLocation.name} — ${currentLocation.tagline}`);
+  text("collectMessage", "Stamp saved to your passport!");
+  setStatus(`Stamp collected at ${currentLocation.name}!`);
+  await renderStampGrid();
+  await checkDrawEligibility();
+}
+
+// ── Draw eligibility modal (5+ stamps) ──
+
+async function checkDrawEligibility() {
+  const count = await countCollectedStamps();
+  if (count < 5) return;
+  if (localStorage.getItem("passportDrawEmailSubmitted") === "1") return;
+  if (localStorage.getItem("passportDrawDismissed") === "1") return;
+
+  text("drawStampCount", String(count));
+  const modal = el("drawModal");
+  if (modal) modal.classList.remove("hidden");
+}
+
+function bindDrawModal() {
+  const form = el("drawEmailForm");
+  const dismissBtn = el("drawDismissBtn");
+  const modal = el("drawModal");
+
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = (el("drawEmailInput")?.value || "").trim();
+      const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      el("drawEmailError")?.classList.toggle("hidden", valid);
+      if (!valid) return;
+
+      await reqP(store("meta", "readwrite").put({
+        key: "draw-email",
+        value: email,
+        updatedAt: new Date().toISOString()
+      }));
+
+      localStorage.setItem("passportDrawEmailSubmitted", "1");
+      if (modal) modal.classList.add("hidden");
+      setStatus("You're in the draw! Good luck!");
+    });
+  }
+
+  if (dismissBtn) {
+    dismissBtn.addEventListener("click", () => {
+      localStorage.setItem("passportDrawDismissed", "1");
+      if (modal) modal.classList.add("hidden");
+    });
+  }
+}
+
+// ── Disclaimer ──
+
+function showDisclaimerOnce(onAccept) {
   const modal = el("disclaimerModal");
-  if (!modal || localStorage.getItem("passportDisclaimerAccepted") === "1") return;
+  if (!modal || localStorage.getItem("passportDisclaimerAccepted") === "1") {
+    if (onAccept) onAccept();
+    return;
+  }
 
   const acceptBtn = el("disclaimerAcceptBtn") || modal.querySelector("button");
   if (!acceptBtn) {
@@ -130,15 +247,17 @@ function showDisclaimerOnce() {
   acceptBtn.addEventListener("click", () => {
     localStorage.setItem("passportDisclaimerAccepted", "1");
     modal.classList.add("hidden");
+    if (onAccept) onAccept();
   }, { once: true });
 }
 
-async function loadLocationState() {
+// ── Location state ──
+
+function loadLocationState() {
   const rawToken = getQrTokenFromUrl();
   const qr = parseSignedQr(rawToken);
   if (!qr) {
-    renderProgressMailto("");
-    return setStatus("Sorry — you must be on site to tag a location. Please scan an official stop QR code.");
+    return setStatus("Scan an official stop QR code to collect a stamp.");
   }
 
   const location = getLocationByUuid(qr.uuid);
@@ -147,104 +266,9 @@ async function loadLocationState() {
   }
 
   currentLocation = location;
-  el("collectSection")?.classList.remove("hidden");
-  text("locationDisplay", `${location.locationId}. ${location.name} — ${location.tagline}`);
-  renderProgressMailto("");
-  setStatus(`Ready to collect at ${location.name}. Geofence radius: ${CONFIG.geofenceMeters}m.`);
 }
 
-async function saveStamp(email, geo, distance) {
-  await reqP(store("stamps", "readwrite").put({
-    locationId: currentLocation.locationId,
-    email,
-    geolocation: `${geo.latitude},${geo.longitude}`,
-    distance,
-    collectedAt: new Date().toISOString()
-  }));
-}
-
-async function validateCollectOnServer(email, geo) {
-  const response = await fetch("?action=collect", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({
-      uuid: currentLocation.qrToken,
-      email,
-      latitude: geo.latitude,
-      longitude: geo.longitude
-    })
-  });
-
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok || !body.success) {
-    const detail = Number.isFinite(body.distance)
-      ? ` You are ${Math.round(body.distance)}m away; max is ${body.allowedRadius || CONFIG.geofenceMeters}m.`
-      : "";
-    throw new Error((body.error || "Location validation failed.") + detail);
-  }
-
-  return body;
-}
-
-async function getSecureProgressToken(email) {
-  const cached = await readStoredToken(currentLocation.locationId, email);
-  if (cached) return cached;
-
-  const response = await fetch("?action=register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({
-      uuid: currentLocation.qrToken,
-      email
-    })
-  });
-  const body = await response.json().catch(() => ({}));
-
-  if (!response.ok || !body.success || typeof body.token !== "string" || body.token.trim() === "") {
-    throw new Error(body.error || "Could not create secure progress token.");
-  }
-
-  const secureToken = body.token.trim();
-  await writeStoredToken(currentLocation.locationId, email, secureToken);
-  return secureToken;
-}
-
-async function handleSubmit(e) {
-  e.preventDefault();
-  const email = (el("emailInput")?.value || "").trim();
-  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  el("emailError")?.classList.toggle("hidden", valid);
-  if (!valid || !currentLocation) return;
-
-  const geo = await getCurrentGeolocation();
-  const result = await validateCollectOnServer(email, geo);
-  await saveStamp(email, geo, result.distance);
-  const secureToken = await getSecureProgressToken(email);
-
-  el("resultSection")?.classList.remove("hidden");
-  text("prizeMessage", `Stamp accepted at ${Math.round(result.distance)}m from target.`);
-  renderProgressMailto(secureToken);
-  setStatus("Stamp validated and saved on this device.");
-  await renderStampGrid();
-}
-
-function renderProgressMailto(token) {
-  const link = el("progressMailtoLink");
-  if (!link) return;
-
-  if (!token || !validationEmail) {
-    link.classList.add("hidden");
-    link.removeAttribute("href");
-    return;
-  }
-
-  const subject = "Cottage Passport progress";
-  const body = `My Cottage Passport token:
-
-${token}`;
-  link.href = `mailto:${encodeURIComponent(validationEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  link.classList.remove("hidden");
-}
+// ── Error handling ──
 
 function bindGlobalErrorHandling() {
   window.addEventListener("error", (event) => {
@@ -259,6 +283,8 @@ function bindGlobalErrorHandling() {
   });
 }
 
+// ── Init ──
+
 async function init() {
   bindGlobalErrorHandling();
   await loadAppConfig();
@@ -266,10 +292,18 @@ async function init() {
   text("appName", CONFIG.appName);
   text("appTagline", CONFIG.headerText);
   await initDB();
-  showDisclaimerOnce();
-  await loadLocationState();
+
+  loadLocationState();
   await renderStampGrid();
-  el("collectForm")?.addEventListener("submit", (e) => handleSubmit(e).catch((err) => setStatus(err.message)));
+  bindDrawModal();
+
+  showDisclaimerOnce(async () => {
+    try {
+      await collectCurrentStamp();
+    } catch (err) {
+      setStatus(`Error: ${err.message}`);
+    }
+  });
 }
 
 init().catch((err) => setStatus(`Initialization failed: ${err.message}`));
