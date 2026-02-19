@@ -8,6 +8,8 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.development]
+
+[userenv.shared]
 COTTAGE_AES_KEY = "dev-placeholder-aes-key"
 COTTAGE_HMAC_SECRET = "dev-placeholder-hmac-secret"
 COTTAGE_VALIDATION_EMAIL = "christian.sabourin@ncc-ccn.ca"

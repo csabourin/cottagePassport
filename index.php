@@ -54,10 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-if (getenv('COTTAGE_AES_KEY') === false || $config['hmac_secret'] === '') {
-    json_out(['success' => false, 'error' => 'Server misconfigured'], 500);
-}
-
 // ============================================================
 // VALID UUIDs (shared with client config)
 // ============================================================
@@ -73,23 +69,25 @@ $locationsByUuid = build_locations_by_uuid($validUuids, $locationRows);
 $action = $_GET['action'] ?? '';
 
 switch ($action) {
-    case 'resolve':
-        handle_resolve($config, $validUuids);
-        break;
-    case 'register':
-        handle_register($config, $validUuids);
-        break;
-    case 'validate':
-        handle_validate($config, $validUuids);
-        break;
-    case 'generate':
-        handle_generate($config, $validUuids);
-        break;
     case 'locations':
         handle_locations($locationsByUuid);
         break;
     case 'collect':
         handle_collect($locationsByUuid);
+        break;
+    case 'resolve':
+    case 'register':
+    case 'validate':
+    case 'generate':
+        if (getenv('COTTAGE_AES_KEY') === false || $config['hmac_secret'] === '') {
+            json_out(['success' => false, 'error' => 'Server misconfigured'], 500);
+        }
+        switch ($action) {
+            case 'resolve':   handle_resolve($config, $validUuids); break;
+            case 'register':  handle_register($config, $validUuids); break;
+            case 'validate':  handle_validate($config, $validUuids); break;
+            case 'generate':  handle_generate($config, $validUuids); break;
+        }
         break;
     default:
         json_out([
