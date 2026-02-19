@@ -5,30 +5,34 @@
 
 :root {
   /* Passport core palette */
-  --passport-navy:   #1a2744;
+  --passport-navy: #1a2744;
   --passport-navy-d: #111b33;
-  --passport-gold:   #c9a227;
-  --gold-light:      #e8c860;
-  --gold-muted:      rgba(201, 162, 39, 0.4);
+  --passport-gold: #c9a227;
+  --gold-light: #e8c860;
+  --gold-muted: rgba(201, 162, 39, 0.4);
 
   /* Page / paper */
-  --bg-paper:        #f7f3e9;
-  --paper-shadow:    rgba(20, 15, 10, 0.42);
+  --bg-paper: #f7f3e9;
+  --paper-shadow: rgba(20, 15, 10, 0.42);
 
   /* Ink */
-  --ink:             #1e1a17;
-  --ink-muted:       #5a4f43;
+  --ink: #1e1a17;
+  --ink-muted: #5a4f43;
 
   /* Accent colours (overridden at runtime by app.js — keep both) */
-  --accent:          #cc0000;   /* passport red  */
-  --accent-2:        #2d5a27;   /* forest green  */
+  --accent: #cc0000;
+  /* passport red  */
+  --accent-2: #2d5a27;
+  /* forest green  */
 
   /* Focus ring */
-  --focus:           #0e63b8;
+  --focus: #0e63b8;
 }
 
 /* ── Reset ── */
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -46,28 +50,20 @@ body {
   z-index: -1;
   background-color: #8f1010;
   background-image:
-    repeating-linear-gradient(
-      0deg,
+    repeating-linear-gradient(0deg,
       rgba(15, 8, 8, 0.96) 0 52px,
-      rgba(164, 16, 16, 0.25) 52px 104px
-    ),
-    repeating-linear-gradient(
-      90deg,
+      rgba(164, 16, 16, 0.25) 52px 104px),
+    repeating-linear-gradient(90deg,
       rgba(15, 8, 8, 0.96) 0 52px,
-      rgba(164, 16, 16, 0.25) 52px 104px
-    ),
-    repeating-linear-gradient(
-      0deg,
+      rgba(164, 16, 16, 0.25) 52px 104px),
+    repeating-linear-gradient(0deg,
       transparent 0 48px,
       rgba(255, 255, 255, 0.1) 48px 56px,
-      transparent 56px 100px
-    ),
-    repeating-linear-gradient(
-      90deg,
+      transparent 56px 100px),
+    repeating-linear-gradient(90deg,
       transparent 0 48px,
       rgba(255, 255, 255, 0.1) 48px 56px,
-      transparent 56px 100px
-    );
+      transparent 56px 100px);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -83,12 +79,10 @@ body {
    HEADER  —  passport cover
    ══════════════════════════════════════════════════════════ */
 .booklet-header {
-  background: linear-gradient(
-    160deg,
-    #243466 0%,
-    var(--passport-navy) 45%,
-    var(--passport-navy-d) 100%
-  );
+  background: linear-gradient(160deg,
+      #243466 0%,
+      var(--passport-navy) 45%,
+      var(--passport-navy-d) 100%);
   color: #fff;
   text-align: center;
   border-radius: 16px 16px 6px 6px;
@@ -120,11 +114,9 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    32deg,
-    transparent              0px, transparent             14px,
-    rgba(255,255,255,0.025)  14px, rgba(255,255,255,0.025) 15px
-  );
+  background: repeating-linear-gradient(32deg,
+      transparent 0px, transparent 14px,
+      rgba(255, 255, 255, 0.025) 14px, rgba(255, 255, 255, 0.025) 15px);
   border-radius: 14px;
   pointer-events: none;
 }
@@ -170,7 +162,7 @@ body {
 }
 
 /* — Tagline / subtitle — */
-.booklet-header > p:not(.eyebrow):not(.header-govt):not(.header-passport-label) {
+.booklet-header>p:not(.eyebrow):not(.header-govt):not(.header-passport-label) {
   margin: 0;
   font-size: 0.88rem;
   font-style: italic;
@@ -181,11 +173,9 @@ body {
 .header-rule {
   display: block;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%, var(--passport-gold) 30%,
-    var(--passport-gold) 70%, transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%, var(--passport-gold) 30%,
+      var(--passport-gold) 70%, transparent 100%);
   margin: 0.9rem auto 0.7rem;
   width: 70%;
   opacity: 0.7;
@@ -208,11 +198,9 @@ body {
   background-color: var(--bg-paper);
 
   /* Subtle security micro-line watermark on the page */
-  background-image: repeating-linear-gradient(
-    0deg,
-    transparent                   0px, transparent                   27px,
-    rgba(180, 155, 110, 0.09)    27px, rgba(180, 155, 110, 0.09)    28px
-  );
+  background-image: repeating-linear-gradient(0deg,
+      transparent 0px, transparent 27px,
+      rgba(180, 155, 110, 0.09) 27px, rgba(180, 155, 110, 0.09) 28px);
 
   border: 1.5px solid #c5b07a;
   border-top: 4px solid var(--passport-gold);
@@ -235,9 +223,7 @@ body {
   left: 1.2rem;
   right: 1.2rem;
   height: 1px;
-  background: linear-gradient(
-    90deg, transparent, rgba(201,162,39,0.25), transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.25), transparent);
 }
 
 /* — Status card: forest-green left ribbon — */
@@ -274,13 +260,17 @@ label {
 }
 
 /* ── Utility ── */
-.hidden { display: none; }
-.muted  {
+.hidden {
+  display: none;
+}
+
+.muted {
   color: var(--ink-muted);
   font-size: 0.86rem;
   font-family: "Avenir Next", "Segoe UI", sans-serif;
 }
-.error  {
+
+.error {
   color: #8a1111;
   font-size: 0.86rem;
   margin-top: 0.3rem;
@@ -290,9 +280,15 @@ label {
 /* ══════════════════════════════════════════════════════════
    FORM CONTROLS
    ══════════════════════════════════════════════════════════ */
-input, textarea, button, a { font: inherit; }
+input,
+textarea,
+button,
+a {
+  font: inherit;
+}
 
-input, textarea {
+input,
+textarea {
   width: 100%;
   border: 1.5px solid #9d8c72;
   background: #fffcf5;
@@ -303,10 +299,15 @@ input, textarea {
   color: var(--ink);
   transition: border-color 0.15s;
 }
-input:focus, textarea:focus { border-color: var(--passport-gold); }
+
+input:focus,
+textarea:focus {
+  border-color: var(--passport-gold);
+}
 
 /* — Buttons & links — */
-button, a {
+button,
+a {
   border: 1.5px solid #7a6a55;
   background: #f4ede0;
   color: var(--ink);
@@ -320,7 +321,9 @@ button, a {
   cursor: pointer;
   transition: background 0.14s, box-shadow 0.14s;
 }
-button:hover, a:hover {
+
+button:hover,
+a:hover {
   background: #eae0cc;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
@@ -335,6 +338,7 @@ button:hover, a:hover {
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
+
 .primary:hover {
   background: #aa0000;
   border-color: #aa0000;
@@ -347,7 +351,11 @@ button:hover, a:hover {
   color: #fff;
   border-color: var(--accent-2);
 }
-#mailtoLink:hover { background: #245020; border-color: #245020; }
+
+#mailtoLink:hover {
+  background: #245020;
+  border-color: #245020;
+}
 
 /* Focus ring */
 button:focus-visible,
@@ -385,6 +393,7 @@ textarea:focus-visible {
   border-left: 3px solid var(--passport-gold);
   padding-left: 0.75rem;
 }
+
 .location-list button:hover {
   border-left-color: var(--accent);
   background: #ede4d3;
@@ -415,7 +424,10 @@ textarea#tokenOutput {
   align-items: center;
   justify-content: space-between;
 }
-.leaf { font-size: 1.5rem; }
+
+.leaf {
+  font-size: 1.5rem;
+}
 
 /* Grid */
 .stamp-grid {
@@ -493,15 +505,37 @@ textarea#tokenOutput {
 
 /* ── Stamp-in animation (newly collected only) ── */
 @keyframes stamp-in {
-  0%   { transform: scale(6); opacity: 0.35; }
-  60%  { transform: scale(0.92); opacity: 1; }
-  80%  { transform: scale(1.05); opacity: 1; }
-  100% { transform: scale(1);   opacity: 1; }
+  0% {
+    transform: scale(6);
+    opacity: 0.35;
+  }
+
+  60% {
+    transform: scale(0.92);
+    opacity: 1;
+  }
+
+  80% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes colorize {
-  0%   { filter: grayscale(1); opacity: 0.3; }
-  100% { filter: grayscale(0); opacity: 0.45; }
+  0% {
+    filter: grayscale(1);
+    opacity: 0.3;
+  }
+
+  100% {
+    filter: grayscale(0);
+    opacity: 0.45;
+  }
 }
 
 /* Animate only the newly-collected stamp */
@@ -522,7 +556,8 @@ textarea#tokenOutput {
 
 /* Location name inside collected slot */
 .stamp-slot.collected strong {
-  font-size: 0.6rem;
+  font-size: 0.9rem;
+  color: var(--ink);
   font-weight: 400;
   display: block;
   margin-top: 2px;
@@ -535,15 +570,23 @@ textarea#tokenOutput {
    RESPONSIVE
    ══════════════════════════════════════════════════════════ */
 @media (max-width: 700px) {
-  .stamp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .booklet { padding: 0.8rem 0.65rem 2rem; }
+  .stamp-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .booklet {
+    padding: 0.8rem 0.65rem 2rem;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
    REDUCED MOTION
    ══════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
@@ -631,6 +674,7 @@ select {
   text-decoration: underline;
   padding: 0.3rem 0.5rem;
 }
+
 .draw-dismiss:hover {
   color: var(--ink);
   background: transparent;
