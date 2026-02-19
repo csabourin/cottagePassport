@@ -1,22 +1,45 @@
 <?php
-$uri = $_SERVER['REQUEST_URI'];
-$path = parse_url($uri, PHP_URL_PATH);
-$query = parse_url($uri, PHP_URL_QUERY) ?? '';
 
-parse_str($query, $params);
+declare(strict_types=1);
 
-if ($path === '/api' || $path === '/api/' || $path === '/index.php' || !empty($params['action'])) {
-    $_SERVER['SCRIPT_NAME'] = '/index.php';
-    $_GET = array_merge($_GET, $params);
-    require __DIR__ . '/index.php';
-    return true;
-}
+$uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+$fullPath = __DIR__ . $uriPath;
 
-$file = __DIR__ . $path;
-if ($path !== '/' && is_file($file)) {
+// Let PHP serve existing files (assets, html, js, css, generator/index.php, etc.).
+if ($uriPath !== '/' && is_file($fullPath)) {
     return false;
 }
 
-header('Cache-Control: no-cache');
-readfile(__DIR__ . '/index.html');
-return true;
+switch ($uriPath) {
+    case '/':
+        require __DIR__ . '/index.html';
+        break;
+
+    case '/validation':
+    case '/validation.html':
+        require __DIR__ . '/validation.html';
+        break;
+
+    case '/devtools':
+    case '/devtools.html':
+        require __DIR__ . '/devtools.html';
+        break;
+
+    case '/generator':
+    case '/generator/':
+    case '/generator/index.php':
+        require __DIR__ . '/generator/index.php';
+        break;
+
+    default:
+        // API entrypoint (e.g., /?action=resolve or any unknown dynamic route).
+        if (isset($_GET['action'])) {
+            require __DIR__ . '/index.php';
+            break;
+        }
+
+        http_response_code(404);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo "Not Found";
+        break;
+}
