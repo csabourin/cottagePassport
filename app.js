@@ -162,15 +162,23 @@ function getLocationByUuid(uuid) {
 
 // ── Stamp grid ──
 
-async function renderStampGrid() {
+async function renderStampGrid(newlyCollectedId) {
   const grid = el("stampGrid");
   if (!grid) return;
   grid.innerHTML = "";
   for (const loc of CONFIG.locations) {
     const stamp = await getStamp(loc.locationId);
+    const isNew = newlyCollectedId === loc.locationId;
     const div = document.createElement("div");
-    div.className = `stamp-slot ${stamp ? "collected" : ""}`;
-    div.textContent = stamp ? `🍁 ${loc.locationId}` : `${loc.locationId}`;
+    div.className = `stamp-slot${stamp ? " collected" : ""}${isNew ? " just-collected" : ""}`;
+    div.style.setProperty("--bg-image", `url(https://picsum.photos/seed/cottage${loc.locationId}/200/200)`);
+    div.setAttribute("role", "listitem");
+
+    const content = document.createElement("span");
+    content.className = "stamp-content";
+    content.textContent = stamp ? `🍁 ${loc.locationId}` : `${loc.locationId}`;
+    div.appendChild(content);
+
     grid.appendChild(div);
   }
 }
@@ -233,7 +241,7 @@ async function collectCurrentStamp() {
   text("locationDisplay", `${currentLocation.locationId}. ${currentLocation.name} — ${currentLocation.tagline}`);
   text("collectMessage", "Stamp saved to your passport!");
   setStatus(`Stamp collected at ${currentLocation.name}!`);
-  await renderStampGrid();
+  await renderStampGrid(currentLocation.locationId);
   await checkDrawEligibility();
 }
 

@@ -439,7 +439,28 @@ textarea#tokenOutput {
   color: #a89272;
   font-family: "Avenir Next", "Segoe UI", sans-serif;
   position: relative;
+  overflow: hidden;
   transition: background 0.12s;
+}
+
+/* Cottage photo background via pseudo-element */
+.stamp-slot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+  border-radius: 4px;
+  filter: grayscale(1);
+  opacity: 0.3;
+  z-index: 0;
+}
+
+/* Stamp text sits above the photo */
+.stamp-content {
+  position: relative;
+  z-index: 1;
 }
 
 /* Collected slot — passport stamp inked in */
@@ -453,6 +474,12 @@ textarea#tokenOutput {
   box-shadow: inset 0 0 10px rgba(204, 0, 0, 0.1);
 }
 
+/* Collected photo becomes full-colour */
+.stamp-slot.collected::before {
+  filter: grayscale(0);
+  opacity: 0.45;
+}
+
 /* Double-border effect on collected stamps (authentic stamp look) */
 .stamp-slot.collected::after {
   content: "";
@@ -461,6 +488,30 @@ textarea#tokenOutput {
   border: 1px solid rgba(204, 0, 0, 0.28);
   border-radius: 3px;
   pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Stamp-in animation (newly collected only) ── */
+@keyframes stamp-in {
+  0%   { transform: scale(2.5); opacity: 0; }
+  60%  { transform: scale(0.92); opacity: 1; }
+  80%  { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+@keyframes colorize {
+  0%   { filter: grayscale(1); opacity: 0.3; }
+  100% { filter: grayscale(0); opacity: 0.45; }
+}
+
+/* Animate only the newly-collected stamp */
+.stamp-slot.just-collected .stamp-content {
+  animation: stamp-in 0.6s ease-out 1s both;
+}
+
+/* Background photo colorises slightly ahead of the stamp landing */
+.stamp-slot.just-collected::before {
+  animation: colorize 0.5s ease-out 0.8s both;
 }
 
 /* Emoji + number inside collected slot */
