@@ -63,6 +63,8 @@ if (getenv('COTTAGE_AES_KEY') === false || $config['hmac_secret'] === '') {
 // ============================================================
 
 $validUuids = require __DIR__ . '/config/valid-qr-uuids.php';
+$locationRows = require __DIR__ . '/config/locations.php';
+$locationsByUuid = build_locations_by_uuid($validUuids, $locationRows);
 
 // ============================================================
 // ROUTING
@@ -83,11 +85,17 @@ switch ($action) {
     case 'generate':
         handle_generate($config, $validUuids);
         break;
+    case 'locations':
+        handle_locations($locationsByUuid);
+        break;
+    case 'collect':
+        handle_collect($locationsByUuid);
+        break;
     default:
         json_out([
             'success' => false,
             'error'   => 'Unknown action',
-            'usage'   => 'action= resolve | register | validate',
+            'usage'   => 'action= resolve | register | validate | locations | collect',
         ], 400);
         break;
 }
@@ -250,6 +258,76 @@ function handle_generate(array $cfg, array $uuids) {
     ]);
 }
 
+function handle_locations(array $locationsByUuid) {
+    $locations = [];
+    foreach ($locationsByUuid as $uuid => $location) {
+        $locations[] = [
+            'locationId' => $location['locationId'],
+            'name' => $location['name'],
+            'tagline' => $location['tagline'],
+            'uuid' => $uuid,
+        ];
+    }
+
+    json_out([
+        'success' => true,
+        'appName' => 'Cottage Passport Canada',
+        'headerText' => 'Collect all 30 Canadiana Cottage stamps',
+        'geofenceMeters' => 550,
+        'locations' => $locations,
+    ]);
+}
+
+function handle_collect(array $locationsByUuid) {
+    require_method('POST');
+
+    $body = read_json_body();
+    $uuid = trim((string)($body['uuid'] ?? ''));
+    $email = trim((string)($body['email'] ?? ''));
+    $latitude = $body['latitude'] ?? null;
+    $longitude = $body['longitude'] ?? null;
+
+    if ($uuid === '' || $email === '' || !is_numeric($latitude) || !is_numeric($longitude)) {
+        json_out(['success' => false, 'error' => 'Missing or invalid uuid/email/coordinates'], 400);
+    }
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        json_out(['success' => false, 'error' => 'Invalid email address'], 400);
+    }
+
+    $location = $locationsByUuid[$uuid] ?? null;
+    if ($location === null) {
+        json_out(['success' => false, 'error' => 'Unknown cottage location'], 404);
+    }
+
+    $distance = haversine_meters((float)$latitude, (float)$longitude, (float)$location['lat'], (float)$location['lng']);
+    $allowedRadius = 550;
+    if ($distance > $allowedRadius) {
+        json_out([
+            'success' => false,
+            'error' => 'Outside allowed radius',
+            'distance' => round($distance),
+            'allowedRadius' => $allowedRadius,
+            'location' => [
+                'locationId' => $location['locationId'],
+                'name' => $location['name'],
+                'tagline' => $location['tagline'],
+            ],
+        ], 403);
+    }
+
+    json_out([
+        'success' => true,
+        'distance' => round($distance),
+        'allowedRadius' => $allowedRadius,
+        'location' => [
+            'locationId' => $location['locationId'],
+            'name' => $location['name'],
+            'tagline' => $location['tagline'],
+        ],
+    ]);
+}
+
 // ============================================================
 // CRYPTO HELPERS
 // ============================================================
@@ -374,4 +452,30 @@ function require_method(string $method) {
     if ($_SERVER['REQUEST_METHOD'] !== $method) {
         json_out(['success' => false, 'error' => $method . ' method required'], 405);
     }
+}
+
+function build_locations_by_uuid(array $uuids, array $locationRows) {
+    if (count($uuids) !== count($locationRows)) {
+        json_out(['success' => false, 'error' => 'Server misconfigured: location map size mismatch'], 500);
+    }
+
+    $result = [];
+    foreach ($locationRows as $idx => $locationRow) {
+        $uuid = $uuids[$idx] ?? null;
+        if (!is_string($uuid) || !isset($locationRow['locationId'], $locationRow['name'], $locationRow['tagline'], $locationRow['lat'], $locationRow['lng'])) {
+            json_out(['success' => false, 'error' => 'Server misconfigured: invalid location map'], 500);
+        }
+        $result[$uuid] = $locationRow;
+    }
+
+    return $result;
+}
+
+function haversine_meters(float $aLat, float $aLng, float $bLat, float $bLng) {
+    $earthRadius = 6371000;
+    $dLat = deg2rad($bLat - $aLat);
+    $dLng = deg2rad($bLng - $aLng);
+    $h = sin($dLat / 2) ** 2
+        + cos(deg2rad($aLat)) * cos(deg2rad($bLat)) * sin($dLng / 2) ** 2;
+    return 2 * $earthRadius * asin(sqrt($h));
 }
