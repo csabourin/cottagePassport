@@ -1,0 +1,47 @@
+modules = ["php-8.2", "web", "nodejs-20", "php-8.4"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+
+[userenv]
+
+[userenv.development]
+COTTAGE_AES_KEY = "dev-placeholder-aes-key"
+COTTAGE_HMAC_SECRET = "dev-placeholder-hmac-secret"
+COTTAGE_VALIDATION_EMAIL = "test@example.com"
+COTTAGE_ADMIN_KEY = "dev-admin-key"
+COTTAGE_TOKEN_EXPIRY_DAYS = "7"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "php -S 0.0.0.0:5000 router.php"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["php", "-S", "0.0.0.0:5000", "router.php"]
