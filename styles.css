@@ -430,7 +430,7 @@ textarea#tokenOutput {
   border: 1.5px dashed #c4ae86;
   border-radius: 5px;
   background: #fffaef;
-  min-height: 66px;
+  aspect-ratio: 1;
   display: grid;
   place-items: center;
   text-align: center;
@@ -469,7 +469,7 @@ textarea#tokenOutput {
   border-style: solid;
   background: #fff2f0;
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 400;
   /* Ink-bleed glow */
   box-shadow: inset 0 0 10px rgba(204, 0, 0, 0.1);
 }
@@ -514,9 +514,16 @@ textarea#tokenOutput {
   animation: colorize 0.5s ease-out 0.8s both;
 }
 
+/* Stamp content in collected slot — large emoji, thin text */
+.stamp-slot.collected .stamp-content {
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
 /* Location name inside collected slot */
 .stamp-slot.collected strong {
   font-size: 0.6rem;
+  font-weight: 400;
   display: block;
   margin-top: 2px;
   line-height: 1.15;
