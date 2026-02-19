@@ -14,20 +14,69 @@ const text = (id, value) => { const node = el(id); if (node) node.textContent = 
 
 async function initDB() {
   if (db) return;
-  db = await new Promise((resolve, reject) => {
-    const req = indexedDB.open("cottage-passport", 2);
-    req.onupgradeneeded = () => {
-      const d = req.result;
-      if (!d.objectStoreNames.contains("stamps")) d.createObjectStore("stamps", { keyPath: "locationId" });
-      if (!d.objectStoreNames.contains("meta")) d.createObjectStore("meta", { keyPath: "key" });
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
+  try {
+    db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open("cottage-passport", 2);
+      req.onupgradeneeded = () => {
+        const d = req.result;
+        if (!d.objectStoreNames.contains("stamps")) d.createObjectStore("stamps", { keyPath: "locationId" });
+        if (!d.objectStoreNames.contains("meta")) d.createObjectStore("meta", { keyPath: "key" });
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  } catch {
+    db = null;
+  }
 }
 
 function reqP(req) { return new Promise((resolve, reject) => { req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
 function store(name, mode = "readonly") { return db.transaction(name, mode).objectStore(name); }
+
+// ── Dual storage: IndexedDB + localStorage fallback ──
+
+const LS_PREFIX = "passportData:";
+
+function lsWrite(storeName, key, data) {
+  try { localStorage.setItem(`${LS_PREFIX}${storeName}:${key}`, JSON.stringify(data)); } catch {}
+}
+
+function lsRead(storeName, key) {
+  try {
+    const raw = localStorage.getItem(`${LS_PREFIX}${storeName}:${key}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+async function getStamp(locationId) {
+  if (db) {
+    try {
+      const result = await reqP(store("stamps").get(locationId));
+      if (result) return result;
+    } catch {}
+  }
+  return lsRead("stamps", locationId);
+}
+
+async function putStamp(data) {
+  lsWrite("stamps", data.locationId, data);
+  if (db) await reqP(store("stamps", "readwrite").put(data));
+}
+
+async function getMeta(key) {
+  if (db) {
+    try {
+      const result = await reqP(store("meta").get(key));
+      if (result) return result;
+    } catch {}
+  }
+  return lsRead("meta", key);
+}
+
+async function putMeta(data) {
+  lsWrite("meta", data.key, data);
+  if (db) await reqP(store("meta", "readwrite").put(data));
+}
 
 function setStatus(message) {
   const section = el("statusSection");
@@ -40,18 +89,18 @@ function setStatus(message) {
 // ── Encryption helpers (Web Crypto API) ──
 
 async function getOrCreateEncryptionKey() {
-  const existing = await reqP(store("meta").get("encryption-key"));
+  const existing = await getMeta("encryption-key");
   if (existing?.value) {
     return crypto.subtle.importKey("jwk", existing.value, { name: "AES-GCM" }, true, ["encrypt", "decrypt"]);
   }
 
   const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
   const jwk = await crypto.subtle.exportKey("jwk", key);
-  await reqP(store("meta", "readwrite").put({
+  await putMeta({
     key: "encryption-key",
     value: jwk,
     updatedAt: new Date().toISOString()
-  }));
+  });
   return key;
 }
 
@@ -118,7 +167,7 @@ async function renderStampGrid() {
   if (!grid) return;
   grid.innerHTML = "";
   for (const loc of CONFIG.locations) {
-    const stamp = await reqP(store("stamps").get(loc.locationId));
+    const stamp = await getStamp(loc.locationId);
     const div = document.createElement("div");
     div.className = `stamp-slot ${stamp ? "collected" : ""}`;
     div.textContent = stamp ? `🍁 ${loc.locationId}` : `${loc.locationId}`;
@@ -131,7 +180,7 @@ async function renderStampGrid() {
 async function countCollectedStamps() {
   let count = 0;
   for (const loc of CONFIG.locations) {
-    const stamp = await reqP(store("stamps").get(loc.locationId));
+    const stamp = await getStamp(loc.locationId);
     if (stamp) count++;
   }
   return count;
@@ -142,10 +191,10 @@ async function countCollectedStamps() {
 async function saveStamp(location) {
   const now = new Date().toISOString();
 
-  await reqP(store("stamps", "readwrite").put({
+  await putStamp({
     locationId: location.locationId,
     collectedAt: now
-  }));
+  });
 
   const tokenData = {
     uuid: location.qrToken,
@@ -155,11 +204,11 @@ async function saveStamp(location) {
   };
   const encryptedToken = await encryptToken(tokenData);
 
-  await reqP(store("meta", "readwrite").put({
+  await putMeta({
     key: `encrypted-token:${location.locationId}`,
     value: encryptedToken,
     updatedAt: now
-  }));
+  });
 }
 
 // ── Collect stamp for current location ──
@@ -167,7 +216,7 @@ async function saveStamp(location) {
 async function collectCurrentStamp() {
   if (!currentLocation) return;
 
-  const existing = await reqP(store("stamps").get(currentLocation.locationId));
+  const existing = await getStamp(currentLocation.locationId);
   if (existing) {
     el("collectSection")?.classList.remove("hidden");
     text("locationDisplay", `${currentLocation.locationId}. ${currentLocation.name} — ${currentLocation.tagline}`);
@@ -235,11 +284,11 @@ function bindDrawModal() {
       el("drawEmailError")?.classList.toggle("hidden", valid);
       if (!valid) return;
 
-      await reqP(store("meta", "readwrite").put({
+      await putMeta({
         key: "draw-email",
         value: email,
         updatedAt: new Date().toISOString()
-      }));
+      });
 
       localStorage.setItem("passportDrawEmailSubmitted", "1");
       if (modal) modal.classList.add("hidden");
