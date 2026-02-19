@@ -8,6 +8,7 @@ const CONFIG = {
 const UUID_RE = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 let db;
 let currentLocation;
+let stampVisibilityObserver;
 
 const el = (id) => document.getElementById(id);
 const text = (id, value) => { const node = el(id); if (node) node.textContent = value; };
@@ -160,6 +161,28 @@ function getLocationByUuid(uuid) {
   return CONFIG.locations.find((l) => l.qrToken === uuid) || null;
 }
 
+function watchStampVisibility(stampEl) {
+  if (!stampEl) return;
+
+  if (!("IntersectionObserver" in window)) {
+    stampEl.classList.add("is-visible");
+    return;
+  }
+
+  if (!stampVisibilityObserver) {
+    stampVisibilityObserver = new IntersectionObserver((entries, observer) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      }
+    }, { threshold: 0.35 });
+  }
+
+  stampVisibilityObserver.observe(stampEl);
+}
+
 // ── Stamp grid ──
 
 async function renderStampGrid(newlyCollectedId) {
@@ -184,6 +207,8 @@ async function renderStampGrid(newlyCollectedId) {
     div.appendChild(content);
 
     grid.appendChild(div);
+
+    if (isNew) watchStampVisibility(div);
   }
 }
 

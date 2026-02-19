@@ -539,13 +539,13 @@ textarea#tokenOutput {
 }
 
 /* Animate only the newly-collected stamp */
-.stamp-slot.just-collected .stamp-content {
-  animation: stamp-in 0.6s ease-out 1s both;
+.stamp-slot.just-collected.is-visible .stamp-content {
+  animation: stamp-in 0.6s ease-out both;
 }
 
 /* Background photo colorises slightly ahead of the stamp landing */
-.stamp-slot.just-collected::before {
-  animation: colorize 0.5s ease-out 0.8s both;
+.stamp-slot.just-collected.is-visible::before {
+  animation: colorize 0.5s ease-out both;
 }
 
 /* Stamp content in collected slot — large emoji, thin text */
