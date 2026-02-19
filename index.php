@@ -1,7 +1,7 @@
 <?php
 /**
  * Cottage Passport - PHP Backend Validation API
- * Hosted at: canadainacottage.replit.app
+ * Hosted at: ncc-ccn.replit.app
  *
  * Endpoints:
  *   GET  ?action=resolve&q=<encrypted>          Decrypt QR, return UUID
@@ -33,7 +33,7 @@ $config = [
     'admin_key'        => getenv('COTTAGE_ADMIN_KEY') ?: '',
     'token_expiry'     => ((int)(getenv('COTTAGE_TOKEN_EXPIRY_DAYS') ?: 7)) * 86400,
     'base_url'         => rtrim(
-        getenv('COTTAGE_BASE_URL') ?: 'https://canadianacottage.replit.app', '/'
+        getenv('COTTAGE_BASE_URL') ?: 'https://ncc-ccn.replit.app', '/'
     ),
 ];
 
