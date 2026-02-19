@@ -540,7 +540,7 @@ textarea#tokenOutput {
 
 /* Animate only the newly-collected stamp */
 .stamp-slot.just-collected.is-visible .stamp-content {
-  animation: stamp-in 0.6s ease-out both;
+  animation: stamp-in 1.2s ease-out both;
 }
 
 /* Background photo colorises slightly ahead of the stamp landing */
