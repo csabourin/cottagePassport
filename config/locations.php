@@ -19,7 +19,7 @@ return [
     ['locationId' => 16, 'name' => 'Hemlock Ridge', 'tagline' => 'Tall evergreens', 'lat' => 45.4259439, 'lng' => -75.6976589],
     ['locationId' => 17, 'name' => 'Northern Porch', 'tagline' => 'Rocking-chair views', 'lat' => 45.4278454, 'lng' => -75.6985422],
     ['locationId' => 18, 'name' => 'Cabin Pantry', 'tagline' => 'Jam jars and tea', 'lat' => 45.4299087, 'lng' => -75.6972875],
-    ['locationId' => 19, 'name' => 'Map Room', 'tagline' => 'Pins and trails', 'lat' => 45.4309962, 'lng' => -75.6941001],
+    ['locationId' => 19, 'name' => 'Map Room', 'tagline' => 'Pins and trails', 'lat' => 45.4048143, 'lng' => -75.855794],
     ['locationId' => 20, 'name' => 'Storm Watch Deck', 'tagline' => 'Rain on tin roof', 'lat' => 45.4302946, 'lng' => -75.6903385],
     ['locationId' => 21, 'name' => 'Moose Meadow', 'tagline' => 'Wild morning paths', 'lat' => 45.4273482, 'lng' => -75.6930129],
     ['locationId' => 22, 'name' => 'S\'more Station', 'tagline' => 'Toasty treats', 'lat' => 45.4265543, 'lng' => -75.6927653],
