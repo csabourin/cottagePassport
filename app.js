@@ -8,6 +8,8 @@ const CONFIG = {
 const UUID_RE = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 let db;
 let currentLocation;
+let validationEmail = "";
+let activeToken = "";
 
 const el = (id) => document.getElementById(id);
 const text = (id, value) => { const node = el(id); if (node) node.textContent = value; };
@@ -42,6 +44,7 @@ async function loadAppConfig() {
   CONFIG.appName = data.appName || CONFIG.appName;
   CONFIG.headerText = data.headerText || CONFIG.headerText;
   CONFIG.geofenceMeters = Number.isFinite(data.geofenceMeters) ? data.geofenceMeters : CONFIG.geofenceMeters;
+  validationEmail = (data.validationEmail || "").trim();
   CONFIG.locations = data.locations
     .filter((loc) => Number.isInteger(loc.locationId) && UUID_RE.test(loc.uuid || ""))
     .map((loc) => ({
@@ -115,8 +118,11 @@ function showDisclaimerOnce() {
 }
 
 async function loadLocationState() {
-  const qr = parseSignedQr(getQrTokenFromUrl());
+  const rawToken = getQrTokenFromUrl();
+  activeToken = rawToken;
+  const qr = parseSignedQr(rawToken);
   if (!qr) {
+    renderProgressMailto("");
     return setStatus("Sorry — you must be on site to tag a location. Please scan an official stop QR code.");
   }
 
@@ -128,6 +134,7 @@ async function loadLocationState() {
   currentLocation = location;
   el("collectSection")?.classList.remove("hidden");
   text("locationDisplay", `${location.locationId}. ${location.name} — ${location.tagline}`);
+  renderProgressMailto("");
   setStatus(`Ready to collect at ${location.name}. Geofence radius: ${CONFIG.geofenceMeters}m.`);
 }
 
@@ -177,8 +184,27 @@ async function handleSubmit(e) {
 
   el("resultSection")?.classList.remove("hidden");
   text("prizeMessage", `Stamp accepted at ${Math.round(result.distance)}m from target.`);
+  renderProgressMailto(activeToken);
   setStatus("Stamp validated and saved on this device.");
   await renderStampGrid();
+}
+
+function renderProgressMailto(token) {
+  const link = el("progressMailtoLink");
+  if (!link) return;
+
+  if (!token || !validationEmail) {
+    link.classList.add("hidden");
+    link.removeAttribute("href");
+    return;
+  }
+
+  const subject = "Cottage Passport progress";
+  const body = `My Cottage Passport token:
+
+${token}`;
+  link.href = `mailto:${encodeURIComponent(validationEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  link.classList.remove("hidden");
 }
 
 function bindGlobalErrorHandling() {

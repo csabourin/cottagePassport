@@ -70,7 +70,7 @@ $action = $_GET['action'] ?? '';
 
 switch ($action) {
     case 'locations':
-        handle_locations($locationsByUuid);
+        handle_locations($locationsByUuid, $config);
         break;
     case 'collect':
         handle_collect($locationsByUuid);
@@ -256,7 +256,7 @@ function handle_generate(array $cfg, array $uuids) {
     ]);
 }
 
-function handle_locations(array $locationsByUuid) {
+function handle_locations(array $locationsByUuid, array $cfg) {
     $locations = [];
     foreach ($locationsByUuid as $uuid => $location) {
         $locations[] = [
@@ -272,6 +272,7 @@ function handle_locations(array $locationsByUuid) {
         'appName' => 'Cottage Passport Canada',
         'headerText' => 'Collect all 30 Canadiana Cottage stamps',
         'geofenceMeters' => 550,
+        'validationEmail' => $cfg['validation_email'],
         'locations' => $locations,
     ]);
 }
