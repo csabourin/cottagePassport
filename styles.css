@@ -558,6 +558,7 @@ textarea#tokenOutput {
 .stamp-slot.collected strong {
   font-size: 0.9rem;
   color: var(--ink);
+  background: #faebd799;
   font-weight: 600;
   display: block;
   margin-top: 2px;
