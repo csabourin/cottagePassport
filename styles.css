@@ -493,7 +493,7 @@ textarea#tokenOutput {
 
 /* ── Stamp-in animation (newly collected only) ── */
 @keyframes stamp-in {
-  0%   { transform: scale(2.5); opacity: 0; }
+  0%   { transform: scale(6); opacity: 0.35; }
   60%  { transform: scale(0.92); opacity: 1; }
   80%  { transform: scale(1.05); opacity: 1; }
   100% { transform: scale(1);   opacity: 1; }
@@ -514,11 +514,14 @@ textarea#tokenOutput {
   animation: colorize 0.5s ease-out 0.8s both;
 }
 
-/* Emoji + number inside collected slot */
+/* Location name inside collected slot */
 .stamp-slot.collected strong {
-  font-size: 0.75rem;
+  font-size: 0.6rem;
   display: block;
-  margin-top: 1px;
+  margin-top: 2px;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ══════════════════════════════════════════════════════════

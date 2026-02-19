@@ -176,7 +176,11 @@ async function renderStampGrid(newlyCollectedId) {
 
     const content = document.createElement("span");
     content.className = "stamp-content";
-    content.textContent = stamp ? `🍁 ${loc.locationId}` : `${loc.locationId}`;
+    if (stamp) {
+      content.innerHTML = `🍁<strong>${loc.name}</strong>`;
+    } else {
+      content.textContent = loc.locationId;
+    }
     div.appendChild(content);
 
     grid.appendChild(div);
