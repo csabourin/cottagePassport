@@ -331,7 +331,7 @@ async function collectCurrentStamp() {
   await checkDrawEligibility();
 }
 
-// ── Draw eligibility modal (5+ stamps) ──
+// ── Draw eligibility modal (3+ stamps) ──
 
 function showDrawButton() {
   const section = el("statusSection");
@@ -351,7 +351,7 @@ function showDrawButton() {
 
 async function checkDrawEligibility() {
   const count = await countCollectedStamps();
-  if (count < 5) return;
+  if (count < 3) return;
   if (localStorage.getItem("passportDrawEmailSubmitted") === "1") return;
 
   text("drawStampCount", String(count));
