@@ -1,5 +1,6 @@
 <?php
 $validUuids = require __DIR__ . '/../config/valid-qr-uuids.php';
+$locationRows = require __DIR__ . '/../config/locations.php';
 
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'https';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
@@ -47,16 +48,18 @@ function build_scan_url(string $baseUrl, string $uuid): string
     return $rebuilt;
 }
 
-$rows = array_map(static function (string $uuid) use ($baseUrl): array {
+$rows = array_map(static function (string $uuid, int $index) use ($baseUrl, $locationRows): array {
     $scanUrl = build_scan_url($baseUrl, $uuid);
     $qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . rawurlencode($scanUrl);
+    $locationName = $locationRows[$index]['name'] ?? ('Location ' . ($index + 1));
 
     return [
         'uuid' => $uuid,
+        'location_name' => $locationName,
         'scan_url' => $scanUrl,
         'qr_image_url' => $qrImageUrl,
     ];
-}, $validUuids);
+}, $validUuids, array_keys($validUuids));
 ?><!doctype html>
 <html lang="en">
 <head>
@@ -74,6 +77,34 @@ $rows = array_map(static function (string $uuid) use ($baseUrl): array {
     th { background: #f3f4f6; text-align: left; }
     code { word-break: break-all; }
     img { width: 130px; height: 130px; }
+    .print-grid { display: none; }
+
+    @media print {
+      @page { size: Letter portrait; margin: 0.3in; }
+      body { margin: 0; font-size: 9pt; }
+      h1, p, form, table { display: none; }
+      .print-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.08in;
+      }
+      .print-card {
+        border: 1px solid #d1d5db;
+        padding: 0.05in;
+        text-align: center;
+        page-break-inside: avoid;
+      }
+      .print-card img {
+        width: 1.35in;
+        height: 1.35in;
+        display: block;
+        margin: 0 auto 0.03in;
+      }
+      .print-card-title {
+        font-size: 8pt;
+        line-height: 1.1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -90,6 +121,7 @@ $rows = array_map(static function (string $uuid) use ($baseUrl): array {
     <thead>
       <tr>
         <th>#</th>
+        <th>Location</th>
         <th>UUID</th>
         <th>Encoded scan URL</th>
         <th>QR preview</th>
@@ -99,16 +131,26 @@ $rows = array_map(static function (string $uuid) use ($baseUrl): array {
       <?php foreach ($rows as $index => $row): ?>
         <tr>
           <td><?= $index + 1 ?></td>
+          <td><?= htmlspecialchars($row['location_name'], ENT_QUOTES, 'UTF-8') ?></td>
           <td><code><?= htmlspecialchars($row['uuid'], ENT_QUOTES, 'UTF-8') ?></code></td>
           <td><code><?= htmlspecialchars($row['scan_url'], ENT_QUOTES, 'UTF-8') ?></code></td>
           <td>
-            <a href="<?= htmlspecialchars($row['qr_image_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer">
-              <img src="<?= htmlspecialchars($row['qr_image_url'], ENT_QUOTES, 'UTF-8') ?>" alt="QR code for <?= htmlspecialchars($row['uuid'], ENT_QUOTES, 'UTF-8') ?>">
+            <a href="<?= htmlspecialchars($row['qr_image_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" title="<?= htmlspecialchars($row['location_name'], ENT_QUOTES, 'UTF-8') ?>">
+              <img src="<?= htmlspecialchars($row['qr_image_url'], ENT_QUOTES, 'UTF-8') ?>" alt="QR code for <?= htmlspecialchars($row['location_name'], ENT_QUOTES, 'UTF-8') ?>">
             </a>
           </td>
         </tr>
       <?php endforeach; ?>
     </tbody>
   </table>
+
+  <section class="print-grid" aria-label="Printable QR code sheet">
+    <?php foreach ($rows as $row): ?>
+      <article class="print-card">
+        <img src="<?= htmlspecialchars($row['qr_image_url'], ENT_QUOTES, 'UTF-8') ?>" alt="QR code for <?= htmlspecialchars($row['location_name'], ENT_QUOTES, 'UTF-8') ?>">
+        <div class="print-card-title"><?= htmlspecialchars($row['location_name'], ENT_QUOTES, 'UTF-8') ?></div>
+      </article>
+    <?php endforeach; ?>
+  </section>
 </body>
 </html>
