@@ -54,7 +54,7 @@ $rows = array_map(static function (string $uuid, int $index) use ($baseUrl, $loc
     $scanUrl = build_scan_url($baseUrl, $uuid);
     $qrImageUrl = 'https://quickchart.io/qr?size=260'
         . '&text=' . rawurlencode($scanUrl)
-        . '&centerImageUrl=' . rawurlencode($qrLogoUrl);
+        . '&centerImageSizeRatio=0.45&centerImageUrl=' . rawurlencode($qrLogoUrl);
     $locationName = $locationRows[$index]['name'] ?? ('Location ' . ($index + 1));
 
     return [
