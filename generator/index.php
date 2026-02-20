@@ -9,6 +9,8 @@ $defaultBase = $scheme . '://' . $host . '/';
 $baseUrlInput = trim((string)($_GET['base'] ?? $defaultBase));
 $baseUrl = filter_var($baseUrlInput, FILTER_VALIDATE_URL) ? $baseUrlInput : $defaultBase;
 
+$qrLogoUrl = 'https://ncc-ccn.replit.app/crown-of-leaves.png';
+
 function build_scan_url(string $baseUrl, string $uuid): string
 {
     $parts = parse_url($baseUrl);
@@ -48,9 +50,11 @@ function build_scan_url(string $baseUrl, string $uuid): string
     return $rebuilt;
 }
 
-$rows = array_map(static function (string $uuid, int $index) use ($baseUrl, $locationRows): array {
+$rows = array_map(static function (string $uuid, int $index) use ($baseUrl, $locationRows, $qrLogoUrl): array {
     $scanUrl = build_scan_url($baseUrl, $uuid);
-    $qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . rawurlencode($scanUrl);
+    $qrImageUrl = 'https://quickchart.io/qr?size=260'
+        . '&text=' . rawurlencode($scanUrl)
+        . '&centerImageUrl=' . rawurlencode($qrLogoUrl);
     $locationName = $locationRows[$index]['name'] ?? ('Location ' . ($index + 1));
 
     return [
