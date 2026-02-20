@@ -1,0 +1,721 @@
+/* ============================================================
+   COTTAGE PASSPORT
+   Theme: Canadiana Cottage Design System
+   Moodboard: Lake Blue, Pine Green, Sandy Beige, Sunshine Yellow
+   ============================================================ */
+
+/* ── Google Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+  /* Cottage core palette */
+  --cottage-blue: #2b6b8a;
+  --cottage-blue-d: #1e5068;
+  --cottage-green: #2d5a27;
+  --cottage-beige: #d4b896;
+  --cottage-yellow: #e8b931;
+  --cottage-grey: #8b9daf;
+
+  /* Warm neutrals */
+  --wood-dark: #5c4033;
+  --wood-medium: #8b6b4a;
+  --wood-light: #c9a87c;
+  --rope: #b89f7e;
+
+  /* Page / paper */
+  --bg-paper: #faf5ed;
+  --paper-shadow: rgba(60, 40, 20, 0.28);
+
+  /* Ink */
+  --ink: #2c2418;
+  --ink-muted: #6b5d4e;
+
+  /* Accent colours (kept compatible with app.js overrides) */
+  --accent: #2b6b8a;       /* lake blue */
+  --accent-2: #2d5a27;     /* pine green */
+
+  /* Focus ring */
+  --focus: #2b6b8a;
+
+  /* Knit texture colour */
+  --knit: #c25538;
+}
+
+/* ── Reset ── */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Cabin", "Segoe UI", Arial, sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ══════════════════════════════════════════════════════════
+   BACKGROUND  —  weathered cedar wood-grain
+   ══════════════════════════════════════════════════════════ */
+.plaid-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: #6b5340;
+  background-image:
+    /* Vertical grain lines */
+    repeating-linear-gradient(2deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(90, 60, 30, 0.35) 3px,
+      rgba(90, 60, 30, 0.35) 4px,
+      transparent 4px,
+      transparent 12px),
+    /* Knot-like variation */
+    repeating-linear-gradient(178deg,
+      transparent 0px,
+      transparent 60px,
+      rgba(120, 80, 40, 0.2) 60px,
+      rgba(120, 80, 40, 0.2) 62px,
+      transparent 62px,
+      transparent 140px),
+    /* Broad grain bands */
+    repeating-linear-gradient(1deg,
+      rgba(100, 70, 40, 0.15) 0px,
+      rgba(80, 55, 30, 0.25) 18px,
+      rgba(110, 80, 45, 0.1) 36px,
+      rgba(90, 62, 35, 0.2) 54px),
+    /* Warm base gradient */
+    linear-gradient(180deg,
+      #7a5f46 0%,
+      #6b5340 40%,
+      #5c4733 100%);
+  filter: blur(1px);
+}
+
+/* ══════════════════════════════════════════════════════════
+   BOOKLET WRAPPER
+   ══════════════════════════════════════════════════════════ */
+.booklet {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 1.2rem 1rem 2.5rem;
+}
+
+/* ══════════════════════════════════════════════════════════
+   HEADER  —  cottage welcome sign
+   ══════════════════════════════════════════════════════════ */
+.booklet-header {
+  background: linear-gradient(168deg,
+      #347d9c 0%,
+      var(--cottage-blue) 40%,
+      var(--cottage-blue-d) 100%);
+  color: #fff;
+  text-align: center;
+  border-radius: 14px 14px 6px 6px;
+  padding: 1.4rem 1.4rem 1.1rem;
+  margin-bottom: 0.25rem;
+
+  /* Rope-style border */
+  border: 3px solid var(--rope);
+  box-shadow:
+    0 8px 28px rgba(30, 20, 10, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* Inner frame — like a wood-burned border */
+.booklet-header::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(212, 184, 150, 0.35);
+  border-radius: 9px;
+  pointer-events: none;
+}
+
+/* Pine needle texture overlay */
+.booklet-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(45deg,
+      transparent 0px, transparent 20px,
+      rgba(255, 255, 255, 0.03) 20px, rgba(255, 255, 255, 0.03) 21px),
+    repeating-linear-gradient(-45deg,
+      transparent 0px, transparent 20px,
+      rgba(255, 255, 255, 0.02) 20px, rgba(255, 255, 255, 0.02) 21px);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+/* — Government of Canada bilingual text — */
+.header-govt {
+  margin: 0 0 0.6rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(212, 184, 150, 0.75);
+  font-family: "Cabin", "Segoe UI", sans-serif;
+}
+
+/* — Maple leaf crest — */
+.header-crest {
+  font-size: 2.6rem;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+  filter: drop-shadow(0 0 8px rgba(232, 185, 49, 0.5));
+}
+
+/* — Canadian Cottage Adventure eyebrow — */
+.eyebrow {
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.7rem;
+  color: var(--cottage-yellow);
+  font-family: "Cabin", "Segoe UI", sans-serif;
+}
+
+/* — App name / title — */
+.booklet-header h1 {
+  margin: 0 0 0.2rem;
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: clamp(1.7rem, 4.5vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+/* — Tagline / subtitle — */
+.booklet-header > p:not(.eyebrow):not(.header-govt):not(.header-passport-label) {
+  margin: 0;
+  font-size: 0.88rem;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.78);
+  font-family: "Playfair Display", Georgia, serif;
+}
+
+/* — Decorative rule — rope-style divider — */
+.header-rule {
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg,
+      transparent 0%, var(--cottage-beige) 20%,
+      var(--cottage-yellow) 50%,
+      var(--cottage-beige) 80%, transparent 100%);
+  margin: 0.9rem auto 0.7rem;
+  width: 70%;
+  opacity: 0.6;
+}
+
+/* — PASSPORT · PASSEPORT label — */
+.header-passport-label {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(212, 184, 150, 0.6);
+  font-family: "Playfair Display", Georgia, serif;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PAGE CARDS  —  cottage log-cabin card
+   ══════════════════════════════════════════════════════════ */
+.page-card {
+  background-color: var(--bg-paper);
+
+  /* Subtle horizontal lines — like ruled cabin journal paper */
+  background-image: repeating-linear-gradient(0deg,
+      transparent 0px, transparent 29px,
+      rgba(139, 107, 74, 0.08) 29px, rgba(139, 107, 74, 0.08) 30px);
+
+  border: 1.5px solid var(--cottage-beige);
+  border-top: 4px solid var(--cottage-blue);
+  border-radius: 3px 3px 10px 10px;
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 0.75rem;
+
+  box-shadow:
+    0 5px 22px var(--paper-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  position: relative;
+}
+
+/* Faint inner top rule */
+.page-card::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 1.2rem;
+  right: 1.2rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(43, 107, 138, 0.2), transparent);
+}
+
+/* — Status card: pine green left ribbon — */
+.status-card {
+  border-left: 7px solid var(--cottage-green);
+  font-weight: 600;
+  font-family: "Cabin", "Segoe UI", sans-serif;
+  padding-left: 1.1rem;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TYPOGRAPHY
+   ══════════════════════════════════════════════════════════ */
+h2 {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--cottage-blue-d);
+  margin: 0 0 0.7rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(43, 107, 138, 0.25);
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cottage-blue-d);
+  margin-top: 0.75rem;
+  font-family: "Cabin", "Segoe UI", sans-serif;
+}
+
+/* ── Utility ── */
+.hidden {
+  display: none;
+}
+
+.muted {
+  color: var(--ink-muted);
+  font-size: 0.86rem;
+  font-family: "Cabin", "Segoe UI", sans-serif;
+}
+
+.error {
+  color: #8a1111;
+  font-size: 0.86rem;
+  margin-top: 0.3rem;
+  font-family: "Cabin", "Segoe UI", sans-serif;
+}
+
+/* ══════════════════════════════════════════════════════════
+   FORM CONTROLS
+   ══════════════════════════════════════════════════════════ */
+input,
+textarea,
+button,
+a {
+  font: inherit;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1.5px solid var(--cottage-beige);
+  background: #fffdf8;
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  margin-top: 0.3rem;
+  font-family: "Cabin", "Segoe UI", sans-serif;
+  color: var(--ink);
+  transition: border-color 0.15s;
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--cottage-blue);
+}
+
+/* — Buttons & links — */
+button,
+a {
+  border: 1.5px solid var(--cottage-beige);
+  background: #f5efe4;
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 0.5rem 0.9rem;
+  margin-top: 0.55rem;
+  text-decoration: none;
+  display: inline-block;
+  font-family: "Cabin", "Segoe UI", sans-serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.14s, box-shadow 0.14s, border-color 0.14s;
+}
+
+button:hover,
+a:hover {
+  background: #ede4d3;
+  border-color: var(--wood-medium);
+  box-shadow: 0 2px 8px rgba(60, 40, 20, 0.18);
+}
+
+/* Primary / save-stamp CTA */
+.primary {
+  background: var(--cottage-blue);
+  color: #fff;
+  border-color: var(--cottage-blue);
+  font-weight: 700;
+  font-size: 0.83rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.primary:hover {
+  background: var(--cottage-blue-d);
+  border-color: var(--cottage-blue-d);
+  box-shadow: 0 3px 10px rgba(43, 107, 138, 0.35);
+}
+
+/* Email / green button */
+#mailtoLink {
+  background: var(--cottage-green);
+  color: #fff;
+  border-color: var(--cottage-green);
+}
+
+#mailtoLink:hover {
+  background: #245020;
+  border-color: #245020;
+}
+
+/* Focus ring */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   LOCATION PICKER
+   ══════════════════════════════════════════════════════════ */
+.location-display {
+  margin: 0.2rem 0 0.85rem;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--cottage-blue-d);
+}
+
+.location-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.45rem;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+
+.location-list button {
+  width: 100%;
+  text-align: left;
+  border-left: 3px solid var(--cottage-green);
+  padding-left: 0.75rem;
+}
+
+.location-list button:hover {
+  border-left-color: var(--cottage-yellow);
+  background: #f0e8d8;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TOKEN OUTPUT
+   ══════════════════════════════════════════════════════════ */
+textarea#tokenOutput {
+  font-family: "Courier New", "Courier", monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  background: #f2edd8;
+  border-color: var(--wood-light);
+}
+
+.token-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+/* ══════════════════════════════════════════════════════════
+   STAMP BOOKLET
+   ══════════════════════════════════════════════════════════ */
+.passport-heading-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.leaf {
+  font-size: 1.5rem;
+}
+
+/* Grid */
+.stamp-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* Empty slot — blank cottage stamp square */
+.stamp-slot {
+  border: 1.5px dashed var(--cottage-beige);
+  border-radius: 6px;
+  background: #fefbf4;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.25rem;
+  color: var(--wood-light);
+  font-family: "Cabin", "Segoe UI", sans-serif;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.12s;
+}
+
+/* Cottage photo background via pseudo-element */
+.stamp-slot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+  border-radius: 5px;
+  filter: grayscale(1);
+  opacity: 0.3;
+  z-index: 0;
+}
+
+/* Stamp text sits above the photo */
+.stamp-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Collected slot — cottage stamp inked in */
+.stamp-slot.collected {
+  border: 2px solid var(--cottage-green);
+  border-style: solid;
+  background: #f0f7ee;
+  color: var(--cottage-green);
+  font-weight: 400;
+  /* Soft pine-green glow */
+  box-shadow: inset 0 0 10px rgba(45, 90, 39, 0.1);
+}
+
+/* Collected photo becomes full-colour */
+.stamp-slot.collected::before {
+  filter: grayscale(0);
+  opacity: 0.45;
+}
+
+/* Double-border effect on collected stamps */
+.stamp-slot.collected::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(45, 90, 39, 0.25);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Stamp-in animation (newly collected only) ── */
+@keyframes stamp-in {
+  0% {
+    transform: scale(6);
+    opacity: 0.35;
+  }
+
+  60% {
+    transform: scale(0.92);
+    opacity: 1;
+  }
+
+  80% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes colorize {
+  0% {
+    filter: grayscale(1);
+    opacity: 0.3;
+  }
+
+  100% {
+    filter: grayscale(0);
+    opacity: 0.45;
+  }
+}
+
+/* Animate only the newly-collected stamp */
+.stamp-slot.just-collected.is-visible .stamp-content {
+  animation: stamp-in 1.2s ease-out both;
+}
+
+/* Background photo colorises slightly ahead of the stamp landing */
+.stamp-slot.just-collected.is-visible::before {
+  animation: colorize 0.5s ease-out both;
+}
+
+/* Stamp content in collected slot — large emoji, thin text */
+.stamp-slot.collected .stamp-content {
+  font-size: 2.5rem;
+  line-height: 1.2;
+}
+
+/* Location name inside collected slot */
+.stamp-slot.collected strong {
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: rgba(250, 245, 237, 0.6);
+  font-weight: 600;
+  display: block;
+  margin-top: 2px;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 700px) {
+  .stamp-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .booklet {
+    padding: 0.8rem 0.65rem 2rem;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.dev-readable {
+  backdrop-filter: blur(1.5px);
+  background-color: rgba(250, 245, 237, 0.95);
+}
+
+select {
+  width: 100%;
+  border: 1.5px solid var(--cottage-beige);
+  background: #fffdf8;
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  margin-top: 0.3rem;
+  font-family: "Cabin", "Segoe UI", sans-serif;
+}
+
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 50, 60, 0.72);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-card {
+  max-width: 640px;
+  width: 100%;
+  background: var(--bg-paper);
+  border: 2px solid var(--cottage-blue);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(30, 20, 10, 0.4);
+  padding: 1.2rem;
+}
+
+/* ══════════════════════════════════════════════════════════
+   DRAW ELIGIBILITY MODAL
+   ══════════════════════════════════════════════════════════ */
+.draw-modal-card {
+  text-align: center;
+}
+
+.draw-crest {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+  filter: drop-shadow(0 0 8px rgba(232, 185, 49, 0.5));
+}
+
+.draw-modal-card h2 {
+  border-bottom: none;
+  font-size: 1.4rem;
+  color: var(--cottage-green);
+  margin-bottom: 0.4rem;
+}
+
+.draw-modal-card p {
+  font-size: 0.95rem;
+  margin: 0 0 1rem;
+  color: var(--ink);
+}
+
+.draw-modal-card form {
+  text-align: left;
+}
+
+.draw-dismiss {
+  background: transparent;
+  border: none;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  margin-top: 0.7rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.3rem 0.5rem;
+}
+
+.draw-dismiss:hover {
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* Enter-the-draw button inside status card */
+#enterDrawBtn {
+  display: block;
+  margin-top: 0.6rem;
+}
