@@ -30,5 +30,5 @@ return [
     ['locationId' => 27, 'name' => 'Pink Lake', 'tagline' => 'Climb the trail and enjoy a postcard-perfect lookout', 'lat' => 45.4296577, 'lng' => -75.6969131],
     ['locationId' => 28, 'name' => 'Mackenzie King Estate', 'tagline' => 'Explore ruins, gardens, and hidden corners of history', 'lat' => 45.4306346, 'lng' => -75.6940356],
     ['locationId' => 29, 'name' => 'King Mountain', 'tagline' => 'Reach the lookout and take in the park from above', 'lat' => 45.4299849, 'lng' => -75.6906147],
-    ['locationId' => 30, 'name' => 'King Mountain', 'tagline' => 'Start your climb and follow the trail to big views', 'lat' => 45.4277215, 'lng' => -75.6884356],
+    ['locationId' => 30, 'name' => 'Rideau Skateway', 'tagline' => 'World`s longest natural skateway', 'lat' => 45.4277215, 'lng' => -75.6884356],
 ];
