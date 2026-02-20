@@ -51,7 +51,7 @@ body {
   background-color: #8f1010;
   background-image:
     repeating-linear-gradient(0deg,
-      rgba(15, 8, 8, 0.96) 0 52px,
+      rgba(15, 8, 8, 0.86) 0 52px,
       rgba(164, 16, 16, 0.25) 52px 104px),
     repeating-linear-gradient(90deg,
       rgba(15, 8, 8, 0.96) 0 52px,
