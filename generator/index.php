@@ -129,9 +129,7 @@ $rows = array_map(static function (string $uuid, int $index) use ($baseUrl, $loc
       <?php foreach ($rows as $index => $row): ?>
         <tr>
           <td><?= $index + 1 ?></td>
-          <td><?= htmlspecialchars($row['location_name'], ENT_QUOTES, 'UTF-8') ?></td>
-          <td><code><?= htmlspecialchars($row['uuid'], ENT_QUOTES, 'UTF-8') ?></code></td>
-          <td><code><?= htmlspecialchars($row['scan_url'], ENT_QUOTES, 'UTF-8') ?></code></td>
+          <td><a href="<?= htmlspecialchars($row['scan_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank"><?= htmlspecialchars($row['location_name'], ENT_QUOTES, 'UTF-8') ?></a></td>
           <td>
             <a href="<?= htmlspecialchars($row['qr_image_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" title="<?= htmlspecialchars($row['location_name'], ENT_QUOTES, 'UTF-8') ?>">
               <img src="<?= htmlspecialchars($row['qr_image_url'], ENT_QUOTES, 'UTF-8') ?>" alt="QR code for <?= htmlspecialchars($row['location_name'], ENT_QUOTES, 'UTF-8') ?>">
