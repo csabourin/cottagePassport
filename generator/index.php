@@ -121,8 +121,11 @@ $rows = array_map(static function (string $uuid, int $index) use ($baseUrl, $loc
     <thead>
       <tr>
         <th>#</th>
+<<<<<<< HEAD
         <th>Location</th>
         <th>UUID</th>
+=======
+>>>>>>> 411be61 (Published your App)
         <th>Encoded scan URL</th>
         <th>QR preview</th>
       </tr>
@@ -131,9 +134,13 @@ $rows = array_map(static function (string $uuid, int $index) use ($baseUrl, $loc
       <?php foreach ($rows as $index => $row): ?>
         <tr>
           <td><?= $index + 1 ?></td>
+<<<<<<< HEAD
           <td><?= htmlspecialchars($row['location_name'], ENT_QUOTES, 'UTF-8') ?></td>
           <td><code><?= htmlspecialchars($row['uuid'], ENT_QUOTES, 'UTF-8') ?></code></td>
           <td><code><?= htmlspecialchars($row['scan_url'], ENT_QUOTES, 'UTF-8') ?></code></td>
+=======
+          <td><code><a href="<?= htmlspecialchars($row['scan_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank"><?= htmlspecialchars($row['scan_url'], ENT_QUOTES, 'UTF-8') ?></a></code></td>
+>>>>>>> 411be61 (Published your App)
           <td>
             <a href="<?= htmlspecialchars($row['qr_image_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" title="<?= htmlspecialchars($row['location_name'], ENT_QUOTES, 'UTF-8') ?>">
               <img src="<?= htmlspecialchars($row['qr_image_url'], ENT_QUOTES, 'UTF-8') ?>" alt="QR code for <?= htmlspecialchars($row['location_name'], ENT_QUOTES, 'UTF-8') ?>">
