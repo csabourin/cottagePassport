@@ -1,13 +1,13 @@
 <?php
 
-namespace csabourin\cottagepassport\models;
+namespace csabourin\stamppassport\models;
 
 use craft\base\Model;
 
 class Settings extends Model
 {
     /** @var string Display name shown in the CP navigation */
-    public string $pluginName = 'Cottage Passport';
+    public string $pluginName = 'Stamp Passport';
 
     /** @var string URL prefix for the frontend route (e.g. "passport" → /en/passport) */
     public string $routePrefix = 'passport';

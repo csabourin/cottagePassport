@@ -1,18 +1,18 @@
 {% extends "_layouts/cp" %}
 
-{% set title = "QR Codes"|t('cottage-passport') %}
+{% set title = "QR Codes"|t('stamp-passport') %}
 {% set selectedSubnavItem = 'qr-generator' %}
 
 {% set crumbs = [
-    { label: settings.pluginName, url: url('cottage-passport') },
+    { label: settings.pluginName, url: url('stamp-passport') },
 ] %}
 
 {% block content %}
     <div class="field">
         <div class="heading">
-            <label for="qr-base-url">{{ "Base URL"|t('cottage-passport') }}</label>
+            <label for="qr-base-url">{{ "Base URL"|t('stamp-passport') }}</label>
             <div class="instructions">
-                <p>{{ "The site URL where the passport frontend lives. QR codes will encode {baseUrl}?q={shortCode}."|t('cottage-passport') }}</p>
+                <p>{{ "The site URL where the passport frontend lives. QR codes will encode {baseUrl}?q={shortCode}."|t('stamp-passport') }}</p>
             </div>
         </div>
         <div class="input">
@@ -27,7 +27,7 @@
     </div>
 
     <div class="buttons" style="margin-bottom:24px">
-        <button id="btn-print" class="btn" type="button">{{ "Print All QR Codes"|t('cottage-passport') }}</button>
+        <button id="btn-print" class="btn" type="button">{{ "Print All QR Codes"|t('stamp-passport') }}</button>
     </div>
 
     {% if items|length %}
@@ -46,7 +46,7 @@
             {% endfor %}
         </div>
     {% else %}
-        <p>{{ "No items yet."|t('cottage-passport') }} <a href="{{ url('cottage-passport/items/new') }}">{{ "Create one"|t('cottage-passport') }}</a>.</p>
+        <p>{{ "No items yet."|t('stamp-passport') }} <a href="{{ url('stamp-passport/items/new') }}">{{ "Create one"|t('stamp-passport') }}</a>.</p>
     {% endif %}
 {% endblock %}
 

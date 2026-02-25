@@ -1,20 +1,20 @@
 <?php
 
-namespace csabourin\cottagepassport\variables;
+namespace csabourin\stamppassport\variables;
 
 use Craft;
-use csabourin\cottagepassport\Plugin;
-use csabourin\cottagepassport\records\ItemRecord;
+use csabourin\stamppassport\Plugin;
+use csabourin\stamppassport\records\ItemRecord;
 
 /**
- * Twig variable accessible via {{ craft.cottagePassport }}.
+ * Twig variable accessible via {{ craft.stampPassport }}.
  */
-class CottagePassportVariable
+class StampPassportVariable
 {
     /**
      * Return all enabled items with content for the current (or given) site.
      *
-     * Usage: {% set items = craft.cottagePassport.items %}
+     * Usage: {% set items = craft.stampPassport.items %}
      */
     public function getItems(?int $siteId = null): array
     {
@@ -24,7 +24,7 @@ class CottagePassportVariable
     /**
      * Get a single item by short code.
      *
-     * Usage: {% set item = craft.cottagePassport.itemByCode('abc12345') %}
+     * Usage: {% set item = craft.stampPassport.itemByCode('abc12345') %}
      */
     public function itemByCode(string $shortCode): ?ItemRecord
     {
@@ -34,9 +34,9 @@ class CottagePassportVariable
     /**
      * Plugin settings for use in templates.
      *
-     * Usage: {{ craft.cottagePassport.settings.pluginName }}
+     * Usage: {{ craft.stampPassport.settings.pluginName }}
      */
-    public function getSettings(): \csabourin\cottagepassport\models\Settings
+    public function getSettings(): \csabourin\stamppassport\models\Settings
     {
         return Plugin::$plugin->getSettings();
     }
@@ -44,7 +44,7 @@ class CottagePassportVariable
     /**
      * Get the asset URL for an item's image.
      *
-     * Usage: {{ craft.cottagePassport.imageUrl(item.imageId) }}
+     * Usage: {{ craft.stampPassport.imageUrl(item.imageId) }}
      */
     public function imageUrl(?int $assetId): ?string
     {
@@ -61,7 +61,7 @@ class CottagePassportVariable
      */
     public function collectActionUrl(): string
     {
-        return \craft\helpers\UrlHelper::actionUrl('cottage-passport/api/collect');
+        return \craft\helpers\UrlHelper::actionUrl('stamp-passport/api/collect');
     }
 
     /**
@@ -69,7 +69,7 @@ class CottagePassportVariable
      */
     public function locationsActionUrl(): string
     {
-        return \craft\helpers\UrlHelper::actionUrl('cottage-passport/api/locations');
+        return \craft\helpers\UrlHelper::actionUrl('stamp-passport/api/locations');
     }
 
     /**
@@ -77,6 +77,6 @@ class CottagePassportVariable
      */
     public function resolveActionUrl(): string
     {
-        return \craft\helpers\UrlHelper::actionUrl('cottage-passport/api/resolve');
+        return \craft\helpers\UrlHelper::actionUrl('stamp-passport/api/resolve');
     }
 }

@@ -1,5 +1,5 @@
 /* ============================================================
-   COTTAGE PASSPORT — Default Frontend Theme
+   STAMP PASSPORT — Default Frontend Theme
    Override by publishing your own stylesheet in the site templates.
    ============================================================ */
 
@@ -19,11 +19,11 @@
 }
 
 /* ── Reset ── */
-.cottage-passport *, .cottage-passport *::before, .cottage-passport *::after {
+.stamp-passport *, .stamp-passport *::before, .stamp-passport *::after {
     box-sizing: border-box;
 }
 
-.cottage-passport {
+.stamp-passport {
     margin: 0;
     font-family: "Cabin", "Segoe UI", Arial, sans-serif;
     color: var(--passport-ink);

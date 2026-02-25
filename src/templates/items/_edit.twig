@@ -3,15 +3,15 @@
 {% set selectedSubnavItem = 'items' %}
 
 {% set crumbs = [
-    { label: craft.app.plugins.getPlugin('cottage-passport').settings.pluginName, url: url('cottage-passport') },
-    { label: 'Items'|t('cottage-passport'), url: url('cottage-passport/items') },
+    { label: craft.app.plugins.getPlugin('stamp-passport').settings.pluginName, url: url('stamp-passport') },
+    { label: 'Items'|t('stamp-passport'), url: url('stamp-passport/items') },
 ] %}
 
 {% block content %}
     <form method="post" accept-charset="UTF-8">
         {{ csrfInput() }}
-        {{ actionInput('cottage-passport/cp/save') }}
-        {{ redirectInput('cottage-passport/items/{itemId}') }}
+        {{ actionInput('stamp-passport/cp/save') }}
+        {{ redirectInput('stamp-passport/items/{itemId}') }}
 
         {% if item %}
             {{ hiddenInput('itemId', item.id) }}
@@ -21,7 +21,7 @@
         <div id="fields">
             <div class="field">
                 <div class="heading">
-                    <label>{{ "Enabled"|t('cottage-passport') }}</label>
+                    <label>{{ "Enabled"|t('stamp-passport') }}</label>
                 </div>
                 <div class="input">
                     {{ tag('div', {
@@ -34,10 +34,10 @@
 
             <hr>
 
-            <h2>{{ "Coordinates"|t('cottage-passport') }}</h2>
+            <h2>{{ "Coordinates"|t('stamp-passport') }}</h2>
 
             {{ forms.textField({
-                label: "Latitude"|t('cottage-passport'),
+                label: "Latitude"|t('stamp-passport'),
                 name: 'latitude',
                 value: item ? item.latitude : '',
                 placeholder: '45.4281237',
@@ -45,7 +45,7 @@
             }) }}
 
             {{ forms.textField({
-                label: "Longitude"|t('cottage-passport'),
+                label: "Longitude"|t('stamp-passport'),
                 name: 'longitude',
                 value: item ? item.longitude : '',
                 placeholder: '-75.6942809',
@@ -54,7 +54,7 @@
 
             <hr>
 
-            <h2>{{ "Image"|t('cottage-passport') }}</h2>
+            <h2>{{ "Image"|t('stamp-passport') }}</h2>
 
             {% set imageElements = [] %}
             {% if item and item.imageId %}
@@ -65,17 +65,17 @@
             {% endif %}
 
             {{ forms.elementSelectField({
-                label: "Location Image"|t('cottage-passport'),
+                label: "Location Image"|t('stamp-passport'),
                 name: 'imageId',
                 elementType: 'craft\\elements\\Asset',
                 criteria: { kind: 'image' },
                 limit: 1,
                 elements: imageElements,
-                modalStorageKey: 'cottage-passport.image',
+                modalStorageKey: 'stamp-passport.image',
             }) }}
 
             {{ forms.textField({
-                label: "Sort Order"|t('cottage-passport'),
+                label: "Sort Order"|t('stamp-passport'),
                 name: 'sortOrder',
                 value: item ? item.sortOrder : 0,
                 type: 'number',
@@ -85,11 +85,11 @@
             {% if item %}
                 <div class="field">
                     <div class="heading">
-                        <label>{{ "Short Code"|t('cottage-passport') }}</label>
+                        <label>{{ "Short Code"|t('stamp-passport') }}</label>
                     </div>
                     <div class="input">
                         <code style="font-size:1.1em">{{ item.shortCode }}</code>
-                        <p class="light">{{ "Auto-generated. Used in QR code URLs."|t('cottage-passport') }}</p>
+                        <p class="light">{{ "Auto-generated. Used in QR code URLs."|t('stamp-passport') }}</p>
                     </div>
                 </div>
             {% endif %}
@@ -97,7 +97,7 @@
             <hr>
 
             {# ── Per-site translatable fields ── #}
-            <h2>{{ "Content by Site"|t('cottage-passport') }}</h2>
+            <h2>{{ "Content by Site"|t('stamp-passport') }}</h2>
 
             <div id="site-content-tabs" class="pane">
                 <nav>
@@ -118,28 +118,28 @@
                     {% set sc = content[site.id] ?? {} %}
                     <div id="site-{{ site.id }}" class="site-content-pane{% if not loop.first %} hidden{% endif %}">
                         {{ forms.textField({
-                            label: "Title"|t('cottage-passport'),
+                            label: "Title"|t('stamp-passport'),
                             name: 'content[' ~ site.id ~ '][title]',
                             value: sc.title ?? '',
                             required: true,
                         }) }}
 
                         {{ forms.textareaField({
-                            label: "Description"|t('cottage-passport'),
+                            label: "Description"|t('stamp-passport'),
                             name: 'content[' ~ site.id ~ '][description]',
                             value: sc.description ?? '',
                             rows: 4,
                         }) }}
 
                         {{ forms.textField({
-                            label: "Link URL"|t('cottage-passport'),
+                            label: "Link URL"|t('stamp-passport'),
                             name: 'content[' ~ site.id ~ '][linkUrl]',
                             value: sc.linkUrl ?? '',
                             placeholder: 'https://',
                         }) }}
 
                         {{ forms.textField({
-                            label: "Link Text"|t('cottage-passport'),
+                            label: "Link Text"|t('stamp-passport'),
                             name: 'content[' ~ site.id ~ '][linkText]',
                             value: sc.linkText ?? '',
                             placeholder: 'Learn more',

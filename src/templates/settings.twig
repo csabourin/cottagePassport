@@ -1,10 +1,10 @@
 {% extends "_layouts/cp" %}
 
-{% set title = "Settings"|t('cottage-passport') %}
+{% set title = "Settings"|t('stamp-passport') %}
 {% set selectedSubnavItem = 'settings' %}
 
 {% set crumbs = [
-    { label: settings.pluginName, url: url('cottage-passport') },
+    { label: settings.pluginName, url: url('stamp-passport') },
 ] %}
 
 {% import "_includes/forms" as forms %}
@@ -12,23 +12,23 @@
 {% block content %}
     <form method="post" accept-charset="UTF-8">
         {{ csrfInput() }}
-        {{ actionInput('cottage-passport/cp/save-settings') }}
-        {{ redirectInput('cottage-passport/settings') }}
+        {{ actionInput('stamp-passport/cp/save-settings') }}
+        {{ redirectInput('stamp-passport/settings') }}
 
-        <h2>{{ "General"|t('cottage-passport') }}</h2>
+        <h2>{{ "General"|t('stamp-passport') }}</h2>
 
         {{ forms.textField({
             first: true,
-            label: "Plugin Name"|t('cottage-passport'),
-            instructions: "Display name shown in the CP navigation."|t('cottage-passport'),
+            label: "Plugin Name"|t('stamp-passport'),
+            instructions: "Display name shown in the CP navigation."|t('stamp-passport'),
             name: 'pluginName',
             value: settings.pluginName,
             required: true,
         }) }}
 
         {{ forms.textField({
-            label: "Route Prefix"|t('cottage-passport'),
-            instructions: "URL prefix for the frontend page (e.g. \"passport\" → /en/passport)."|t('cottage-passport'),
+            label: "Route Prefix"|t('stamp-passport'),
+            instructions: "URL prefix for the frontend page (e.g. \"passport\" → /en/passport)."|t('stamp-passport'),
             name: 'routePrefix',
             value: settings.routePrefix,
             required: true,
@@ -36,17 +36,17 @@
 
         <hr>
 
-        <h2>{{ "Geofence"|t('cottage-passport') }}</h2>
+        <h2>{{ "Geofence"|t('stamp-passport') }}</h2>
 
         {{ forms.lightswitchField({
-            label: "Enable Geofence"|t('cottage-passport'),
-            instructions: "When enabled, visitors must be within the configured radius of a location to check in."|t('cottage-passport'),
+            label: "Enable Geofence"|t('stamp-passport'),
+            instructions: "When enabled, visitors must be within the configured radius of a location to check in."|t('stamp-passport'),
             name: 'enableGeofence',
             on: settings.enableGeofence,
         }) }}
 
         {{ forms.textField({
-            label: "Geofence Radius (metres)"|t('cottage-passport'),
+            label: "Geofence Radius (metres)"|t('stamp-passport'),
             name: 'geofenceRadius',
             value: settings.geofenceRadius,
             type: 'number',
@@ -57,11 +57,11 @@
 
         <hr>
 
-        <h2>{{ "Prizes"|t('cottage-passport') }}</h2>
+        <h2>{{ "Prizes"|t('stamp-passport') }}</h2>
 
         {{ forms.textField({
-            label: "Draw Threshold"|t('cottage-passport'),
-            instructions: "Number of stamps required before the draw entry form appears."|t('cottage-passport'),
+            label: "Draw Threshold"|t('stamp-passport'),
+            instructions: "Number of stamps required before the draw entry form appears."|t('stamp-passport'),
             name: 'drawThreshold',
             value: settings.drawThreshold,
             type: 'number',
@@ -70,8 +70,8 @@
         }) }}
 
         {{ forms.textField({
-            label: "Max Stickers"|t('cottage-passport'),
-            instructions: "Maximum number of sticker prizes available (0 = unlimited)."|t('cottage-passport'),
+            label: "Max Stickers"|t('stamp-passport'),
+            instructions: "Maximum number of sticker prizes available (0 = unlimited)."|t('stamp-passport'),
             name: 'maxStickers',
             value: settings.maxStickers,
             type: 'number',
@@ -81,19 +81,19 @@
 
         <hr>
 
-        <h2>{{ "Freeform Integration"|t('cottage-passport') }}</h2>
+        <h2>{{ "Freeform Integration"|t('stamp-passport') }}</h2>
 
         {{ forms.textField({
-            label: "Draw Form Handle"|t('cottage-passport'),
-            instructions: "Freeform form handle for the end-of-season draw entry."|t('cottage-passport'),
+            label: "Draw Form Handle"|t('stamp-passport'),
+            instructions: "Freeform form handle for the end-of-season draw entry."|t('stamp-passport'),
             name: 'freeformDrawFormHandle',
             value: settings.freeformDrawFormHandle,
             placeholder: 'passportDraw',
         }) }}
 
         {{ forms.textField({
-            label: "Sticker Form Handle"|t('cottage-passport'),
-            instructions: "Freeform form handle for the Memory Makers sticker request."|t('cottage-passport'),
+            label: "Sticker Form Handle"|t('stamp-passport'),
+            instructions: "Freeform form handle for the Memory Makers sticker request."|t('stamp-passport'),
             name: 'freeformStickerFormHandle',
             value: settings.freeformStickerFormHandle,
             placeholder: 'passportSticker',
@@ -101,11 +101,11 @@
 
         <hr>
 
-        <h2>{{ "Analytics"|t('cottage-passport') }}</h2>
+        <h2>{{ "Analytics"|t('stamp-passport') }}</h2>
 
         {{ forms.textField({
-            label: "GA4 Measurement ID"|t('cottage-passport'),
-            instructions: "Google Analytics 4 measurement ID (e.g. G-XXXXXXXXXX). Leave blank to disable."|t('cottage-passport'),
+            label: "GA4 Measurement ID"|t('stamp-passport'),
+            instructions: "Google Analytics 4 measurement ID (e.g. G-XXXXXXXXXX). Leave blank to disable."|t('stamp-passport'),
             name: 'ga4MeasurementId',
             value: settings.ga4MeasurementId,
             placeholder: 'G-XXXXXXXXXX',

@@ -1,16 +1,16 @@
 {#
     Bucket list / passport frontend page.
-    Override by placing _cottage-passport/index.twig in your site templates.
+    Override by placing _stamp-passport/index.twig in your site templates.
 #}
-{% extends "_cottage-passport/_layout" %}
+{% extends "_stamp-passport/_layout" %}
 
-{% set settings = craft.cottagePassport.settings %}
-{% set items = craft.cottagePassport.items %}
+{% set settings = craft.stampPassport.settings %}
+{% set items = craft.stampPassport.items %}
 
 {% block title %}{{ settings.pluginName }}{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="{{ craft.app.assetManager.getPublishedUrl('@csabourin/cottagepassport/web/assets/frontend/css/passport.css', true) }}">
+    <link rel="stylesheet" href="{{ craft.app.assetManager.getPublishedUrl('@csabourin/stamppassport/web/assets/frontend/css/passport.css', true) }}">
 {% endblock %}
 
 {% block content %}
@@ -64,8 +64,8 @@
             <div class="passport-modal-backdrop"></div>
             <div class="passport-modal-content">
                 <button class="passport-modal-close" aria-label="Close">&times;</button>
-                <h2 id="drawModalTitle">{{ 'Enter the Draw!'|t('cottage-passport') }}</h2>
-                <p>{{ "You've unlocked the draw entry! Fill in the form below for a chance to win."|t('cottage-passport') }}</p>
+                <h2 id="drawModalTitle">{{ 'Enter the Draw!'|t('stamp-passport') }}</h2>
+                <p>{{ "You've unlocked the draw entry! Fill in the form below for a chance to win."|t('stamp-passport') }}</p>
                 <div id="drawFormContainer">
                     {{ craft.freeform.form(drawHandle, { ajax: true }) }}
                 </div>
@@ -80,8 +80,8 @@
             <div class="passport-modal-backdrop"></div>
             <div class="passport-modal-content">
                 <button class="passport-modal-close" aria-label="Close">&times;</button>
-                <h2 id="stickerModalTitle">{{ 'Memory Makers!'|t('cottage-passport') }}</h2>
-                <p>{{ "Congratulations! You've completed the full bucket list. Claim your limited-edition sticker."|t('cottage-passport') }}</p>
+                <h2 id="stickerModalTitle">{{ 'Memory Makers!'|t('stamp-passport') }}</h2>
+                <p>{{ "Congratulations! You've completed the full bucket list. Claim your limited-edition sticker."|t('stamp-passport') }}</p>
                 <div id="stickerFormContainer">
                     {{ craft.freeform.form(stickerHandle, { ajax: true }) }}
                 </div>
@@ -93,15 +93,15 @@
     <div id="disclaimerModal" class="passport-modal hidden" role="dialog" aria-labelledby="disclaimerTitle">
         <div class="passport-modal-backdrop"></div>
         <div class="passport-modal-content">
-            <h2 id="disclaimerTitle">{{ "Before You Begin"|t('cottage-passport') }}</h2>
-            <p>{{ "Your progress is saved locally on this device. Use the same phone for every scan and avoid clearing your browser cache, as checked-off items cannot be recovered."|t('cottage-passport') }}</p>
+            <h2 id="disclaimerTitle">{{ "Before You Begin"|t('stamp-passport') }}</h2>
+            <p>{{ "Your progress is saved locally on this device. Use the same phone for every scan and avoid clearing your browser cache, as checked-off items cannot be recovered."|t('stamp-passport') }}</p>
             <button id="disclaimerAccept" class="passport-btn passport-btn-primary">
-                {{ "Got it, let's go!"|t('cottage-passport') }}
+                {{ "Got it, let's go!"|t('stamp-passport') }}
             </button>
         </div>
     </div>
 {% endblock %}
 
 {% block scripts %}
-    <script src="{{ craft.app.assetManager.getPublishedUrl('@csabourin/cottagepassport/web/assets/frontend/js/passport.js', true) }}"></script>
+    <script src="{{ craft.app.assetManager.getPublishedUrl('@csabourin/stamppassport/web/assets/frontend/js/passport.js', true) }}"></script>
 {% endblock %}

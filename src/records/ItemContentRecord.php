@@ -1,6 +1,6 @@
 <?php
 
-namespace csabourin\cottagepassport\records;
+namespace csabourin\stamppassport\records;
 
 use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
@@ -19,7 +19,7 @@ class ItemContentRecord extends ActiveRecord
 {
     public static function tableName(): string
     {
-        return '{{%cottagepassport_items_content}}';
+        return '{{%stamppassport_items_content}}';
     }
 
     public function getItem(): ActiveQueryInterface

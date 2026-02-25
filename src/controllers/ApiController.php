@@ -1,10 +1,10 @@
 <?php
 
-namespace csabourin\cottagepassport\controllers;
+namespace csabourin\stamppassport\controllers;
 
 use Craft;
 use craft\web\Controller;
-use csabourin\cottagepassport\Plugin;
+use csabourin\stamppassport\Plugin;
 use yii\web\Response;
 
 /**
@@ -23,7 +23,7 @@ class ApiController extends Controller
     }
 
     /**
-     * GET actions/cottage-passport/api/locations
+     * GET actions/stamp-passport/api/locations
      *
      * Returns all enabled items with content for the current site.
      */
@@ -69,7 +69,7 @@ class ApiController extends Controller
     }
 
     /**
-     * POST actions/cottage-passport/api/collect
+     * POST actions/stamp-passport/api/collect
      *
      * Validate a QR check-in (geofence if enabled).
      * Body: { shortCode, latitude, longitude }
@@ -89,7 +89,7 @@ class ApiController extends Controller
             $this->response->setStatusCode(404);
             return $this->asJson([
                 'success' => false,
-                'error' => Craft::t('cottage-passport', 'Unknown item.'),
+                'error' => Craft::t('stamp-passport', 'Unknown item.'),
             ]);
         }
 
@@ -97,7 +97,7 @@ class ApiController extends Controller
             $this->response->setStatusCode(403);
             return $this->asJson([
                 'success' => false,
-                'error' => Craft::t('cottage-passport', 'Outside allowed radius.'),
+                'error' => Craft::t('stamp-passport', 'Outside allowed radius.'),
                 'distance' => $result['distance'],
                 'allowedRadius' => $result['allowedRadius'],
             ]);
@@ -127,7 +127,7 @@ class ApiController extends Controller
     }
 
     /**
-     * GET actions/cottage-passport/api/resolve?q=<shortCode>
+     * GET actions/stamp-passport/api/resolve?q=<shortCode>
      *
      * Resolve a short code to an item (used by frontend when loading from QR URL).
      */
@@ -140,7 +140,7 @@ class ApiController extends Controller
             $this->response->setStatusCode(404);
             return $this->asJson([
                 'success' => false,
-                'error' => Craft::t('cottage-passport', 'Invalid QR code.'),
+                'error' => Craft::t('stamp-passport', 'Invalid QR code.'),
             ]);
         }
 

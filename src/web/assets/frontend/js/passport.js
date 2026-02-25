@@ -1,5 +1,5 @@
 /**
- * Cottage Passport — Frontend JavaScript
+ * Stamp Passport — Frontend JavaScript
  *
  * Handles IndexedDB storage, QR-based stamp collection,
  * geofence validation, progress tracking, GA4 events,
@@ -26,7 +26,7 @@
        IndexedDB + localStorage fallback
        ═══════════════════════════════════════════ */
 
-    const DB_NAME    = 'cottage-passport';
+    const DB_NAME    = 'stamp-passport';
     const DB_VERSION = 1;
     const LS_PREFIX  = 'passportData:';
 

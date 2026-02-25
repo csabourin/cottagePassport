@@ -1,12 +1,12 @@
 <?php
 
-namespace csabourin\cottagepassport\services;
+namespace csabourin\stamppassport\services;
 
 use Craft;
 use craft\base\Component;
 use craft\helpers\StringHelper;
-use csabourin\cottagepassport\records\ItemRecord;
-use csabourin\cottagepassport\records\ItemContentRecord;
+use csabourin\stamppassport\records\ItemRecord;
+use csabourin\stamppassport\records\ItemContentRecord;
 
 class Items extends Component
 {
@@ -139,7 +139,7 @@ class Items extends Component
     {
         foreach ($ids as $order => $id) {
             Craft::$app->getDb()->createCommand()
-                ->update('{{%cottagepassport_items}}', ['sortOrder' => $order], ['id' => $id])
+                ->update('{{%stamppassport_items}}', ['sortOrder' => $order], ['id' => $id])
                 ->execute();
         }
         return true;
@@ -152,7 +152,7 @@ class Items extends Component
      */
     public function validateGeofence(string $shortCode, float $lat, float $lng): array
     {
-        $settings = \csabourin\cottagepassport\Plugin::$plugin->getSettings();
+        $settings = \csabourin\stamppassport\Plugin::$plugin->getSettings();
         $item = $this->getItemByShortCode($shortCode);
 
         if (!$item || !$item->enabled) {

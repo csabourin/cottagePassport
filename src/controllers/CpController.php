@@ -1,12 +1,12 @@
 <?php
 
-namespace csabourin\cottagepassport\controllers;
+namespace csabourin\stamppassport\controllers;
 
 use Craft;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
-use csabourin\cottagepassport\Plugin;
-use csabourin\cottagepassport\records\ItemRecord;
+use csabourin\stamppassport\Plugin;
+use csabourin\stamppassport\records\ItemRecord;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -19,7 +19,7 @@ class CpController extends Controller
     {
         $items = Plugin::$plugin->items->getAllItems();
 
-        return $this->renderTemplate('cottage-passport/items/index', [
+        return $this->renderTemplate('stamp-passport/items/index', [
             'items' => $items,
             'settings' => Plugin::$plugin->getSettings(),
         ]);
@@ -37,10 +37,10 @@ class CpController extends Controller
             if (!$item) {
                 throw new NotFoundHttpException('Item not found.');
             }
-            $title = Craft::t('cottage-passport', 'Edit Item');
+            $title = Craft::t('stamp-passport', 'Edit Item');
         } else {
             $item = null;
-            $title = Craft::t('cottage-passport', 'New Item');
+            $title = Craft::t('stamp-passport', 'New Item');
         }
 
         // Build content array keyed by siteId for the template
@@ -65,7 +65,7 @@ class CpController extends Controller
             }
         }
 
-        return $this->renderTemplate('cottage-passport/items/_edit', [
+        return $this->renderTemplate('stamp-passport/items/_edit', [
             'item' => $item,
             'content' => $content,
             'sites' => $sites,
@@ -96,11 +96,11 @@ class CpController extends Controller
         $record = Plugin::$plugin->items->saveItem($attributes, $content, $id);
 
         if (!$record) {
-            Craft::$app->getSession()->setError(Craft::t('cottage-passport', 'Could not save item.'));
+            Craft::$app->getSession()->setError(Craft::t('stamp-passport', 'Could not save item.'));
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('cottage-passport', 'Item saved.'));
+        Craft::$app->getSession()->setNotice(Craft::t('stamp-passport', 'Item saved.'));
         return $this->redirectToPostedUrl(['itemId' => $record->id]);
     }
 
@@ -143,7 +143,7 @@ class CpController extends Controller
         $items = Plugin::$plugin->items->getAllItems();
         $sites = Craft::$app->getSites()->getAllSites();
 
-        return $this->renderTemplate('cottage-passport/qr-generator', [
+        return $this->renderTemplate('stamp-passport/qr-generator', [
             'items' => $items,
             'sites' => $sites,
             'settings' => Plugin::$plugin->getSettings(),
@@ -155,7 +155,7 @@ class CpController extends Controller
      */
     public function actionSettings(): Response
     {
-        return $this->renderTemplate('cottage-passport/settings', [
+        return $this->renderTemplate('stamp-passport/settings', [
             'settings' => Plugin::$plugin->getSettings(),
         ]);
     }
@@ -181,12 +181,12 @@ class CpController extends Controller
         $settings->freeformStickerFormHandle = $request->getBodyParam('freeformStickerFormHandle') ?: null;
 
         if (!$settings->validate()) {
-            Craft::$app->getSession()->setError(Craft::t('cottage-passport', 'Settings not saved.'));
+            Craft::$app->getSession()->setError(Craft::t('stamp-passport', 'Settings not saved.'));
             return null;
         }
 
         Craft::$app->getPlugins()->savePluginSettings(Plugin::$plugin, $settings->toArray());
-        Craft::$app->getSession()->setNotice(Craft::t('cottage-passport', 'Settings saved.'));
+        Craft::$app->getSession()->setNotice(Craft::t('stamp-passport', 'Settings saved.'));
 
         return $this->redirectToPostedUrl();
     }

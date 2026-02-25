@@ -1,6 +1,6 @@
 <?php
 
-namespace csabourin\cottagepassport\migrations;
+namespace csabourin\stamppassport\migrations;
 
 use craft\db\Migration;
 
@@ -15,14 +15,14 @@ class Install extends Migration
 
     public function safeDown(): bool
     {
-        $this->dropTableIfExists('{{%cottagepassport_items_content}}');
-        $this->dropTableIfExists('{{%cottagepassport_items}}');
+        $this->dropTableIfExists('{{%stamppassport_items_content}}');
+        $this->dropTableIfExists('{{%stamppassport_items}}');
         return true;
     }
 
     private function _createItemsTable(): void
     {
-        $this->createTable('{{%cottagepassport_items}}', [
+        $this->createTable('{{%stamppassport_items}}', [
             'id' => $this->primaryKey(),
             'shortCode' => $this->string(12)->notNull(),
             'latitude' => $this->decimal(10, 7)->null(),
@@ -35,13 +35,13 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
 
-        $this->createIndex(null, '{{%cottagepassport_items}}', 'shortCode', true);
-        $this->createIndex(null, '{{%cottagepassport_items}}', 'sortOrder');
-        $this->createIndex(null, '{{%cottagepassport_items}}', 'enabled');
+        $this->createIndex(null, '{{%stamppassport_items}}', 'shortCode', true);
+        $this->createIndex(null, '{{%stamppassport_items}}', 'sortOrder');
+        $this->createIndex(null, '{{%stamppassport_items}}', 'enabled');
 
         $this->addForeignKey(
             null,
-            '{{%cottagepassport_items}}',
+            '{{%stamppassport_items}}',
             'imageId',
             '{{%assets}}',
             'id',
@@ -51,7 +51,7 @@ class Install extends Migration
 
     private function _createItemsContentTable(): void
     {
-        $this->createTable('{{%cottagepassport_items_content}}', [
+        $this->createTable('{{%stamppassport_items_content}}', [
             'id' => $this->primaryKey(),
             'itemId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
@@ -64,20 +64,20 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
 
-        $this->createIndex(null, '{{%cottagepassport_items_content}}', ['itemId', 'siteId'], true);
+        $this->createIndex(null, '{{%stamppassport_items_content}}', ['itemId', 'siteId'], true);
 
         $this->addForeignKey(
             null,
-            '{{%cottagepassport_items_content}}',
+            '{{%stamppassport_items_content}}',
             'itemId',
-            '{{%cottagepassport_items}}',
+            '{{%stamppassport_items}}',
             'id',
             'CASCADE'
         );
 
         $this->addForeignKey(
             null,
-            '{{%cottagepassport_items_content}}',
+            '{{%stamppassport_items_content}}',
             'siteId',
             '{{%sites}}',
             'id',

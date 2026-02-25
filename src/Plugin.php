@@ -1,6 +1,6 @@
 <?php
 
-namespace csabourin\cottagepassport;
+namespace csabourin\stamppassport;
 
 use Craft;
 use craft\base\Plugin as BasePlugin;
@@ -9,13 +9,13 @@ use craft\events\RegisterTemplateRootsEvent;
 use craft\web\UrlManager;
 use craft\web\View;
 use craft\web\twig\variables\CraftVariable;
-use csabourin\cottagepassport\models\Settings;
-use csabourin\cottagepassport\services\Items;
-use csabourin\cottagepassport\variables\CottagePassportVariable;
+use csabourin\stamppassport\models\Settings;
+use csabourin\stamppassport\services\Items;
+use csabourin\stamppassport\variables\StampPassportVariable;
 use yii\base\Event;
 
 /**
- * Cottage Passport plugin for Craft CMS 4
+ * Stamp Passport plugin for Craft CMS 4
  *
  * @property Items $items
  * @property Settings $settings
@@ -33,8 +33,8 @@ class Plugin extends BasePlugin
         parent::init();
         self::$plugin = $this;
 
-        // Register Yii alias so templates can reference @csabourin/cottagepassport/...
-        Craft::setAlias('@csabourin/cottagepassport', __DIR__);
+        // Register Yii alias so templates can reference @csabourin/stamppassport/...
+        Craft::setAlias('@csabourin/stamppassport', __DIR__);
 
         $this->setComponents([
             'items' => Items::class,
@@ -51,9 +51,9 @@ class Plugin extends BasePlugin
         $item = parent::getCpNavItem();
         $item['label'] = $this->getSettings()->pluginName;
         $item['subnav'] = [
-            'items' => ['label' => Craft::t('cottage-passport', 'Items'), 'url' => 'cottage-passport/items'],
-            'qr-generator' => ['label' => Craft::t('cottage-passport', 'QR Codes'), 'url' => 'cottage-passport/qr-generator'],
-            'settings' => ['label' => Craft::t('cottage-passport', 'Settings'), 'url' => 'cottage-passport/settings'],
+            'items' => ['label' => Craft::t('stamp-passport', 'Items'), 'url' => 'stamp-passport/items'],
+            'qr-generator' => ['label' => Craft::t('stamp-passport', 'QR Codes'), 'url' => 'stamp-passport/qr-generator'],
+            'settings' => ['label' => Craft::t('stamp-passport', 'Settings'), 'url' => 'stamp-passport/settings'],
         ];
         return $item;
     }
@@ -66,7 +66,7 @@ class Plugin extends BasePlugin
     protected function settingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate(
-            'cottage-passport/settings',
+            'stamp-passport/settings',
             ['settings' => $this->getSettings()]
         );
     }
@@ -77,12 +77,12 @@ class Plugin extends BasePlugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
-                $event->rules['cottage-passport'] = 'cottage-passport/cp/index';
-                $event->rules['cottage-passport/items'] = 'cottage-passport/cp/index';
-                $event->rules['cottage-passport/items/new'] = 'cottage-passport/cp/edit';
-                $event->rules['cottage-passport/items/<itemId:\d+>'] = 'cottage-passport/cp/edit';
-                $event->rules['cottage-passport/qr-generator'] = 'cottage-passport/cp/qr-generator';
-                $event->rules['cottage-passport/settings'] = 'cottage-passport/cp/settings';
+                $event->rules['stamp-passport'] = 'stamp-passport/cp/index';
+                $event->rules['stamp-passport/items'] = 'stamp-passport/cp/index';
+                $event->rules['stamp-passport/items/new'] = 'stamp-passport/cp/edit';
+                $event->rules['stamp-passport/items/<itemId:\d+>'] = 'stamp-passport/cp/edit';
+                $event->rules['stamp-passport/qr-generator'] = 'stamp-passport/cp/qr-generator';
+                $event->rules['stamp-passport/settings'] = 'stamp-passport/cp/settings';
             }
         );
     }
@@ -94,7 +94,7 @@ class Plugin extends BasePlugin
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $routePrefix = $this->getSettings()->routePrefix ?? 'passport';
-                $event->rules[$routePrefix] = ['template' => '_cottage-passport/index'];
+                $event->rules[$routePrefix] = ['template' => '_stamp-passport/index'];
             }
         );
     }
@@ -105,7 +105,7 @@ class Plugin extends BasePlugin
             View::class,
             View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS,
             function (RegisterTemplateRootsEvent $event) {
-                $event->roots['_cottage-passport'] = __DIR__ . '/templates/_frontend';
+                $event->roots['_stamp-passport'] = __DIR__ . '/templates/_frontend';
             }
         );
     }
@@ -116,7 +116,7 @@ class Plugin extends BasePlugin
             CraftVariable::class,
             CraftVariable::EVENT_INIT,
             function ($event) {
-                $event->sender->set('cottagePassport', CottagePassportVariable::class);
+                $event->sender->set('stampPassport', StampPassportVariable::class);
             }
         );
     }

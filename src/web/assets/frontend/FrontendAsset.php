@@ -1,6 +1,6 @@
 <?php
 
-namespace csabourin\cottagepassport\web\assets\frontend;
+namespace csabourin\stamppassport\web\assets\frontend;
 
 use craft\web\AssetBundle;
 
