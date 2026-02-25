@@ -89,7 +89,7 @@
             let code = card.dataset.shortcode;
             let scanUrl = baseUrl + '?q=' + encodeURIComponent(code);
             const qrLogoUrl = 'https://ncc-ccn.replit.app/crown-of-leaves.png';
-            let qrApiUrl = `https://quickchart.io/qr?size=1200&text='${encodeURIComponent(scanUrl)}&centerImageSizeRatio=0.44&centerImageUrl=${encodeURIComponent(qrLogoUrl)}`;
+            let qrApiUrl = `https://quickchart.io/qr?size=450&text=${encodeURIComponent(scanUrl)}&centerImageSizeRatio=0.44&centerImageUrl=${encodeURIComponent(qrLogoUrl)}`;
             card.querySelector('img').src = qrApiUrl;
         });
     }
