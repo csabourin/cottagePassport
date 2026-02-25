@@ -189,7 +189,9 @@
 
         var fill = el('progressFill');
         var text = el('progressText');
+        var bar  = fill ? fill.parentElement : null;
         if (fill) fill.style.width = pct + '%';
+        if (bar)  bar.setAttribute('aria-valuenow', count);
         if (text) text.textContent = count + ' / ' + total;
     }
 
