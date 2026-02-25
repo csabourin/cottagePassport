@@ -81,13 +81,18 @@ class Items extends Component
         } else {
             $record = new ItemRecord();
             $record->shortCode = $this->_generateShortCode();
+            // Assign sort order only for new records
+            $record->sortOrder = $attributes['sortOrder'] ?? $this->_getNextSortOrder();
         }
 
         $record->latitude = $attributes['latitude'] ?? null;
         $record->longitude = $attributes['longitude'] ?? null;
         $record->imageId = $attributes['imageId'] ?? null;
         $record->enabled = $attributes['enabled'] ?? true;
-        $record->sortOrder = $attributes['sortOrder'] ?? $this->_getNextSortOrder();
+        // For existing records, only change sortOrder if explicitly provided
+        if ($id && array_key_exists('sortOrder', $attributes)) {
+            $record->sortOrder = $attributes['sortOrder'];
+        }
 
         if (!$record->save()) {
             return false;

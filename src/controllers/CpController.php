@@ -32,6 +32,15 @@ class CpController extends Controller
     {
         $sites = Craft::$app->getSites()->getAllSites();
 
+        // Resolve the active site from the ?site=handle query param
+        $siteHandle = Craft::$app->getRequest()->getQueryParam('site');
+        $currentSite = $siteHandle
+            ? Craft::$app->getSites()->getSiteByHandle($siteHandle)
+            : null;
+        if (!$currentSite) {
+            $currentSite = Craft::$app->getSites()->getPrimarySite();
+        }
+
         if ($itemId) {
             $item = Plugin::$plugin->items->getItemById($itemId);
             if (!$item) {
@@ -69,6 +78,7 @@ class CpController extends Controller
             'item' => $item,
             'content' => $content,
             'sites' => $sites,
+            'currentSite' => $currentSite,
             'title' => $title,
         ]);
     }
@@ -83,12 +93,13 @@ class CpController extends Controller
         $request = Craft::$app->getRequest();
         $id = $request->getBodyParam('itemId') ?: null;
 
+        // Don't include sortOrder — service preserves existing value for updates
+        // and auto-assigns for new records
         $attributes = [
             'latitude' => $request->getBodyParam('latitude') ?: null,
             'longitude' => $request->getBodyParam('longitude') ?: null,
             'imageId' => $request->getBodyParam('imageId')[0] ?? null,
             'enabled' => (bool)$request->getBodyParam('enabled', true),
-            'sortOrder' => (int)$request->getBodyParam('sortOrder', 0),
         ];
 
         $content = $request->getBodyParam('content', []);
@@ -101,7 +112,13 @@ class CpController extends Controller
         }
 
         Craft::$app->getSession()->setNotice(Craft::t('stamp-passport', 'Item saved.'));
-        return $this->redirectToPostedUrl(['itemId' => $record->id]);
+
+        // Redirect back preserving the active site
+        $siteId = (int)$request->getBodyParam('siteId');
+        $site = $siteId ? Craft::$app->getSites()->getSiteById($siteId) : null;
+        $redirectParams = $site ? ['site' => $site->handle] : [];
+
+        return $this->redirect(UrlHelper::cpUrl('stamp-passport/items/' . $record->id, $redirectParams));
     }
 
     /**

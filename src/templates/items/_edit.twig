@@ -9,53 +9,80 @@
     { label: 'Items'|t('stamp-passport'), url: url('stamp-passport/items') },
 ] %}
 
+{# ── Site toggle in header (next to the page title) ── #}
+{% block contextMenu %}
+    {% if craft.app.isMultiSite %}
+        <div>
+            <button type="button" class="btn menubtn" data-icon="world">{{ currentSite.name }}</button>
+            <div class="menu">
+                <ul class="padded">
+                    {% for site in sites %}
+                        <li>
+                            <a href="{{ url('stamp-passport/items/' ~ (item ? item.id : 'new'), { site: site.handle }) }}"
+                               {% if site.id == currentSite.id %}class="sel"{% endif %}>
+                                {{ site.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{# ── Save button in the header action area ── #}
+{% block actionButton %}
+    <button type="submit" form="item-form" class="btn submit">{{ "Save"|t('app') }}</button>
+{% endblock %}
+
+{# ── Main form ── #}
 {% block content %}
-    <form method="post" accept-charset="UTF-8">
+    <form id="item-form" method="post" accept-charset="UTF-8">
         {{ csrfInput() }}
         {{ actionInput('stamp-passport/cp/save') }}
-        {{ redirectInput('stamp-passport/items/{itemId}') }}
+        {{ hiddenInput('siteId', currentSite.id) }}
 
         {% if item %}
             {{ hiddenInput('itemId', item.id) }}
         {% endif %}
 
-        {# ── Language-independent fields ── #}
         <div id="fields">
-            <div class="field">
-                <div class="heading">
-                    <label>{{ "Enabled"|t('stamp-passport') }}</label>
-                </div>
-                <div class="input">
-                    {{ tag('div', {
-                        class: 'lightswitch',
-                        'data-value': item ? item.enabled : true,
+
+            {# Enabled toggle #}
+            {{ forms.lightswitchField({
+                label: "Enabled"|t('app'),
+                name: 'enabled',
+                on: item ? item.enabled : true,
+            }) }}
+
+            <hr>
+
+            {# ── Coordinates — side by side ── #}
+            <h2>{{ "Coordinates"|t('stamp-passport') }}</h2>
+            <div class="flex gap-4">
+                <div class="flex-grow">
+                    {{ forms.textField({
+                        label: "Latitude"|t('stamp-passport'),
+                        name: 'latitude',
+                        value: item ? item.latitude : '',
+                        placeholder: '45.4281237',
+                        size: 20,
                     }) }}
-                    {{ hiddenInput('enabled', item ? item.enabled : 1) }}
+                </div>
+                <div class="flex-grow">
+                    {{ forms.textField({
+                        label: "Longitude"|t('stamp-passport'),
+                        name: 'longitude',
+                        value: item ? item.longitude : '',
+                        placeholder: '-75.6942809',
+                        size: 20,
+                    }) }}
                 </div>
             </div>
 
             <hr>
 
-            <h2>{{ "Coordinates"|t('stamp-passport') }}</h2>
-
-            {{ forms.textField({
-                label: "Latitude"|t('stamp-passport'),
-                name: 'latitude',
-                value: item ? item.latitude : '',
-                placeholder: '45.4281237',
-                size: 20,
-            }) }}
-
-            {{ forms.textField({
-                label: "Longitude"|t('stamp-passport'),
-                name: 'longitude',
-                value: item ? item.longitude : '',
-                placeholder: '-75.6942809',
-                size: 20,
-            }) }}
-
-            <hr>
-
+            {# ── Image ── #}
             <h2>{{ "Image"|t('stamp-passport') }}</h2>
 
             {% set imageElements = [] %}
@@ -76,113 +103,83 @@
                 modalStorageKey: 'stamp-passport.image',
             }) }}
 
-            {{ forms.textField({
-                label: "Sort Order"|t('stamp-passport'),
-                name: 'sortOrder',
-                value: item ? item.sortOrder : 0,
-                type: 'number',
-                size: 5,
-            }) }}
-
-            {% if item %}
-                <div class="field">
-                    <div class="heading">
-                        <label>{{ "Short Code"|t('stamp-passport') }}</label>
-                    </div>
-                    <div class="input">
-                        <code style="font-size:1.1em">{{ item.shortCode }}</code>
-                        <p class="light">{{ "Auto-generated. Used in QR code URLs."|t('stamp-passport') }}</p>
-                    </div>
-                </div>
-            {% endif %}
-
             <hr>
 
             {# ── Per-site translatable fields ── #}
-            <h2>{{ "Content by Site"|t('stamp-passport') }}</h2>
+            <h2>{{ currentSite.name }} {{ "Content"|t('stamp-passport') }}</h2>
 
-            <div id="site-content-tabs" class="pane">
-                <nav>
-                    <ul class="tabs">
-                        {% for site in sites %}
-                            <li>
-                                <a href="#site-{{ site.id }}"
-                                   class="tab{% if loop.first %} sel{% endif %}"
-                                   data-site="{{ site.id }}">
-                                    {{ site.name }}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </nav>
+            {% set sc = content[currentSite.id] ?? {} %}
 
-                {% for site in sites %}
-                    {% set sc = content[site.id] ?? {} %}
-                    <div id="site-{{ site.id }}" class="site-content-pane{% if not loop.first %} hidden{% endif %}">
-                        {{ forms.textField({
-                            label: "Title"|t('stamp-passport'),
-                            name: 'content[' ~ site.id ~ '][title]',
-                            value: sc.title ?? '',
-                            required: true,
-                        }) }}
+            {{ forms.textField({
+                label: "Title"|t('stamp-passport'),
+                name: 'content[' ~ currentSite.id ~ '][title]',
+                value: sc.title ?? '',
+                required: true,
+            }) }}
 
-                        {{ forms.textareaField({
-                            label: "Description"|t('stamp-passport'),
-                            name: 'content[' ~ site.id ~ '][description]',
-                            value: sc.description ?? '',
-                            rows: 4,
-                        }) }}
+            {{ forms.textareaField({
+                label: "Description"|t('stamp-passport'),
+                name: 'content[' ~ currentSite.id ~ '][description]',
+                value: sc.description ?? '',
+                rows: 4,
+            }) }}
 
-                        {{ forms.textField({
-                            label: "Link URL"|t('stamp-passport'),
-                            name: 'content[' ~ site.id ~ '][linkUrl]',
-                            value: sc.linkUrl ?? '',
-                            placeholder: 'https://',
-                        }) }}
+            {{ forms.textField({
+                label: "Link URL"|t('stamp-passport'),
+                name: 'content[' ~ currentSite.id ~ '][linkUrl]',
+                value: sc.linkUrl ?? '',
+                placeholder: 'https://',
+            }) }}
 
-                        {{ forms.textField({
-                            label: "Link Text"|t('stamp-passport'),
-                            name: 'content[' ~ site.id ~ '][linkText]',
-                            value: sc.linkText ?? '',
-                            placeholder: 'Learn more',
-                        }) }}
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
+            {{ forms.textField({
+                label: "Link Text"|t('stamp-passport'),
+                name: 'content[' ~ currentSite.id ~ '][linkText]',
+                value: sc.linkText ?? '',
+                placeholder: 'Learn more',
+            }) }}
+
+        </div>{# /fields #}
 
         <div class="buttons">
             <button type="submit" class="btn submit">{{ "Save"|t('app') }}</button>
         </div>
+
     </form>
 {% endblock %}
 
-{% js %}
-(function() {
-    // Site content tabs
-    var tabs = document.querySelectorAll('#site-content-tabs .tab');
-    var panes = document.querySelectorAll('.site-content-pane');
+{# ── Right-hand details sidebar (read-only meta) ── #}
+{% block details %}
+    <div id="details">
+        {% if item %}
+            <div class="meta read-only">
+                <div class="field">
+                    <div class="heading">
+                        <label>{{ "Short Code"|t('stamp-passport') }}</label>
+                    </div>
+                    <div class="value">
+                        <code style="font-size:1.1em">{{ item.shortCode }}</code>
+                    </div>
+                    <div class="instructions">
+                        <p class="smalltext light">{{ "Auto-generated. Used in QR code URLs."|t('stamp-passport') }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
 
-    tabs.forEach(function(tab) {
-        tab.addEventListener('click', function(e) {
-            e.preventDefault();
-            tabs.forEach(function(t) { t.classList.remove('sel'); });
-            panes.forEach(function(p) { p.classList.add('hidden'); });
-            tab.classList.add('sel');
-            var target = document.getElementById(tab.getAttribute('href').substring(1));
-            if (target) target.classList.remove('hidden');
-        });
-    });
-
-    // Lightswitch
-    var ls = document.querySelector('.lightswitch');
-    if (ls && typeof Craft !== 'undefined') {
-        new Craft.LightSwitch(ls, {
-            value: ls.dataset.value == '1' || ls.dataset.value == 'true' ? true : false,
-            onChange: function(value) {
-                ls.parentElement.querySelector('input[name="enabled"]').value = value ? '1' : '0';
-            }
-        });
-    }
-})();
-{% endjs %}
+        <div class="meta read-only">
+            <div class="field">
+                <div class="heading">
+                    <label>{{ "Sort Order"|t('stamp-passport') }}</label>
+                </div>
+                <div class="value light">
+                    {% if item %}
+                        {{ item.sortOrder }}
+                        <p class="smalltext">{{ "Drag rows in the Items list to reorder."|t('stamp-passport') }}</p>
+                    {% else %}
+                        <span class="light">{{ "Assigned on save."|t('stamp-passport') }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
