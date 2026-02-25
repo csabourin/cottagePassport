@@ -1,0 +1,186 @@
+{% extends "_layouts/cp" %}
+
+{% set selectedSubnavItem = 'items' %}
+
+{% set crumbs = [
+    { label: craft.app.plugins.getPlugin('cottage-passport').settings.pluginName, url: url('cottage-passport') },
+    { label: 'Items'|t('cottage-passport'), url: url('cottage-passport/items') },
+] %}
+
+{% block content %}
+    <form method="post" accept-charset="UTF-8">
+        {{ csrfInput() }}
+        {{ actionInput('cottage-passport/cp/save') }}
+        {{ redirectInput('cottage-passport/items/{itemId}') }}
+
+        {% if item %}
+            {{ hiddenInput('itemId', item.id) }}
+        {% endif %}
+
+        {# ── Language-independent fields ── #}
+        <div id="fields">
+            <div class="field">
+                <div class="heading">
+                    <label>{{ "Enabled"|t('cottage-passport') }}</label>
+                </div>
+                <div class="input">
+                    {{ tag('div', {
+                        class: 'lightswitch',
+                        'data-value': item ? item.enabled : true,
+                    }) }}
+                    {{ hiddenInput('enabled', item ? item.enabled : 1) }}
+                </div>
+            </div>
+
+            <hr>
+
+            <h2>{{ "Coordinates"|t('cottage-passport') }}</h2>
+
+            {{ forms.textField({
+                label: "Latitude"|t('cottage-passport'),
+                name: 'latitude',
+                value: item ? item.latitude : '',
+                placeholder: '45.4281237',
+                size: 20,
+            }) }}
+
+            {{ forms.textField({
+                label: "Longitude"|t('cottage-passport'),
+                name: 'longitude',
+                value: item ? item.longitude : '',
+                placeholder: '-75.6942809',
+                size: 20,
+            }) }}
+
+            <hr>
+
+            <h2>{{ "Image"|t('cottage-passport') }}</h2>
+
+            {% set imageElements = [] %}
+            {% if item and item.imageId %}
+                {% set asset = craft.assets.id(item.imageId).one() %}
+                {% if asset %}
+                    {% set imageElements = [asset] %}
+                {% endif %}
+            {% endif %}
+
+            {{ forms.elementSelectField({
+                label: "Location Image"|t('cottage-passport'),
+                name: 'imageId',
+                elementType: 'craft\\elements\\Asset',
+                criteria: { kind: 'image' },
+                limit: 1,
+                elements: imageElements,
+                modalStorageKey: 'cottage-passport.image',
+            }) }}
+
+            {{ forms.textField({
+                label: "Sort Order"|t('cottage-passport'),
+                name: 'sortOrder',
+                value: item ? item.sortOrder : 0,
+                type: 'number',
+                size: 5,
+            }) }}
+
+            {% if item %}
+                <div class="field">
+                    <div class="heading">
+                        <label>{{ "Short Code"|t('cottage-passport') }}</label>
+                    </div>
+                    <div class="input">
+                        <code style="font-size:1.1em">{{ item.shortCode }}</code>
+                        <p class="light">{{ "Auto-generated. Used in QR code URLs."|t('cottage-passport') }}</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            <hr>
+
+            {# ── Per-site translatable fields ── #}
+            <h2>{{ "Content by Site"|t('cottage-passport') }}</h2>
+
+            <div id="site-content-tabs" class="pane">
+                <nav>
+                    <ul class="tabs">
+                        {% for site in sites %}
+                            <li>
+                                <a href="#site-{{ site.id }}"
+                                   class="tab{% if loop.first %} sel{% endif %}"
+                                   data-site="{{ site.id }}">
+                                    {{ site.name }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+
+                {% for site in sites %}
+                    {% set sc = content[site.id] ?? {} %}
+                    <div id="site-{{ site.id }}" class="site-content-pane{% if not loop.first %} hidden{% endif %}">
+                        {{ forms.textField({
+                            label: "Title"|t('cottage-passport'),
+                            name: 'content[' ~ site.id ~ '][title]',
+                            value: sc.title ?? '',
+                            required: true,
+                        }) }}
+
+                        {{ forms.textareaField({
+                            label: "Description"|t('cottage-passport'),
+                            name: 'content[' ~ site.id ~ '][description]',
+                            value: sc.description ?? '',
+                            rows: 4,
+                        }) }}
+
+                        {{ forms.textField({
+                            label: "Link URL"|t('cottage-passport'),
+                            name: 'content[' ~ site.id ~ '][linkUrl]',
+                            value: sc.linkUrl ?? '',
+                            placeholder: 'https://',
+                        }) }}
+
+                        {{ forms.textField({
+                            label: "Link Text"|t('cottage-passport'),
+                            name: 'content[' ~ site.id ~ '][linkText]',
+                            value: sc.linkText ?? '',
+                            placeholder: 'Learn more',
+                        }) }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button type="submit" class="btn submit">{{ "Save"|t('app') }}</button>
+        </div>
+    </form>
+{% endblock %}
+
+{% js %}
+(function() {
+    // Site content tabs
+    var tabs = document.querySelectorAll('#site-content-tabs .tab');
+    var panes = document.querySelectorAll('.site-content-pane');
+
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            tabs.forEach(function(t) { t.classList.remove('sel'); });
+            panes.forEach(function(p) { p.classList.add('hidden'); });
+            tab.classList.add('sel');
+            var target = document.getElementById(tab.getAttribute('href').substring(1));
+            if (target) target.classList.remove('hidden');
+        });
+    });
+
+    // Lightswitch
+    var ls = document.querySelector('.lightswitch');
+    if (ls && typeof Craft !== 'undefined') {
+        new Craft.LightSwitch(ls, {
+            value: ls.dataset.value == '1' || ls.dataset.value == 'true' ? true : false,
+            onChange: function(value) {
+                ls.parentElement.querySelector('input[name="enabled"]').value = value ? '1' : '0';
+            }
+        });
+    }
+})();
+{% endjs %}

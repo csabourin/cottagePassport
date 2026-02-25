@@ -1,0 +1,48 @@
+{#
+    Default frontend layout for the Cottage Passport plugin.
+    Override by placing _cottage-passport/_layout.twig in your site templates.
+#}
+<!DOCTYPE html>
+<html lang="{{ currentSite.language[:2] }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ craft.cottagePassport.settings.pluginName }}{% endblock %}</title>
+
+    {% block head %}{% endblock %}
+
+    {# GA4 — only if configured #}
+    {% set ga4Id = craft.cottagePassport.settings.ga4MeasurementId %}
+    {% if ga4Id %}
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga4Id }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{ ga4Id }}');
+        </script>
+    {% endif %}
+</head>
+<body class="cottage-passport">
+    {% block body %}
+        <main class="passport-main">
+            {% block content %}{% endblock %}
+        </main>
+    {% endblock %}
+
+    {# Passport configuration injected for JS #}
+    <script>
+        window.__PASSPORT_CONFIG__ = {
+            locationsUrl: '{{ craft.cottagePassport.locationsActionUrl()|e("js") }}',
+            collectUrl:   '{{ craft.cottagePassport.collectActionUrl()|e("js") }}',
+            resolveUrl:   '{{ craft.cottagePassport.resolveActionUrl()|e("js") }}',
+            drawThreshold: {{ craft.cottagePassport.settings.drawThreshold }},
+            maxStickers:   {{ craft.cottagePassport.settings.maxStickers }},
+            enableGeofence: {{ craft.cottagePassport.settings.enableGeofence ? 'true' : 'false' }},
+            lang: '{{ currentSite.language[:2] }}',
+        };
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

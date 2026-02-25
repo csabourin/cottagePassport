@@ -1,0 +1,22 @@
+{
+    "name": "csabourin/craft-cottage-passport",
+    "description": "A self-contained Craft CMS 4 plugin for bilingual bucket list / passport experiences with QR code check-ins.",
+    "type": "craft-plugin",
+    "license": "proprietary",
+    "require": {
+        "craftcms/cms": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "csabourin\\cottagepassport\\": "src/"
+        }
+    },
+    "extra": {
+        "handle": "cottage-passport",
+        "name": "Cottage Passport",
+        "developer": "Christian Sabourin",
+        "class": "csabourin\\cottagepassport\\Plugin",
+        "hasCpSettings": true,
+        "hasCpSection": true
+    }
+}

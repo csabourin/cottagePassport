@@ -1,0 +1,22 @@
+/* Cottage Passport — CP styles */
+
+/* Item listing table tweaks */
+#passport-items code {
+    font-size: 0.85em;
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* Site content tabs in edit form */
+#site-content-tabs {
+    margin-top: 8px;
+}
+
+#site-content-tabs .tabs {
+    margin-bottom: 16px;
+}
+
+.site-content-pane {
+    padding: 4px 0;
+}
