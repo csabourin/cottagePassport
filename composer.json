@@ -1,0 +1,22 @@
+{
+    "name": "csabourin/craft-stamp-passport",
+    "description": "A self-contained Craft CMS 4 plugin for bilingual bucket list / passport experiences with QR code check-ins.",
+    "type": "craft-plugin",
+    "license": "proprietary",
+    "require": {
+        "craftcms/cms": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "csabourin\\stamppassport\\": "src/"
+        }
+    },
+    "extra": {
+        "handle": "stamp-passport",
+        "name": "Stamp Passport",
+        "developer": "Christian Sabourin",
+        "class": "csabourin\\stamppassport\\Plugin",
+        "hasCpSettings": true,
+        "hasCpSection": true
+    }
+}
