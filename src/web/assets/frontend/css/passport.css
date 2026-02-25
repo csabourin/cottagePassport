@@ -1,98 +1,218 @@
 /* ============================================================
-   STAMP PASSPORT — Default Frontend Theme
+   STAMP PASSPORT — Bucket List Challenge Theme
+   Draws from _legacy/styles.css (plaid) and _legacy/styles-cottage.css (wood)
    Override by publishing your own stylesheet in the site templates.
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Cabin:wght@400;600;700&family=Playfair+Display:wght@400;700&display=swap');
 
 :root {
-    --passport-blue: #2b6b8a;
-    --passport-blue-dark: #1e5068;
-    --passport-green: #2d5a27;
-    --passport-beige: #d4b896;
-    --passport-yellow: #e8b931;
-    --passport-paper: #faf5ed;
-    --passport-ink: #2c2418;
-    --passport-ink-muted: #6b5d4e;
-    --passport-radius: 8px;
-    --passport-shadow: 0 2px 12px rgba(60, 40, 20, 0.15);
+    --passport-teal:       #2b6b8a;
+    --passport-teal-dark:  #1e5068;
+    --passport-green:      #2d5a27;
+    --passport-cream:      #f5f0e8;
+    --passport-paper:      #faf7f2;
+    --passport-beige:      #d4b896;
+    --passport-ink:        #1e1a17;
+    --passport-ink-muted:  #6b5d4e;
+    --passport-radius:     4px;
 }
 
 /* ── Reset ── */
-.stamp-passport *, .stamp-passport *::before, .stamp-passport *::after {
+.stamp-passport *,
+.stamp-passport *::before,
+.stamp-passport *::after {
     box-sizing: border-box;
 }
 
-.stamp-passport {
+/* ══════════════════════════════════════════════════════════
+   BODY — bold red-and-black buffalo plaid (from _legacy/styles.css)
+   ══════════════════════════════════════════════════════════ */
+body {
     margin: 0;
+    min-height: 100vh;
+    background-color: #8f1010;
+    background-image:
+        repeating-linear-gradient(0deg,
+            rgba(15, 8, 8, 0.86) 0 52px,
+            rgba(164, 16, 16, 0.25) 52px 104px),
+        repeating-linear-gradient(90deg,
+            rgba(15, 8, 8, 0.96) 0 52px,
+            rgba(164, 16, 16, 0.25) 52px 104px),
+        repeating-linear-gradient(0deg,
+            transparent 0 48px,
+            rgba(255, 255, 255, 0.1) 48px 56px,
+            transparent 56px 100px),
+        repeating-linear-gradient(90deg,
+            transparent 0 48px,
+            rgba(255, 255, 255, 0.1) 48px 56px,
+            transparent 56px 100px);
+}
+
+.stamp-passport {
     font-family: "Cabin", "Segoe UI", Arial, sans-serif;
     color: var(--passport-ink);
-    background-color: var(--passport-paper);
-    min-height: 100vh;
 }
 
-/* ── Layout ── */
+/* ══════════════════════════════════════════════════════════
+   MAIN CONTAINER — narrow booklet centred on plaid
+   ══════════════════════════════════════════════════════════ */
 .passport-main {
-    max-width: 960px;
+    max-width: 480px;
     margin: 0 auto;
-    padding: 24px 16px 80px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 40px;
 }
 
-/* ── Header ── */
+/* ══════════════════════════════════════════════════════════
+   HEADER — dark wood panel
+   CSS wood-grain texture (from _legacy/styles-cottage.css).
+   Overridden by .has-wood-bg + --passport-wood-img when a custom image is set.
+   ══════════════════════════════════════════════════════════ */
 .passport-header {
+    /* CSS wood-grain fallback */
+    background-color: #5c4033;
+    background-image:
+        repeating-linear-gradient(2deg,
+            transparent 0px, transparent 3px,
+            rgba(90, 60, 30, 0.35) 3px, rgba(90, 60, 30, 0.35) 4px,
+            transparent 4px, transparent 12px),
+        repeating-linear-gradient(178deg,
+            transparent 0px, transparent 60px,
+            rgba(120, 80, 40, 0.2) 60px, rgba(120, 80, 40, 0.2) 62px,
+            transparent 62px, transparent 140px),
+        repeating-linear-gradient(1deg,
+            rgba(100, 70, 40, 0.15) 0px,
+            rgba(80, 55, 30, 0.25) 18px,
+            rgba(110, 80, 45, 0.1) 36px,
+            rgba(90, 62, 35, 0.2) 54px),
+        linear-gradient(180deg, #7a5f46 0%, #6b5340 40%, #5c4733 100%);
+    background-size: cover;
+    background-position: center top;
+    padding: 28px 24px 24px;
     text-align: center;
-    padding: 48px 16px 32px;
 }
 
+/* When a custom wood-panel image is uploaded via settings */
+.passport-header.has-wood-bg {
+    background-image: var(--passport-wood-img);
+}
+
+/* ── Circular logo ── */
+.passport-header-logo {
+    margin-bottom: 10px;
+}
+
+.passport-logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(212, 184, 150, 0.55);
+    display: block;
+    margin: 0 auto;
+}
+
+.passport-logo-placeholder {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(212, 184, 150, 0.4);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.9rem;
+    line-height: 1;
+}
+
+/* ── Organisation name ── */
+.passport-org {
+    margin: 0 0 12px;
+    font-size: 0.6rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(212, 184, 150, 0.75);
+    font-family: "Cabin", sans-serif;
+    line-height: 1.7;
+}
+
+/* ── Page title (two-line: light serif + bold caps) ── */
 .passport-title {
-    font-family: "Playfair Display", Georgia, serif;
-    font-size: clamp(1.8rem, 5vw, 2.6rem);
-    font-weight: 700;
-    color: var(--passport-blue-dark);
-    margin: 0 0 8px;
-}
-
-.passport-subtitle {
-    font-size: 1.05rem;
-    color: var(--passport-ink-muted);
     margin: 0;
+    color: #fff;
+    line-height: 1.05;
 }
 
-/* ── Status ── */
+.passport-title-light {
+    display: block;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1.3rem, 4vw, 1.7rem);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+}
+
+.passport-title-bold {
+    display: block;
+    font-family: "Cabin", "Segoe UI", Arial, sans-serif;
+    font-size: clamp(1.9rem, 6vw, 2.6rem);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCAN INSTRUCTION STRIP
+   ══════════════════════════════════════════════════════════ */
+.passport-scan-strip {
+    background: var(--passport-cream);
+    padding: 14px 20px;
+    text-align: center;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--passport-ink);
+    border-bottom: 1px solid #e0d8cc;
+    line-height: 1.45;
+}
+
+/* ══════════════════════════════════════════════════════════
+   STATUS (JS-populated scan feedback)
+   ══════════════════════════════════════════════════════════ */
 .passport-status {
     text-align: center;
-    padding: 12px 16px;
-    background: var(--passport-blue);
+    padding: 10px 16px;
+    background: var(--passport-teal);
     color: #fff;
-    border-radius: var(--passport-radius);
-    margin-bottom: 24px;
+    font-size: 0.88rem;
     font-weight: 600;
 }
 
-/* ── Stamp Grid ── */
+/* ══════════════════════════════════════════════════════════
+   ITEM LIST
+   ══════════════════════════════════════════════════════════ */
 .passport-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 20px;
-    margin-bottom: 32px;
+    background: var(--passport-paper);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
+/* Each item — horizontal card: image left, text right */
 .stamp-slot {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 14px 16px;
+    border-bottom: 1px solid #ede5d8;
     background: #fff;
-    border-radius: var(--passport-radius);
-    box-shadow: var(--passport-shadow);
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     position: relative;
-}
-
-.stamp-slot:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(60, 40, 20, 0.22);
+    transition: background 0.15s;
 }
 
 .stamp-slot.collected {
-    border: 3px solid var(--passport-green);
+    background: #f6fdf5;
 }
 
 .stamp-slot.just-collected {
@@ -100,18 +220,21 @@
 }
 
 @keyframes stampPop {
-    0%   { transform: scale(0.9); opacity: 0.5; }
-    60%  { transform: scale(1.05); }
-    100% { transform: scale(1); opacity: 1; }
+    0%   { transform: scale(0.98); opacity: 0.6; }
+    60%  { transform: scale(1.01); }
+    100% { transform: scale(1);    opacity: 1;   }
 }
 
-/* Stamp image */
+/* ── Image thumbnail (left column) ── */
 .stamp-image {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 10;
+    width: 88px;
+    height: 88px;
+    flex-shrink: 0;
+    margin-right: 14px;
+    background: #e4ddd4;
+    border-radius: var(--passport-radius);
     overflow: hidden;
-    background: var(--passport-beige);
+    position: relative;
 }
 
 .stamp-image img {
@@ -121,46 +244,53 @@
     display: block;
 }
 
+/* Green check badge over the thumbnail */
 .stamp-check {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 36px;
-    height: 36px;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
     background: var(--passport-green);
     color: #fff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
-/* Stamp info */
+/* ── Text content (right column) ── */
 .stamp-info {
-    padding: 14px 16px 18px;
+    flex: 1;
+    min-width: 0;
 }
 
 .stamp-title {
     font-family: "Playfair Display", Georgia, serif;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    margin: 0 0 6px;
-    color: var(--passport-blue-dark);
+    color: var(--passport-teal);
+    margin: 0 0 5px;
+    line-height: 1.3;
+}
+
+.stamp-slot.collected .stamp-title {
+    color: var(--passport-green);
 }
 
 .stamp-desc {
-    font-size: 0.9rem;
+    font-size: 0.83rem;
     color: var(--passport-ink-muted);
-    margin: 0 0 8px;
-    line-height: 1.4;
+    margin: 0 0 6px;
+    line-height: 1.45;
 }
 
 .stamp-link {
-    font-size: 0.85rem;
-    color: var(--passport-blue);
+    font-size: 0.8rem;
+    color: var(--passport-teal);
     text-decoration: none;
     font-weight: 600;
 }
@@ -169,33 +299,39 @@
     text-decoration: underline;
 }
 
-/* ── Progress Bar ── */
+/* ══════════════════════════════════════════════════════════
+   PROGRESS BAR
+   ══════════════════════════════════════════════════════════ */
 .passport-progress {
-    margin-bottom: 32px;
+    background: var(--passport-cream);
+    padding: 12px 16px;
+    border-top: 1px solid #e0d8cc;
 }
 
 .progress-bar {
-    height: 12px;
-    background: #e0d5c7;
-    border-radius: 6px;
+    height: 10px;
+    background: #ddd4c5;
+    border-radius: 5px;
     overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--passport-green), var(--passport-blue));
-    border-radius: 6px;
+    background: linear-gradient(90deg, var(--passport-green), var(--passport-teal));
+    border-radius: 5px;
     transition: width 0.6s ease;
 }
 
 .progress-text {
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--passport-ink-muted);
-    margin-top: 8px;
+    margin: 8px 0 0;
 }
 
-/* ── Modals ── */
+/* ══════════════════════════════════════════════════════════
+   MODALS
+   ══════════════════════════════════════════════════════════ */
 .passport-modal {
     position: fixed;
     inset: 0;
@@ -209,42 +345,42 @@
 .passport-modal-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    background: rgba(0, 0, 0, 0.58);
 }
 
 .passport-modal-content {
     position: relative;
     background: #fff;
-    border-radius: 12px;
-    padding: 32px 28px;
-    max-width: 520px;
+    border-radius: 10px;
+    padding: 28px 24px;
+    max-width: 480px;
     width: 100%;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
 }
 
 .passport-modal-content h2 {
     font-family: "Playfair Display", Georgia, serif;
-    font-size: 1.5rem;
-    color: var(--passport-blue-dark);
-    margin: 0 0 12px;
+    font-size: 1.4rem;
+    color: var(--passport-teal-dark);
+    margin: 0 0 10px;
 }
 
 .passport-modal-content p {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     color: var(--passport-ink-muted);
     line-height: 1.5;
-    margin: 0 0 20px;
+    margin: 0 0 18px;
 }
 
 .passport-modal-close {
     position: absolute;
-    top: 12px;
-    right: 16px;
+    top: 10px;
+    right: 14px;
     background: none;
     border: none;
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     color: var(--passport-ink-muted);
     cursor: pointer;
     line-height: 1;
@@ -255,13 +391,15 @@
     color: var(--passport-ink);
 }
 
-/* ── Buttons ── */
+/* ══════════════════════════════════════════════════════════
+   BUTTONS
+   ══════════════════════════════════════════════════════════ */
 .passport-btn {
     display: inline-block;
-    padding: 12px 28px;
+    padding: 11px 26px;
     border-radius: var(--passport-radius);
     font-family: "Cabin", sans-serif;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
     border: none;
     cursor: pointer;
@@ -270,37 +408,52 @@
 }
 
 .passport-btn-primary {
-    background: var(--passport-blue);
+    background: var(--passport-teal);
     color: #fff;
 }
 
 .passport-btn-primary:hover {
-    background: var(--passport-blue-dark);
+    background: var(--passport-teal-dark);
 }
 
 .passport-btn-secondary {
     background: transparent;
-    color: var(--passport-blue);
-    border: 2px solid var(--passport-blue);
+    color: var(--passport-teal);
+    border: 2px solid var(--passport-teal);
 }
 
 .passport-btn-secondary:hover {
-    background: var(--passport-blue);
+    background: var(--passport-teal);
     color: #fff;
 }
 
-/* ── Utility ── */
+/* ══════════════════════════════════════════════════════════
+   UTILITY
+   ══════════════════════════════════════════════════════════ */
 .hidden {
     display: none !important;
 }
 
-/* ── Responsive ── */
-@media (max-width: 600px) {
-    .passport-grid {
-        grid-template-columns: 1fr;
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 520px) {
+    .passport-main {
+        max-width: 100%;
     }
 
-    .passport-modal-content {
-        padding: 24px 20px;
+    .stamp-image {
+        width: 72px;
+        height: 72px;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
     }
 }

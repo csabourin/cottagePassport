@@ -33,6 +33,12 @@ class Settings extends Model
     /** @var string|null Freeform form handle for the sticker / Memory Makers request */
     public ?string $freeformStickerFormHandle = null;
 
+    /** @var int|null Asset ID for the circular logo displayed in the page header */
+    public ?int $logoAssetId = null;
+
+    /** @var int|null Asset ID for the wood panel header background image */
+    public ?int $woodPanelAssetId = null;
+
     public function defineRules(): array
     {
         return [
@@ -43,6 +49,7 @@ class Settings extends Model
             [['maxStickers'], 'integer', 'min' => 0],
             [['ga4MeasurementId'], 'match', 'pattern' => '/^G-[A-Z0-9]+$/', 'skipOnEmpty' => true],
             [['freeformDrawFormHandle', 'freeformStickerFormHandle'], 'string', 'max' => 100],
+            [['logoAssetId', 'woodPanelAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
         ];
     }
 }

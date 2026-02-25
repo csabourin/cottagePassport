@@ -5,28 +5,61 @@
 {% extends "_stamp-passport/_layout" %}
 
 {% set settings = craft.stampPassport.settings %}
-{% set items = craft.stampPassport.items %}
+{% set items    = craft.stampPassport.items %}
+
+{% set logoUrl     = settings.logoAssetId     ? craft.stampPassport.imageUrl(settings.logoAssetId)     : null %}
+{% set woodPanelUrl = settings.woodPanelAssetId ? craft.stampPassport.imageUrl(settings.woodPanelAssetId) : null %}
 
 {% block title %}{{ settings.pluginName }}{% endblock %}
 
 {% block head %}
     <link rel="stylesheet" href="{{ craft.app.assetManager.getPublishedUrl('@csabourin/stamppassport/web/assets/frontend/css/passport.css', true) }}">
+    {% if woodPanelUrl %}
+    <style>
+        .passport-header.has-wood-bg {
+            --passport-wood-img: url('{{ woodPanelUrl|e }}');
+        }
+    </style>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
-    <header class="passport-header">
-        <h1 class="passport-title">{{ settings.pluginName }}</h1>
-        <p class="passport-subtitle" id="passportSubtitle"></p>
+
+    {# ── Header — wood panel with circular logo ── #}
+    <header class="passport-header{{ woodPanelUrl ? ' has-wood-bg' : '' }}">
+        <div class="passport-header-logo">
+            {% if logoUrl %}
+                <img src="{{ logoUrl }}" alt="{{ settings.pluginName }}" class="passport-logo">
+            {% else %}
+                <div class="passport-logo-placeholder">🍁</div>
+            {% endif %}
+        </div>
+
+        <p class="passport-org">
+            National Capital Commission<br>
+            Commission de la capitale nationale
+        </p>
+
+        <h1 class="passport-title">
+            <span class="passport-title-light">{{ settings.pluginName }}</span>
+            <span class="passport-title-bold">{{ "Challenge"|t('stamp-passport') }}</span>
+        </h1>
     </header>
 
-    {# Status area for scan feedback #}
+    {# ── Instruction strip ── #}
+    <div class="passport-scan-strip">
+        {{ "Scan all QR codes at official locations to complete your summer bucket list."|t('stamp-passport') }}
+    </div>
+
+    {# ── Status area for scan feedback (JS-populated) ── #}
     <section id="statusSection" class="passport-status hidden"></section>
 
-    {# Stamp grid #}
+    {# ── Item list ── #}
     <section class="passport-grid" id="stampGrid">
         {% for item in items %}
             {% set content = item.contents[0] ?? null %}
             <article class="stamp-slot" data-code="{{ item.shortCode }}" data-id="{{ item.id }}">
+
                 <div class="stamp-image">
                     {% if item.imageId %}
                         {% set asset = craft.assets.id(item.imageId).one() %}
@@ -36,20 +69,22 @@
                     {% endif %}
                     <div class="stamp-check hidden">&#10003;</div>
                 </div>
+
                 <div class="stamp-info">
                     <h3 class="stamp-title">{{ content.title ?? '' }}</h3>
                     <p class="stamp-desc">{{ content.description ?? '' }}</p>
                     {% if content and content.linkUrl %}
                         <a class="stamp-link" href="{{ content.linkUrl }}" target="_blank" rel="noopener">
-                            {{ content.linkText ?? 'Learn more' }}
+                            {{ content.linkText ?? 'Learn more'|t('stamp-passport') }}
                         </a>
                     {% endif %}
                 </div>
+
             </article>
         {% endfor %}
     </section>
 
-    {# Progress bar #}
+    {# ── Progress bar ── #}
     <section class="passport-progress">
         <div class="progress-bar">
             <div class="progress-fill" id="progressFill" style="width:0%"></div>
@@ -57,7 +92,7 @@
         <p class="progress-text" id="progressText"></p>
     </section>
 
-    {# Freeform draw modal #}
+    {# ── Draw modal ── #}
     {% set drawHandle = settings.freeformDrawFormHandle %}
     {% if drawHandle %}
         <div id="drawModal" class="passport-modal hidden" role="dialog" aria-labelledby="drawModalTitle">
@@ -73,7 +108,7 @@
         </div>
     {% endif %}
 
-    {# Freeform sticker modal #}
+    {# ── Sticker modal ── #}
     {% set stickerHandle = settings.freeformStickerFormHandle %}
     {% if stickerHandle %}
         <div id="stickerModal" class="passport-modal hidden" role="dialog" aria-labelledby="stickerModalTitle">
@@ -89,7 +124,7 @@
         </div>
     {% endif %}
 
-    {# Disclaimer modal (shown once) #}
+    {# ── Disclaimer modal (shown once) ── #}
     <div id="disclaimerModal" class="passport-modal hidden" role="dialog" aria-labelledby="disclaimerTitle">
         <div class="passport-modal-backdrop"></div>
         <div class="passport-modal-content">
@@ -100,6 +135,7 @@
             </button>
         </div>
     </div>
+
 {% endblock %}
 
 {% block scripts %}

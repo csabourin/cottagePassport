@@ -197,6 +197,12 @@ class CpController extends Controller
         $settings->freeformDrawFormHandle = $request->getBodyParam('freeformDrawFormHandle') ?: null;
         $settings->freeformStickerFormHandle = $request->getBodyParam('freeformStickerFormHandle') ?: null;
 
+        $logoIds = $request->getBodyParam('logoAssetId');
+        $settings->logoAssetId = is_array($logoIds) ? ((int)($logoIds[0] ?? 0) ?: null) : ((int)($logoIds ?: 0) ?: null);
+
+        $woodIds = $request->getBodyParam('woodPanelAssetId');
+        $settings->woodPanelAssetId = is_array($woodIds) ? ((int)($woodIds[0] ?? 0) ?: null) : ((int)($woodIds ?: 0) ?: null);
+
         if (!$settings->validate()) {
             Craft::$app->getSession()->setError(Craft::t('stamp-passport', 'Settings not saved.'));
             return null;

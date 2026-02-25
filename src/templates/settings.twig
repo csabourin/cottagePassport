@@ -101,6 +101,36 @@
 
         <hr>
 
+        <h2>{{ "Appearance"|t('stamp-passport') }}</h2>
+
+        {% set logoElements = settings.logoAssetId ? craft.assets.id(settings.logoAssetId).all() : [] %}
+        {{ forms.elementSelectField({
+            label: "Header Logo"|t('stamp-passport'),
+            instructions: "Circular image displayed at the top of the page header. Recommended: square PNG with transparent background."|t('stamp-passport'),
+            id: 'logoAssetId',
+            name: 'logoAssetId',
+            elementType: 'craft\\elements\\Asset',
+            criteria: { kind: 'image' },
+            limit: 1,
+            elements: logoElements,
+            modalStorageKey: 'stamp-passport.logoAsset',
+        }) }}
+
+        {% set woodElements = settings.woodPanelAssetId ? craft.assets.id(settings.woodPanelAssetId).all() : [] %}
+        {{ forms.elementSelectField({
+            label: "Header Wood Panel"|t('stamp-passport'),
+            instructions: "Background image for the page header. If not set, a CSS wood-grain texture is used as fallback."|t('stamp-passport'),
+            id: 'woodPanelAssetId',
+            name: 'woodPanelAssetId',
+            elementType: 'craft\\elements\\Asset',
+            criteria: { kind: 'image' },
+            limit: 1,
+            elements: woodElements,
+            modalStorageKey: 'stamp-passport.woodPanelAsset',
+        }) }}
+
+        <hr>
+
         <h2>{{ "Analytics"|t('stamp-passport') }}</h2>
 
         {{ forms.textField({
