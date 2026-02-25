@@ -34,7 +34,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "php -S 0.0.0.0:5000 router.php"
+args = "php -S 0.0.0.0:5000 standalone/router.php"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -46,4 +46,4 @@ externalPort = 80
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["php", "-S", "0.0.0.0:5000", "router.php"]
+run = ["php", "-S", "0.0.0.0:5000", "standalone/router.php"]

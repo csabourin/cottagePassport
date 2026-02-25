@@ -1,0 +1,4 @@
+# Exclude non-plugin files from Composer package exports
+/standalone        export-ignore
+/.gitattributes    export-ignore
+/.gitignore        export-ignore
