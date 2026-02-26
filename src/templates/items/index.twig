@@ -14,6 +14,59 @@
 {% endblock %}
 
 {% block content %}
+
+ {% if items|length %}
+        <table id="passport-items" class="data fullwidth">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>{{ "Title"|t('stamp-passport') }}</th>
+                    <th>{{ "Short Code"|t('stamp-passport') }}</th>
+                    <th>{{ "Coordinates"|t('stamp-passport') }}</th>
+                    <th>{{ "Enabled"|t('stamp-passport') }}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                    {% set content = item.contents[0] ?? null %}
+                    <tr data-id="{{ item.id }}">
+                        <td class="thin">
+                            <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
+                        </td>
+                        <td>
+                            <a href="{{ url('stamp-passport/items/' ~ item.id) }}">
+                                {{ content ? content.title : '—' }}
+                            </a>
+                        </td>
+                        <td><code>{{ item.shortCode }}</code></td>
+                        <td>
+                            {% if item.latitude and item.longitude %}
+                                {{ item.latitude|number_format(4) }}, {{ item.longitude|number_format(4) }}
+                            {% else %}
+                                <span class="light">{{ "Not set"|t('stamp-passport') }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.enabled %}
+                                <span class="status green"></span>
+                            {% else %}
+                                <span class="status"></span>
+                            {% endif %}
+                        </td>
+                        <td class="thin">
+                            <a class="delete icon" title="{{ 'Delete'|t('app') }}"
+                               data-id="{{ item.id }}"
+                               role="button"></a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{{ "No items yet."|t('stamp-passport') }} <a href="{{ url('stamp-passport/items/new') }}">{{ "Create one"|t('stamp-passport') }}</a>.</p>
+    {% endif %}
+
     {# ── Per-site display text customization ── #}
     <form method="post" accept-charset="UTF-8">
         {{ csrfInput() }}
@@ -215,57 +268,6 @@
 
     <hr>
 
-    {% if items|length %}
-        <table id="passport-items" class="data fullwidth">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>{{ "Title"|t('stamp-passport') }}</th>
-                    <th>{{ "Short Code"|t('stamp-passport') }}</th>
-                    <th>{{ "Coordinates"|t('stamp-passport') }}</th>
-                    <th>{{ "Enabled"|t('stamp-passport') }}</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in items %}
-                    {% set content = item.contents[0] ?? null %}
-                    <tr data-id="{{ item.id }}">
-                        <td class="thin">
-                            <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
-                        </td>
-                        <td>
-                            <a href="{{ url('stamp-passport/items/' ~ item.id) }}">
-                                {{ content ? content.title : '—' }}
-                            </a>
-                        </td>
-                        <td><code>{{ item.shortCode }}</code></td>
-                        <td>
-                            {% if item.latitude and item.longitude %}
-                                {{ item.latitude|number_format(4) }}, {{ item.longitude|number_format(4) }}
-                            {% else %}
-                                <span class="light">{{ "Not set"|t('stamp-passport') }}</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if item.enabled %}
-                                <span class="status green"></span>
-                            {% else %}
-                                <span class="status"></span>
-                            {% endif %}
-                        </td>
-                        <td class="thin">
-                            <a class="delete icon" title="{{ 'Delete'|t('app') }}"
-                               data-id="{{ item.id }}"
-                               role="button"></a>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>{{ "No items yet."|t('stamp-passport') }} <a href="{{ url('stamp-passport/items/new') }}">{{ "Create one"|t('stamp-passport') }}</a>.</p>
-    {% endif %}
 {% endblock %}
 
 {% js %}

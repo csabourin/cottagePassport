@@ -7,133 +7,13 @@
     { label: settings.pluginName, url: url('stamp-passport') },
 ] %}
 
-{% import "_includes/forms" as forms %}
-
 {% block content %}
     <form method="post" accept-charset="UTF-8">
         {{ csrfInput() }}
         {{ actionInput('stamp-passport/cp/save-settings') }}
         {{ redirectInput('stamp-passport/settings') }}
 
-        <h2>{{ "General"|t('stamp-passport') }}</h2>
-
-        <input type="hidden" name="pluginName" value="{{ settings.pluginName }}">
-
-        {{ forms.textField({
-            first: true,
-            label: "Route Prefix"|t('stamp-passport'),
-            instructions: "URL prefix for the frontend page (e.g. \"passport\" → /en/passport)."|t('stamp-passport'),
-            name: 'routePrefix',
-            value: settings.routePrefix,
-            required: true,
-        }) }}
-
-        <hr>
-
-        <h2>{{ "Geofence"|t('stamp-passport') }}</h2>
-
-        {{ forms.lightswitchField({
-            label: "Enable Geofence"|t('stamp-passport'),
-            instructions: "When enabled, visitors must be within the configured radius of a location to check in."|t('stamp-passport'),
-            name: 'enableGeofence',
-            on: settings.enableGeofence,
-        }) }}
-
-        {{ forms.textField({
-            label: "Geofence Radius (metres)"|t('stamp-passport'),
-            name: 'geofenceRadius',
-            value: settings.geofenceRadius,
-            type: 'number',
-            min: 50,
-            max: 10000,
-            size: 10,
-        }) }}
-
-        <hr>
-
-        <h2>{{ "Prizes"|t('stamp-passport') }}</h2>
-
-        {{ forms.textField({
-            label: "Draw Threshold"|t('stamp-passport'),
-            instructions: "Number of stamps required before the draw entry form appears."|t('stamp-passport'),
-            name: 'drawThreshold',
-            value: settings.drawThreshold,
-            type: 'number',
-            min: 1,
-            size: 5,
-        }) }}
-
-        {{ forms.textField({
-            label: "Max Stickers"|t('stamp-passport'),
-            instructions: "Maximum number of sticker prizes available (0 = unlimited)."|t('stamp-passport'),
-            name: 'maxStickers',
-            value: settings.maxStickers,
-            type: 'number',
-            min: 0,
-            size: 5,
-        }) }}
-
-        <hr>
-
-        <h2>{{ "Freeform Integration"|t('stamp-passport') }}</h2>
-
-        {{ forms.textField({
-            label: "Draw Form Handle"|t('stamp-passport'),
-            instructions: "Freeform form handle for the end-of-season draw entry."|t('stamp-passport'),
-            name: 'freeformDrawFormHandle',
-            value: settings.freeformDrawFormHandle,
-            placeholder: 'passportDraw',
-        }) }}
-
-        {{ forms.textField({
-            label: "Sticker Form Handle"|t('stamp-passport'),
-            instructions: "Freeform form handle for the Memory Makers sticker request."|t('stamp-passport'),
-            name: 'freeformStickerFormHandle',
-            value: settings.freeformStickerFormHandle,
-            placeholder: 'passportSticker',
-        }) }}
-
-        <hr>
-
-        <h2>{{ "Appearance"|t('stamp-passport') }}</h2>
-
-        {% set logoElements = settings.logoAssetId ? craft.assets.id(settings.logoAssetId).all() : [] %}
-        {{ forms.elementSelectField({
-            label: "Header Logo"|t('stamp-passport'),
-            instructions: "Circular image displayed at the top of the page header. Recommended: square PNG with transparent background."|t('stamp-passport'),
-            id: 'logoAssetId',
-            name: 'logoAssetId',
-            elementType: 'craft\\elements\\Asset',
-            criteria: { kind: 'image' },
-            limit: 1,
-            elements: logoElements,
-            modalStorageKey: 'stamp-passport.logoAsset',
-        }) }}
-
-        {% set woodElements = settings.woodPanelAssetId ? craft.assets.id(settings.woodPanelAssetId).all() : [] %}
-        {{ forms.elementSelectField({
-            label: "Header Wood Panel"|t('stamp-passport'),
-            instructions: "Background image for the page header. If not set, a CSS wood-grain texture is used as fallback."|t('stamp-passport'),
-            id: 'woodPanelAssetId',
-            name: 'woodPanelAssetId',
-            elementType: 'craft\\elements\\Asset',
-            criteria: { kind: 'image' },
-            limit: 1,
-            elements: woodElements,
-            modalStorageKey: 'stamp-passport.woodPanelAsset',
-        }) }}
-
-        <hr>
-
-        <h2>{{ "Analytics"|t('stamp-passport') }}</h2>
-
-        {{ forms.textField({
-            label: "GA4 Measurement ID"|t('stamp-passport'),
-            instructions: "Google Analytics 4 measurement ID (e.g. G-XXXXXXXXXX). Leave blank to disable."|t('stamp-passport'),
-            name: 'ga4MeasurementId',
-            value: settings.ga4MeasurementId,
-            placeholder: 'G-XXXXXXXXXX',
-        }) }}
+        {% include 'stamp-passport/_settings-fields' %}
 
         <div class="buttons">
             <button type="submit" class="btn submit">{{ "Save"|t('app') }}</button>

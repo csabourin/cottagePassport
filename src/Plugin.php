@@ -53,6 +53,7 @@ class Plugin extends BasePlugin
     {
         $item = parent::getCpNavItem();
         $item['label'] = $this->getSettings()->pluginName;
+        $item['iconMask'] = __DIR__ . '/icon.svg';
         $item['subnav'] = [
             'items' => ['label' => Craft::t('stamp-passport', 'Items'), 'url' => 'stamp-passport/items'],
             'qr-generator' => ['label' => Craft::t('stamp-passport', 'QR Codes'), 'url' => 'stamp-passport/qr-generator'],
@@ -69,7 +70,7 @@ class Plugin extends BasePlugin
     protected function settingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate(
-            'stamp-passport/settings',
+            'stamp-passport/_settings-fields',
             ['settings' => $this->getSettings()]
         );
     }
