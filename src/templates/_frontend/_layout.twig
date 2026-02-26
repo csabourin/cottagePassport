@@ -8,7 +8,7 @@
 {% set allSites = craft.app.sites.allSites %}
 {% set sitesJson = [] %}
 {% for site in allSites %}
-    {% set siteBaseUrl = site.baseUrl|default('')|trim('/') ~ '/' %}
+    {% set siteBaseUrl = (site.getBaseUrl() ?? '')|trim('/') ~ '/' %}
     {% set sitesJson = sitesJson|merge([{
         id: site.id,
         handle: site.handle,
@@ -87,6 +87,7 @@
     {% endblock %}
 
     {# Passport configuration injected for JS #}
+    {% set t = craft.stampPassport %}
     <script>
         window.__PASSPORT_CONFIG__ = {
             locationsUrl: '{{ craft.stampPassport.locationsActionUrl()|e("js") }}',
@@ -99,6 +100,15 @@
             contestVersion: '{{ craft.stampPassport.settings.contestVersion|e("js") }}',
             lang: '{{ currentSite.language[:2] }}',
             sites: {{ sitesJson|json_encode|raw }},
+            text: {
+                alreadyCheckedIn: '{{ t.text("alreadyCheckedIn")|e("js") }}',
+                checkingLocation: '{{ t.text("checkingLocation")|e("js") }}',
+                locationError:    '{{ t.text("locationError")|e("js") }}',
+                checkinFailed:    '{{ t.text("checkinFailed")|e("js") }}',
+                checkedIn:        '{{ t.text("checkedIn")|e("js") }}',
+                qrNotRecognized:  '{{ t.text("qrNotRecognized")|e("js") }}',
+                loadError:        '{{ t.text("loadError")|e("js") }}',
+            },
         };
     </script>
 

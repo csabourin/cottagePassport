@@ -97,7 +97,9 @@ class Plugin extends BasePlugin
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $routePrefix = $this->getSettings()->routePrefix ?? 'passport';
+                $routePrefix = trim($routePrefix, '/');
                 $event->rules[$routePrefix] = ['template' => '_stamp-passport/index'];
+                $event->rules[$routePrefix . '/'] = ['template' => '_stamp-passport/index'];
                 $event->rules['api/contest-progress'] = 'stamp-passport/contest-progress/index';
             }
         );

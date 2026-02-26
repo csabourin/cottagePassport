@@ -11,6 +11,7 @@
     'use strict';
 
     var CFG = window.__PASSPORT_CONFIG__ || {};
+    var TXT = CFG.text || {};
 
     /* ── Selectors ── */
     var el  = function (id) { return document.getElementById(id); };
@@ -601,7 +602,7 @@
 
         var existing = await getStamp(item.shortCode);
         if (existing) {
-            showStatus('You already checked in here!');
+            showStatus(TXT.alreadyCheckedIn || 'You already checked in here!');
             ga4Event('passport_stamp_duplicate', { item_code: item.shortCode });
             await renderGrid();
             await checkThresholds();
@@ -610,7 +611,7 @@
 
         /* Geofence check (if enabled) */
         if (CFG.enableGeofence) {
-            showStatus('Checking your location\u2026');
+            showStatus(TXT.checkingLocation || 'Checking your location\u2026');
             var pos;
             try {
                 pos = await new Promise(function (resolve, reject) {
@@ -620,13 +621,13 @@
                     });
                 });
             } catch (err) {
-                showStatus('Could not determine your location. Please allow location access and try again.');
+                showStatus(TXT.locationError || 'Could not determine your location. Please allow location access and try again.');
                 return;
             }
 
             var result = await apiCollect(item.shortCode, pos.coords.latitude, pos.coords.longitude);
             if (!result.success) {
-                showStatus(result.error || 'Check-in failed. Are you at the right location?');
+                showStatus(result.error || TXT.checkinFailed || 'Check-in failed. Are you at the right location?');
                 ga4Event('passport_geofence_fail', { item_code: item.shortCode, distance: result.distance });
                 return;
             }
@@ -638,7 +639,7 @@
             collectedAt: new Date().toISOString(),
         });
 
-        showStatus('Checked in! ' + (item.title || ''));
+        showStatus((TXT.checkedIn || 'Checked in!') + ' ' + (item.title || ''));
         ga4Event('passport_stamp_collected', { item_code: item.shortCode, item_title: item.title });
 
         await renderGrid(item.shortCode);
@@ -772,7 +773,7 @@
         try {
             itemsData = await fetchLocations();
         } catch (err) {
-            showStatus('Could not load passport data. Please try again later.');
+            showStatus(TXT.loadError || 'Could not load passport data. Please try again later.');
             return;
         }
 
@@ -813,7 +814,7 @@
                     collectStamp(currentItem);
                 });
             } else {
-                showStatus('This QR code is not recognized.');
+                showStatus(TXT.qrNotRecognized || 'This QR code is not recognized.');
             }
         }
 

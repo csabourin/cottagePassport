@@ -42,6 +42,16 @@ class StampPassportVariable
     }
 
     /**
+     * Get a customizable display text value for the current site.
+     *
+     * Usage: {{ craft.stampPassport.text('challengeTitle') }}
+     */
+    public function text(string $key, ?string $siteHandle = null): string
+    {
+        return Plugin::$plugin->getSettings()->getText($key, $siteHandle);
+    }
+
+    /**
      * Get the asset URL for an item's image.
      *
      * Usage: {{ craft.stampPassport.imageUrl(item.imageId) }}
