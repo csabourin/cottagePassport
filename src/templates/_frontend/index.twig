@@ -27,6 +27,28 @@
 
     {# ── Header — wood panel with circular logo ── #}
     <header class="passport-header{{ woodPanelUrl ? ' has-wood-bg' : '' }}">
+
+        {# ── Language switcher (top-right) ── #}
+        {% set allSites = craft.app.sites.allSites %}
+        {% if allSites|length > 1 %}
+        <nav class="passport-lang-nav" aria-label="{{ 'Language'|t('stamp-passport') }}">
+            {% for site in allSites %}
+                {% if site.id != currentSite.id %}
+                    {% set siteBaseUrl = site.baseUrl|default('')|trim('/') ~ '/' %}
+                    <a href="{{ siteBaseUrl ~ settings.routePrefix }}"
+                       class="passport-lang-link"
+                       data-passport-lang="{{ site.language[:2] }}"
+                       data-passport-href="{{ siteBaseUrl ~ settings.routePrefix }}"
+                       lang="{{ site.language[:2] }}"
+                       hreflang="{{ site.language[:2] }}"
+                       aria-label="{{ site.name }}">
+                        {{ site.language[:2]|upper }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </nav>
+        {% endif %}
+
         <div class="passport-header-logo">
             {% if logoUrl %}
                 <img src="{{ logoUrl }}" alt="{{ settings.pluginName }}" class="passport-logo">

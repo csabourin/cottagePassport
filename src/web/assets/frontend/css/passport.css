@@ -89,6 +89,7 @@ body {
    Overridden by .has-wood-bg + --passport-wood-img when an image is set.
    ══════════════════════════════════════════════════════════ */
 .passport-header {
+    position: relative;
     background-color: #5c4033;
     background-image:
         repeating-linear-gradient(2deg,
@@ -114,6 +115,41 @@ body {
 /* Custom wood-panel image uploaded via plugin settings */
 .passport-header.has-wood-bg {
     background-image: var(--passport-wood-img);
+}
+
+/* ── Language switcher (top-right of header)
+   Near-white on dark wood: ~9.7:1 ✓ AA
+   44×44 px touch target ✓ WCAG 2.5.5                       ── */
+.passport-lang-nav {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+}
+
+.passport-lang-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 6px 12px;
+    font-family: "Cabin", sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #fff;
+    text-decoration: none;
+    border: 1.5px solid rgba(255, 248, 235, 0.5);
+    border-radius: var(--passport-radius);
+    background: rgba(0, 0, 0, 0.18);
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.passport-lang-link:hover,
+.passport-lang-link:focus-visible {
+    background: rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 248, 235, 0.85);
 }
 
 /* ── Circular logo ── */

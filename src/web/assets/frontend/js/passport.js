@@ -166,6 +166,12 @@
         var params = new URL(window.location.href).searchParams;
         var urlCid = params.get('cid');
 
+        // If user arrived with ?lang=, record explicit language choice
+        var urlLang = params.get('lang');
+        if (urlLang) {
+            try { localStorage.setItem('passport:langChoice', urlLang); } catch (ex) {}
+        }
+
         if (urlCid && isValidUUID(urlCid)) {
             persistCid(urlCid);
             cleanUrlParams(['cid', 'lang']);
@@ -509,9 +515,12 @@
         for (var i = 0; i < links.length; i++) {
             (function (link) {
                 link.addEventListener('click', function (e) {
+                    var targetLang = link.getAttribute('data-passport-lang');
                     var baseHref = link.getAttribute('data-passport-href') || link.getAttribute('href');
-                    if (baseHref && contestCid) {
+                    if (baseHref) {
                         e.preventDefault();
+                        // Record explicit language choice so auto-redirect doesn't fight it
+                        try { localStorage.setItem('passport:langChoice', targetLang); } catch (ex) {}
                         window.location.href = languageSwitchUrl(baseHref);
                     }
                 });
@@ -520,7 +529,10 @@
     }
 
     // Expose for external language switch integrations
-    window.__PASSPORT_LANG_SWITCH__ = function (targetBaseUrl) {
+    window.__PASSPORT_LANG_SWITCH__ = function (targetBaseUrl, targetLang) {
+        if (targetLang) {
+            try { localStorage.setItem('passport:langChoice', targetLang); } catch (ex) {}
+        }
         return languageSwitchUrl(targetBaseUrl);
     };
 
