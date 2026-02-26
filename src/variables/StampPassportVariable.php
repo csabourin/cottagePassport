@@ -79,4 +79,12 @@ class StampPassportVariable
     {
         return \craft\helpers\UrlHelper::actionUrl('stamp-passport/api/resolve');
     }
+
+    /**
+     * Return the site URL for the contest progress sync endpoint.
+     */
+    public function contestProgressUrl(): string
+    {
+        return \craft\helpers\UrlHelper::siteUrl('api/contest-progress');
+    }
 }

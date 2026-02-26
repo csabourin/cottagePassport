@@ -2,12 +2,68 @@
     Default frontend layout for the Stamp Passport plugin.
     Override by placing _stamp-passport/_layout.twig in your site templates.
 #}
+
+{# Build sites list for language switch and auto-redirect #}
+{% set routePrefix = craft.stampPassport.settings.routePrefix %}
+{% set allSites = craft.app.sites.allSites %}
+{% set sitesJson = [] %}
+{% for site in allSites %}
+    {% set siteBaseUrl = site.baseUrl|default('')|trim('/') ~ '/' %}
+    {% set sitesJson = sitesJson|merge([{
+        id: site.id,
+        handle: site.handle,
+        lang: site.language[:2],
+        name: site.name,
+        url: siteBaseUrl ~ routePrefix,
+        current: (site.id == currentSite.id),
+    }]) %}
+{% endfor %}
+
 <!DOCTYPE html>
 <html lang="{{ currentSite.language[:2] }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ craft.stampPassport.settings.pluginName }}{% endblock %}</title>
+
+    {# ── Early language redirect — runs before body to prevent flicker ── #}
+    <script>
+    (function(){
+        try {
+            var currentLang = '{{ currentSite.language[:2] }}';
+            var sites = {{ sitesJson|json_encode|raw }};
+            var params = new URL(window.location.href).searchParams;
+
+            // If user arrived via explicit language switch or cross-domain link, record their choice
+            if (params.has('lang') || params.has('cid')) {
+                localStorage.setItem('passport:langChoice', currentLang);
+                return;
+            }
+
+            // If user previously made an explicit language choice, respect it
+            if (localStorage.getItem('passport:langChoice')) return;
+
+            // Detect browser preferred language
+            var browserLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+            var preferred = '';
+            for (var i = 0; i < browserLangs.length; i++) {
+                var l = (browserLangs[i] || '').substring(0, 2).toLowerCase();
+                if (l) { preferred = l; break; }
+            }
+
+            if (!preferred || preferred === currentLang) return;
+
+            // Find a matching site
+            for (var j = 0; j < sites.length; j++) {
+                if (sites[j].lang === preferred && !sites[j].current) {
+                    localStorage.setItem('passport:langChoice', preferred);
+                    window.location.replace(sites[j].url);
+                    return;
+                }
+            }
+        } catch(e) {}
+    })();
+    </script>
 
     {% block head %}{% endblock %}
 
@@ -39,7 +95,10 @@
             drawThreshold: {{ craft.stampPassport.settings.drawThreshold }},
             maxStickers:   {{ craft.stampPassport.settings.maxStickers }},
             enableGeofence: {{ craft.stampPassport.settings.enableGeofence ? 'true' : 'false' }},
+            contestProgressUrl: '{{ craft.stampPassport.contestProgressUrl()|e("js") }}',
+            contestVersion: '{{ craft.stampPassport.settings.contestVersion|e("js") }}',
             lang: '{{ currentSite.language[:2] }}',
+            sites: {{ sitesJson|json_encode|raw }},
         };
     </script>
 
