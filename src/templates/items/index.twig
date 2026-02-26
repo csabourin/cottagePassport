@@ -1,5 +1,7 @@
 {% extends "_layouts/cp" %}
 
+{% import "_includes/forms" as forms %}
+
 {% set title = "Items"|t('stamp-passport') %}
 {% set selectedSubnavItem = 'items' %}
 
@@ -12,6 +14,207 @@
 {% endblock %}
 
 {% block content %}
+    {# ── Per-site display text customization ── #}
+    <form method="post" accept-charset="UTF-8">
+        {{ csrfInput() }}
+        {{ actionInput('stamp-passport/cp/save-display-text') }}
+        {{ redirectInput('stamp-passport/items') }}
+
+        <h2>{{ "Display Text"|t('stamp-passport') }}</h2>
+        <p class="light">{{ "Customize all display text per site. Leave fields blank to use built-in defaults for that language."|t('stamp-passport') }}</p>
+
+        {# Site tabs #}
+        {% if allSites|length > 1 %}
+        <div class="btngroup" id="siteTextTabs" style="margin-bottom: 1em;">
+            {% for site in allSites %}
+                <button type="button"
+                        class="btn{{ loop.first ? ' active' : '' }}"
+                        data-site-text-tab="{{ site.handle }}">
+                    {{ site.name }} ({{ site.language[:2]|upper }})
+                </button>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% for site in allSites %}
+            {% set lang = site.language[:2] %}
+            {% set defaults = textDefaults[lang] ?? textDefaults['en'] %}
+            <div class="stamp-passport-site-text{{ not loop.first ? ' hidden' : '' }}"
+                 data-site-text-panel="{{ site.handle }}">
+
+                {% if allSites|length > 1 %}
+                    <h3>{{ site.name }} ({{ lang|upper }})</h3>
+                {% endif %}
+
+                <h4 style="margin-top:1.5em">{{ "Header"|t('stamp-passport') }}</h4>
+
+                {{ forms.textareaField({
+                    label: textLabels['orgName'],
+                    instructions: "Organization name displayed in the page header. Use new lines for multiple lines."|t('stamp-passport'),
+                    name: 'uiText[' ~ site.handle ~ '][orgName]',
+                    value: settings.uiText[site.handle]['orgName'] ?? '',
+                    placeholder: defaults['orgName']|replace({"\n": "\n"}),
+                    rows: 2,
+                }) }}
+
+                {{ forms.textField({
+                    label: textLabels['challengeTitle'],
+                    instructions: "Bold title shown after the header logo."|t('stamp-passport'),
+                    name: 'uiText[' ~ site.handle ~ '][challengeTitle]',
+                    value: settings.uiText[site.handle]['challengeTitle'] ?? '',
+                    placeholder: defaults['challengeTitle'],
+                }) }}
+
+                {{ forms.textField({
+                    label: textLabels['scanInstructions'],
+                    instructions: "Instruction text shown below the header."|t('stamp-passport'),
+                    name: 'uiText[' ~ site.handle ~ '][scanInstructions]',
+                    value: settings.uiText[site.handle]['scanInstructions'] ?? '',
+                    placeholder: defaults['scanInstructions'],
+                }) }}
+
+                <h4 style="margin-top:1.5em">{{ "Draw Modal"|t('stamp-passport') }}</h4>
+
+                {{ forms.textField({
+                    label: textLabels['drawModalTitle'],
+                    name: 'uiText[' ~ site.handle ~ '][drawModalTitle]',
+                    value: settings.uiText[site.handle]['drawModalTitle'] ?? '',
+                    placeholder: defaults['drawModalTitle'],
+                }) }}
+
+                {{ forms.textareaField({
+                    label: textLabels['drawModalBody'],
+                    name: 'uiText[' ~ site.handle ~ '][drawModalBody]',
+                    value: settings.uiText[site.handle]['drawModalBody'] ?? '',
+                    placeholder: defaults['drawModalBody'],
+                    rows: 2,
+                }) }}
+
+                <h4 style="margin-top:1.5em">{{ "Sticker Modal"|t('stamp-passport') }}</h4>
+
+                {{ forms.textField({
+                    label: textLabels['stickerModalTitle'],
+                    name: 'uiText[' ~ site.handle ~ '][stickerModalTitle]',
+                    value: settings.uiText[site.handle]['stickerModalTitle'] ?? '',
+                    placeholder: defaults['stickerModalTitle'],
+                }) }}
+
+                {{ forms.textareaField({
+                    label: textLabels['stickerModalBody'],
+                    name: 'uiText[' ~ site.handle ~ '][stickerModalBody]',
+                    value: settings.uiText[site.handle]['stickerModalBody'] ?? '',
+                    placeholder: defaults['stickerModalBody'],
+                    rows: 2,
+                }) }}
+
+                <h4 style="margin-top:1.5em">{{ "Disclaimer Modal"|t('stamp-passport') }}</h4>
+
+                {{ forms.textField({
+                    label: textLabels['disclaimerTitle'],
+                    name: 'uiText[' ~ site.handle ~ '][disclaimerTitle]',
+                    value: settings.uiText[site.handle]['disclaimerTitle'] ?? '',
+                    placeholder: defaults['disclaimerTitle'],
+                }) }}
+
+                {{ forms.textareaField({
+                    label: textLabels['disclaimerBody'],
+                    name: 'uiText[' ~ site.handle ~ '][disclaimerBody]',
+                    value: settings.uiText[site.handle]['disclaimerBody'] ?? '',
+                    placeholder: defaults['disclaimerBody'],
+                    rows: 2,
+                }) }}
+
+                {{ forms.textField({
+                    label: textLabels['disclaimerButton'],
+                    name: 'uiText[' ~ site.handle ~ '][disclaimerButton]',
+                    value: settings.uiText[site.handle]['disclaimerButton'] ?? '',
+                    placeholder: defaults['disclaimerButton'],
+                }) }}
+
+                <h4 style="margin-top:1.5em">{{ "Status Messages"|t('stamp-passport') }}</h4>
+
+                {{ forms.textField({
+                    label: textLabels['alreadyCheckedIn'],
+                    name: 'uiText[' ~ site.handle ~ '][alreadyCheckedIn]',
+                    value: settings.uiText[site.handle]['alreadyCheckedIn'] ?? '',
+                    placeholder: defaults['alreadyCheckedIn'],
+                }) }}
+
+                {{ forms.textField({
+                    label: textLabels['checkingLocation'],
+                    name: 'uiText[' ~ site.handle ~ '][checkingLocation]',
+                    value: settings.uiText[site.handle]['checkingLocation'] ?? '',
+                    placeholder: defaults['checkingLocation'],
+                }) }}
+
+                {{ forms.textField({
+                    label: textLabels['locationError'],
+                    name: 'uiText[' ~ site.handle ~ '][locationError]',
+                    value: settings.uiText[site.handle]['locationError'] ?? '',
+                    placeholder: defaults['locationError'],
+                }) }}
+
+                {{ forms.textField({
+                    label: textLabels['checkinFailed'],
+                    name: 'uiText[' ~ site.handle ~ '][checkinFailed]',
+                    value: settings.uiText[site.handle]['checkinFailed'] ?? '',
+                    placeholder: defaults['checkinFailed'],
+                }) }}
+
+                {{ forms.textField({
+                    label: textLabels['checkedIn'],
+                    name: 'uiText[' ~ site.handle ~ '][checkedIn]',
+                    value: settings.uiText[site.handle]['checkedIn'] ?? '',
+                    placeholder: defaults['checkedIn'],
+                }) }}
+
+                {{ forms.textField({
+                    label: textLabels['qrNotRecognized'],
+                    name: 'uiText[' ~ site.handle ~ '][qrNotRecognized]',
+                    value: settings.uiText[site.handle]['qrNotRecognized'] ?? '',
+                    placeholder: defaults['qrNotRecognized'],
+                }) }}
+
+                {{ forms.textField({
+                    label: textLabels['loadError'],
+                    name: 'uiText[' ~ site.handle ~ '][loadError]',
+                    value: settings.uiText[site.handle]['loadError'] ?? '',
+                    placeholder: defaults['loadError'],
+                }) }}
+            </div>
+        {% endfor %}
+
+        <div class="buttons">
+            <button type="submit" class="btn submit">{{ "Save Display Text"|t('stamp-passport') }}</button>
+        </div>
+    </form>
+
+    {# Tab switching for multi-site text #}
+    {% if allSites|length > 1 %}
+    <script>
+    (function() {
+        var tabs = document.querySelectorAll('[data-site-text-tab]');
+        var panels = document.querySelectorAll('[data-site-text-panel]');
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                var handle = tab.getAttribute('data-site-text-tab');
+                tabs.forEach(function(t) { t.classList.remove('active'); });
+                tab.classList.add('active');
+                panels.forEach(function(p) {
+                    if (p.getAttribute('data-site-text-panel') === handle) {
+                        p.classList.remove('hidden');
+                    } else {
+                        p.classList.add('hidden');
+                    }
+                });
+            });
+        });
+    })();
+    </script>
+    {% endif %}
+
+    <hr>
+
     {% if items|length %}
         <table id="passport-items" class="data fullwidth">
             <thead>

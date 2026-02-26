@@ -5,6 +5,7 @@ namespace csabourin\stamppassport\controllers;
 use Craft;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use csabourin\stamppassport\models\Settings;
 use csabourin\stamppassport\Plugin;
 use csabourin\stamppassport\records\ItemRecord;
 use yii\web\NotFoundHttpException;
@@ -20,8 +21,12 @@ class CpController extends Controller
         $items = Plugin::$plugin->items->getAllItems();
 
         return $this->renderTemplate('stamp-passport/items/index', [
-            'items' => $items,
-            'settings' => Plugin::$plugin->getSettings(),
+            'items'        => $items,
+            'settings'     => Plugin::$plugin->getSettings(),
+            'allSites'     => Craft::$app->getSites()->getAllSites(),
+            'textDefaults' => Settings::TEXT_DEFAULTS,
+            'textLabels'   => Settings::TEXT_LABELS,
+            'textKeys'     => Settings::TEXT_KEYS,
         ]);
     }
 
@@ -165,6 +170,42 @@ class CpController extends Controller
             'sites' => $sites,
             'settings' => Plugin::$plugin->getSettings(),
         ]);
+    }
+
+    /**
+     * Save display text settings from the Items page (POST).
+     */
+    public function actionSaveDisplayText(): ?Response
+    {
+        $this->requirePostRequest();
+
+        $request  = Craft::$app->getRequest();
+        $settings = Plugin::$plugin->getSettings();
+
+        // Start from current saved values so other settings are not clobbered
+        $cleaned = $settings->uiText;
+        $uiText  = $request->getBodyParam('uiText', []);
+        if (is_array($uiText)) {
+            foreach ($uiText as $handle => $texts) {
+                if (!is_array($texts)) {
+                    continue;
+                }
+                foreach ($texts as $key => $value) {
+                    $value = trim((string)$value);
+                    if ($value !== '') {
+                        $cleaned[$handle][$key] = $value;
+                    } else {
+                        unset($cleaned[$handle][$key]);
+                    }
+                }
+            }
+        }
+        $settings->uiText = $cleaned;
+
+        Craft::$app->getPlugins()->savePluginSettings(Plugin::$plugin, $settings->toArray());
+        Craft::$app->getSession()->setNotice(Craft::t('stamp-passport', 'Display text saved.'));
+
+        return $this->redirectToPostedUrl();
     }
 
     /**
