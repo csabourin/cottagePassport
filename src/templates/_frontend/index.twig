@@ -6,6 +6,7 @@
 
 {% set settings = craft.stampPassport.settings %}
 {% set items    = craft.stampPassport.items %}
+{% set t        = craft.stampPassport %}
 
 {% set logoUrl     = settings.logoAssetId     ? craft.stampPassport.imageUrl(settings.logoAssetId)     : null %}
 {% set woodPanelUrl = settings.woodPanelAssetId ? craft.stampPassport.imageUrl(settings.woodPanelAssetId) : null %}
@@ -34,7 +35,7 @@
         <nav class="passport-lang-nav" aria-label="{{ 'Language'|t('stamp-passport') }}">
             {% for site in allSites %}
                 {% if site.id != currentSite.id %}
-                    {% set siteBaseUrl = site.baseUrl|default('')|trim('/') ~ '/' %}
+                    {% set siteBaseUrl = (site.getBaseUrl() ?? '')|trim('/') ~ '/' %}
                     <a href="{{ siteBaseUrl ~ settings.routePrefix }}"
                        class="passport-lang-link"
                        data-passport-lang="{{ site.language[:2] }}"
@@ -58,19 +59,18 @@
         </div>
 
         <p class="passport-org">
-            National Capital Commission<br>
-            Commission de la capitale nationale
+            {{ t.text('orgName')|nl2br }}
         </p>
 
         <h1 class="passport-title">
             <span class="passport-title-light">{{ settings.pluginName }}</span>
-            <span class="passport-title-bold">{{ "Challenge"|t('stamp-passport') }}</span>
+            <span class="passport-title-bold">{{ t.text('challengeTitle') }}</span>
         </h1>
     </header>
 
     {# ── Instruction strip ── #}
     <div class="passport-scan-strip">
-        {{ "Scan all QR codes at official locations to complete your summer bucket list."|t('stamp-passport') }}
+        {{ t.text('scanInstructions') }}
     </div>
 
     {# ── Status area for scan feedback (JS-populated, announced to AT) ── #}
@@ -125,9 +125,9 @@
         <div id="drawModal" class="passport-modal hidden" role="dialog" aria-labelledby="drawModalTitle">
             <div class="passport-modal-backdrop"></div>
             <div class="passport-modal-content">
-                <button class="passport-modal-close" aria-label="Close">&times;</button>
-                <h2 id="drawModalTitle">{{ 'Enter the Draw!'|t('stamp-passport') }}</h2>
-                <p>{{ "You've unlocked the draw entry! Fill in the form below for a chance to win."|t('stamp-passport') }}</p>
+                <button class="passport-modal-close" aria-label="{{ 'Close'|t('stamp-passport') }}">&times;</button>
+                <h2 id="drawModalTitle">{{ t.text('drawModalTitle') }}</h2>
+                <p>{{ t.text('drawModalBody') }}</p>
                 <div id="drawFormContainer">
                     {{ craft.freeform.form(drawHandle, { ajax: true }) }}
                 </div>
@@ -141,9 +141,9 @@
         <div id="stickerModal" class="passport-modal hidden" role="dialog" aria-labelledby="stickerModalTitle">
             <div class="passport-modal-backdrop"></div>
             <div class="passport-modal-content">
-                <button class="passport-modal-close" aria-label="Close">&times;</button>
-                <h2 id="stickerModalTitle">{{ 'Memory Makers!'|t('stamp-passport') }}</h2>
-                <p>{{ "Congratulations! You've completed the full bucket list. Claim your limited-edition sticker."|t('stamp-passport') }}</p>
+                <button class="passport-modal-close" aria-label="{{ 'Close'|t('stamp-passport') }}">&times;</button>
+                <h2 id="stickerModalTitle">{{ t.text('stickerModalTitle') }}</h2>
+                <p>{{ t.text('stickerModalBody') }}</p>
                 <div id="stickerFormContainer">
                     {{ craft.freeform.form(stickerHandle, { ajax: true }) }}
                 </div>
@@ -155,10 +155,10 @@
     <div id="disclaimerModal" class="passport-modal hidden" role="dialog" aria-labelledby="disclaimerTitle">
         <div class="passport-modal-backdrop"></div>
         <div class="passport-modal-content">
-            <h2 id="disclaimerTitle">{{ "Before You Begin"|t('stamp-passport') }}</h2>
-            <p>{{ "Your progress is saved locally and synced online. Use the language toggle to switch between English and French without losing your stamps."|t('stamp-passport') }}</p>
+            <h2 id="disclaimerTitle">{{ t.text('disclaimerTitle') }}</h2>
+            <p>{{ t.text('disclaimerBody') }}</p>
             <button id="disclaimerAccept" class="passport-btn passport-btn-primary">
-                {{ "Got it, let's go!"|t('stamp-passport') }}
+                {{ t.text('disclaimerButton') }}
             </button>
         </div>
     </div>

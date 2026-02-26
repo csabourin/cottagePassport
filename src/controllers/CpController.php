@@ -203,6 +203,24 @@ class CpController extends Controller
         $woodIds = $request->getBodyParam('woodPanelAssetId');
         $settings->woodPanelAssetId = is_array($woodIds) ? ((int)($woodIds[0] ?? 0) ?: null) : ((int)($woodIds ?: 0) ?: null);
 
+        // Per-site display text overrides — strip empty values
+        $uiText = $request->getBodyParam('uiText', []);
+        $cleaned = [];
+        if (is_array($uiText)) {
+            foreach ($uiText as $handle => $texts) {
+                if (!is_array($texts)) {
+                    continue;
+                }
+                foreach ($texts as $key => $value) {
+                    $value = trim((string)$value);
+                    if ($value !== '') {
+                        $cleaned[$handle][$key] = $value;
+                    }
+                }
+            }
+        }
+        $settings->uiText = $cleaned;
+
         if (!$settings->validate()) {
             Craft::$app->getSession()->setError(Craft::t('stamp-passport', 'Settings not saved.'));
             return null;
