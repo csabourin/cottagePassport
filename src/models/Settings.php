@@ -39,6 +39,9 @@ class Settings extends Model
     /** @var int|null Asset ID for the wood panel header background image */
     public ?int $woodPanelAssetId = null;
 
+    /** @var string Contest version identifier, changes when contest rules change */
+    public string $contestVersion = '2026.02';
+
     public function defineRules(): array
     {
         return [
@@ -50,6 +53,7 @@ class Settings extends Model
             [['ga4MeasurementId'], 'match', 'pattern' => '/^G-[A-Z0-9]+$/', 'skipOnEmpty' => true],
             [['freeformDrawFormHandle', 'freeformStickerFormHandle'], 'string', 'max' => 100],
             [['logoAssetId', 'woodPanelAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
+            [['contestVersion'], 'string', 'max' => 20],
         ];
     }
 }

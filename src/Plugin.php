@@ -10,6 +10,7 @@ use craft\web\UrlManager;
 use craft\web\View;
 use craft\web\twig\variables\CraftVariable;
 use csabourin\stamppassport\models\Settings;
+use csabourin\stamppassport\services\ContestProgress;
 use csabourin\stamppassport\services\Items;
 use csabourin\stamppassport\variables\StampPassportVariable;
 use yii\base\Event;
@@ -18,13 +19,14 @@ use yii\base\Event;
  * Stamp Passport plugin for Craft CMS 4
  *
  * @property Items $items
+ * @property ContestProgress $contestProgress
  * @property Settings $settings
  */
 class Plugin extends BasePlugin
 {
     public static Plugin $plugin;
 
-    public string $schemaVersion = '1.0.0';
+    public string $schemaVersion = '1.1.0';
     public bool $hasCpSettings = true;
     public bool $hasCpSection = true;
 
@@ -38,6 +40,7 @@ class Plugin extends BasePlugin
 
         $this->setComponents([
             'items' => Items::class,
+            'contestProgress' => ContestProgress::class,
         ]);
 
         $this->_registerCpRoutes();
@@ -95,6 +98,7 @@ class Plugin extends BasePlugin
             function (RegisterUrlRulesEvent $event) {
                 $routePrefix = $this->getSettings()->routePrefix ?? 'passport';
                 $event->rules[$routePrefix] = ['template' => '_stamp-passport/index'];
+                $event->rules['api/contest-progress'] = 'stamp-passport/contest-progress/index';
             }
         );
     }

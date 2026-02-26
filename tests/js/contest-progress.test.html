@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contest Progress — Client Tests</title>
+    <style>
+        body { font-family: monospace; margin: 2rem; background: #1a1a2e; color: #e0e0e0; }
+        .pass { color: #4caf50; } .fail { color: #f44336; }
+        .suite { margin: 1rem 0; padding: 0.5rem; border-left: 3px solid #333; }
+        h1 { color: #ccc; } h2 { color: #aaa; margin-top: 1.5rem; }
+        #summary { margin-top: 2rem; padding: 1rem; background: #222; border-radius: 4px; }
+    </style>
+</head>
+<body>
+<h1>Contest Progress — Client-Side Tests</h1>
+<div id="results"></div>
+<div id="summary"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    var results = document.getElementById('results');
+    var passed = 0, failed = 0;
+
+    function assert(condition, label) {
+        if (condition) {
+            passed++;
+            results.innerHTML += '<div class="pass">PASS: ' + label + '</div>';
+        } else {
+            failed++;
+            results.innerHTML += '<div class="fail">FAIL: ' + label + '</div>';
+        }
+    }
+
+    function suite(name) {
+        results.innerHTML += '<h2>' + name + '</h2><div class="suite">';
+    }
+
+    function endSuite() {
+        results.innerHTML += '</div>';
+    }
+
+    /* ═══════════════════════════════════════════
+       UUID Validation
+       ═══════════════════════════════════════════ */
+
+    var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+    function isValidUUID(str) {
+        return UUID_RE.test(str);
+    }
+
+    function generateUUID() {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+            return crypto.randomUUID();
+        }
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0;
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    }
+
+    suite('UUID Generation & Validation');
+
+    assert(isValidUUID('550e8400-e29b-41d4-a716-446655440000'), 'valid UUID v4 accepted');
+    assert(isValidUUID('6ba7b810-9dad-41d0-80b4-00c04fd430c8'), 'another valid UUID v4 accepted');
+    assert(!isValidUUID(''), 'empty string rejected');
+    assert(!isValidUUID('not-a-uuid'), 'random string rejected');
+    assert(!isValidUUID('550e8400-e29b-31d4-a716-446655440000'), 'UUID v3 rejected (wrong version digit)');
+    assert(!isValidUUID('550e8400-e29b-41d4-c716-446655440000'), 'bad variant rejected');
+    assert(!isValidUUID('<script>alert(1)</script>'), 'XSS attempt rejected');
+
+    var generated = generateUUID();
+    assert(isValidUUID(generated), 'generateUUID() produces valid UUID v4: ' + generated);
+    assert(generateUUID() !== generateUUID(), 'two generated UUIDs are different');
+
+    endSuite();
+
+    /* ═══════════════════════════════════════════
+       CID Detection Priority
+       ═══════════════════════════════════════════ */
+
+    suite('CID Detection Priority');
+
+    // Simulate URL param
+    var testUrl1 = new URL('https://example.com/passport?cid=550e8400-e29b-41d4-a716-446655440000&lang=en');
+    assert(testUrl1.searchParams.get('cid') === '550e8400-e29b-41d4-a716-446655440000', 'cid extracted from URL params');
+    assert(testUrl1.searchParams.get('lang') === 'en', 'lang extracted from URL params');
+
+    // localStorage fallback
+    try {
+        localStorage.setItem('contest:cid', '6ba7b810-9dad-41d0-80b4-00c04fd430c8');
+        var stored = localStorage.getItem('contest:cid');
+        assert(stored === '6ba7b810-9dad-41d0-80b4-00c04fd430c8', 'cid read from localStorage');
+        localStorage.removeItem('contest:cid');
+    } catch (e) {
+        assert(false, 'localStorage test skipped: ' + e.message);
+    }
+
+    endSuite();
+
+    /* ═══════════════════════════════════════════
+       URL Cleanup
+       ═══════════════════════════════════════════ */
+
+    suite('URL Cleanup');
+
+    var urlWithParams = new URL('https://example.com/passport?cid=abc&lang=fr&q=xyz');
+    urlWithParams.searchParams.delete('cid');
+    urlWithParams.searchParams.delete('lang');
+    assert(urlWithParams.searchParams.has('q'), 'q param preserved after cleanup');
+    assert(!urlWithParams.searchParams.has('cid'), 'cid removed');
+    assert(!urlWithParams.searchParams.has('lang'), 'lang removed');
+    assert(urlWithParams.pathname === '/passport', 'pathname preserved');
+
+    endSuite();
+
+    /* ═══════════════════════════════════════════
+       Merge Logic
+       ═══════════════════════════════════════════ */
+
+    function mergePayloads(local, server) {
+        var localSteps = (local.progress && local.progress.stepsCompleted) || [];
+        var serverSteps = (server.progress && server.progress.stepsCompleted) || [];
+        var localTs = (local.progress && local.progress.custom && local.progress.custom.stampTimestamps) || {};
+        var serverTs = (server.progress && server.progress.custom && server.progress.custom.stampTimestamps) || {};
+
+        var allSteps = {};
+        var mergedTs = {};
+        var i;
+
+        for (i = 0; i < localSteps.length; i++) {
+            allSteps[localSteps[i]] = true;
+            mergedTs[localSteps[i]] = localTs[localSteps[i]];
+        }
+        for (i = 0; i < serverSteps.length; i++) {
+            var sc = serverSteps[i];
+            allSteps[sc] = true;
+            if (!mergedTs[sc]) {
+                mergedTs[sc] = serverTs[sc] || new Date().toISOString();
+            } else if (serverTs[sc] && serverTs[sc] < mergedTs[sc]) {
+                mergedTs[sc] = serverTs[sc];
+            }
+        }
+
+        var mergedSteps = Object.keys(allSteps);
+        var changed = mergedSteps.length !== serverSteps.length ||
+            mergedSteps.some(function (s) { return serverSteps.indexOf(s) === -1; });
+
+        return {
+            changed: changed,
+            payload: {
+                schemaVersion: 1,
+                contestVersion: '2026.02',
+                progress: {
+                    stepsCompleted: mergedSteps,
+                    answers: {},
+                    score: mergedSteps.length,
+                    badges: [],
+                    custom: { stampTimestamps: mergedTs }
+                },
+                updatedAt: new Date().toISOString()
+            }
+        };
+    }
+
+    suite('Conflict Resolution — Merge');
+
+    // Case 1: Union of disjoint steps
+    var local1 = {
+        progress: {
+            stepsCompleted: ['step1', 'step2'],
+            custom: { stampTimestamps: { step1: '2026-02-25T10:00:00Z', step2: '2026-02-25T11:00:00Z' } }
+        }
+    };
+    var server1 = {
+        progress: {
+            stepsCompleted: ['step3'],
+            custom: { stampTimestamps: { step3: '2026-02-25T12:00:00Z' } }
+        }
+    };
+    var merged1 = mergePayloads(local1, server1);
+    assert(merged1.payload.progress.stepsCompleted.length === 3, 'disjoint merge: 3 steps total');
+    assert(merged1.changed === true, 'disjoint merge: changed=true (local had steps server lacks)');
+    assert(merged1.payload.progress.score === 3, 'disjoint merge: score recomputed to 3');
+
+    // Case 2: Identical steps — no change
+    var local2 = {
+        progress: {
+            stepsCompleted: ['step1'],
+            custom: { stampTimestamps: { step1: '2026-02-25T10:00:00Z' } }
+        }
+    };
+    var server2 = {
+        progress: {
+            stepsCompleted: ['step1'],
+            custom: { stampTimestamps: { step1: '2026-02-25T10:00:00Z' } }
+        }
+    };
+    var merged2 = mergePayloads(local2, server2);
+    assert(merged2.payload.progress.stepsCompleted.length === 1, 'identical merge: 1 step');
+    assert(merged2.changed === false, 'identical merge: changed=false');
+
+    // Case 3: Overlapping steps — union
+    var local3 = {
+        progress: {
+            stepsCompleted: ['step1', 'step2'],
+            custom: { stampTimestamps: { step1: '2026-02-25T10:00:00Z', step2: '2026-02-25T11:00:00Z' } }
+        }
+    };
+    var server3 = {
+        progress: {
+            stepsCompleted: ['step2', 'step3'],
+            custom: { stampTimestamps: { step2: '2026-02-25T09:00:00Z', step3: '2026-02-25T12:00:00Z' } }
+        }
+    };
+    var merged3 = mergePayloads(local3, server3);
+    assert(merged3.payload.progress.stepsCompleted.length === 3, 'overlap merge: 3 steps');
+    assert(merged3.changed === true, 'overlap merge: changed=true');
+    assert(merged3.payload.progress.custom.stampTimestamps.step2 === '2026-02-25T09:00:00Z',
+        'overlap merge: earlier timestamp wins for step2');
+
+    // Case 4: Empty local, server has data
+    var local4 = { progress: { stepsCompleted: [], custom: { stampTimestamps: {} } } };
+    var server4 = {
+        progress: {
+            stepsCompleted: ['step1'],
+            custom: { stampTimestamps: { step1: '2026-02-25T10:00:00Z' } }
+        }
+    };
+    var merged4 = mergePayloads(local4, server4);
+    assert(merged4.payload.progress.stepsCompleted.length === 1, 'empty local: server data preserved');
+    assert(merged4.changed === false, 'empty local: changed=false (server already has it)');
+
+    endSuite();
+
+    /* ═══════════════════════════════════════════
+       Language Switch URL Builder
+       ═══════════════════════════════════════════ */
+
+    suite('Language Switch URL');
+
+    function languageSwitchUrl(targetBaseUrl, cid) {
+        if (!cid) return targetBaseUrl;
+        var sep = targetBaseUrl.indexOf('?') === -1 ? '?' : '&';
+        return targetBaseUrl + sep + 'cid=' + encodeURIComponent(cid);
+    }
+
+    var switchUrl1 = languageSwitchUrl('https://ccn-ncc.gc.ca/passeport', '550e8400-e29b-41d4-a716-446655440000');
+    assert(switchUrl1.indexOf('cid=550e8400') !== -1, 'cid appended to switch URL');
+    assert(switchUrl1.indexOf('?cid=') !== -1, 'uses ? separator for clean URL');
+
+    var switchUrl2 = languageSwitchUrl('https://ccn-ncc.gc.ca/passeport?foo=bar', '550e8400-e29b-41d4-a716-446655440000');
+    assert(switchUrl2.indexOf('&cid=') !== -1, 'uses & separator when URL already has params');
+
+    var switchUrl3 = languageSwitchUrl('https://ccn-ncc.gc.ca/passeport', null);
+    assert(switchUrl3 === 'https://ccn-ncc.gc.ca/passeport', 'returns base URL when cid is null');
+
+    endSuite();
+
+    /* ═══════════════════════════════════════════
+       IndexedDB State Store
+       ═══════════════════════════════════════════ */
+
+    suite('IndexedDB State Store');
+
+    var idbTestDone = false;
+    try {
+        var dbReq = indexedDB.open('contest-progress-test', 2);
+        dbReq.onupgradeneeded = function () {
+            var d = dbReq.result;
+            if (!d.objectStoreNames.contains('stamps'))
+                d.createObjectStore('stamps', { keyPath: 'shortCode' });
+            if (!d.objectStoreNames.contains('meta'))
+                d.createObjectStore('meta', { keyPath: 'key' });
+            if (!d.objectStoreNames.contains('state'))
+                d.createObjectStore('state', { keyPath: 'key' });
+        };
+        dbReq.onsuccess = function () {
+            var testDb = dbReq.result;
+            assert(testDb.objectStoreNames.contains('stamps'), 'IDB has stamps store');
+            assert(testDb.objectStoreNames.contains('meta'), 'IDB has meta store');
+            assert(testDb.objectStoreNames.contains('state'), 'IDB has state store (new in v2)');
+
+            // Write and read from state store
+            var tx = testDb.transaction('state', 'readwrite');
+            var stateStore = tx.objectStore('state');
+            var testPayload = {
+                key: 'progress',
+                schemaVersion: 1,
+                contestVersion: '2026.02',
+                progress: { stepsCompleted: ['s1'], score: 1 }
+            };
+            stateStore.put(testPayload);
+            tx.oncomplete = function () {
+                var readTx = testDb.transaction('state', 'readonly');
+                var readReq = readTx.objectStore('state').get('progress');
+                readReq.onsuccess = function () {
+                    assert(readReq.result && readReq.result.key === 'progress', 'state store read/write works');
+                    assert(readReq.result.progress.stepsCompleted[0] === 's1', 'payload preserved in state store');
+
+                    // Cleanup
+                    testDb.close();
+                    indexedDB.deleteDatabase('contest-progress-test');
+                    endSuite();
+                    showSummary();
+                };
+            };
+        };
+        dbReq.onerror = function () {
+            assert(false, 'IndexedDB open failed');
+            endSuite();
+            showSummary();
+        };
+    } catch (e) {
+        assert(false, 'IndexedDB not available: ' + e.message);
+        endSuite();
+        showSummary();
+    }
+
+    function showSummary() {
+        var summary = document.getElementById('summary');
+        var total = passed + failed;
+        var color = failed === 0 ? '#4caf50' : '#f44336';
+        summary.innerHTML = '<span style="color:' + color + '">' +
+            passed + '/' + total + ' passed' +
+            (failed > 0 ? ' (' + failed + ' failed)' : ' — all green!') +
+            '</span>';
+    }
+})();
+</script>
+</body>
+</html>

@@ -10,11 +10,13 @@ class Install extends Migration
     {
         $this->_createItemsTable();
         $this->_createItemsContentTable();
+        $this->_createContestProgressTable();
         return true;
     }
 
     public function safeDown(): bool
     {
+        $this->dropTableIfExists('{{%stamppassport_contest_progress}}');
         $this->dropTableIfExists('{{%stamppassport_items_content}}');
         $this->dropTableIfExists('{{%stamppassport_items}}');
         return true;
@@ -82,6 +84,30 @@ class Install extends Migration
             '{{%sites}}',
             'id',
             'CASCADE'
+        );
+    }
+
+    private function _createContestProgressTable(): void
+    {
+        $this->createTable('{{%stamppassport_contest_progress}}', [
+            'contest_id' => $this->char(36)->notNull(),
+            'payload_json' => $this->text()->notNull(),
+            'payload_hash' => $this->char(64)->notNull(),
+            'revision' => $this->integer()->notNull()->defaultValue(0),
+            'updated_at' => $this->dateTime()->notNull(),
+            'created_at' => $this->dateTime()->notNull(),
+        ]);
+
+        $this->addPrimaryKey(
+            'pk_stamppassport_contest_progress',
+            '{{%stamppassport_contest_progress}}',
+            'contest_id'
+        );
+
+        $this->createIndex(
+            'idx_stamppassport_contest_progress_updated_at',
+            '{{%stamppassport_contest_progress}}',
+            'updated_at'
         );
     }
 }

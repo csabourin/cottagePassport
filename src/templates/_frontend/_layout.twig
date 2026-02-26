@@ -39,6 +39,8 @@
             drawThreshold: {{ craft.stampPassport.settings.drawThreshold }},
             maxStickers:   {{ craft.stampPassport.settings.maxStickers }},
             enableGeofence: {{ craft.stampPassport.settings.enableGeofence ? 'true' : 'false' }},
+            contestProgressUrl: '{{ craft.stampPassport.contestProgressUrl()|e("js") }}',
+            contestVersion: '{{ craft.stampPassport.settings.contestVersion|e("js") }}',
             lang: '{{ currentSite.language[:2] }}',
         };
     </script>
