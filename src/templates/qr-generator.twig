@@ -10,9 +10,13 @@
 {% block content %}
     <div class="field">
         <div class="heading">
-            <label for="qr-base-url">{{ "Base URL"|t('stamp-passport') }}</label>
+            <label for="qr-base-url">
+                {{ "Base URL"|t('stamp-passport') }}
+            </label>
             <div class="instructions">
-                <p>{{ "The site URL where the passport frontend lives. QR codes will encode {baseUrl}?q={shortCode}."|t('stamp-passport') }}</p>
+                <p>
+                    {{ "The site URL where the passport frontend lives. QR codes will encode {baseUrl}?q={shortCode}."|t('stamp-passport') }}
+                </p>
             </div>
         </div>
         <div class="input">
@@ -27,7 +31,9 @@
     </div>
 
     <div class="buttons" style="margin-bottom:24px">
-        <button id="btn-print" class="btn" type="button">{{ "Print All QR Codes"|t('stamp-passport') }}</button>
+        <button id="btn-print" class="btn" type="button">
+            {{ "Print All QR Codes"|t('stamp-passport') }}
+        </button>
     </div>
 
     {% if items|length %}
@@ -36,69 +42,83 @@
                 {% set content = item.contents[0] ?? null %}
                 <div class="qr-card" data-shortcode="{{ item.shortCode }}">
                     <div class="qr-image">
-                        <img src="" alt="QR {{ item.shortCode }}" width="200" height="200" loading="lazy">
-                    </div>
-                    <div class="qr-label">
-                        <strong>{{ content ? content.title : 'Item #' ~ item.id }}</strong>
-                        <br><code>{{ item.shortCode }}</code>
-                    </div>
+                        <a href="#" target="_blank" rel="noopener">
+                            <img src="" alt="QR {{ item.shortCode }}" width="200" height="200" loading="lazy"></a>
+                        </div>
+                        <div class="qr-label">
+                            <strong>
+                                {{ content ? content.title : 'Item #' ~ item.id }}
+                            </strong>
+                            <br>
+                                <code>
+                                    {{ item.shortCode }}
+                                </code>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p>{{ "No items yet."|t('stamp-passport') }} <a href="{{ url('stamp-passport/items/new') }}">{{ "Create one"|t('stamp-passport') }}</a>.</p>
-    {% endif %}
-{% endblock %}
+            {% else %}
+                <p>
+                    {{ "No items yet."|t('stamp-passport') }}
+                    <a href="{{ url('stamp-passport/items/new') }}">
+                        {{ "Create one"|t('stamp-passport') }}
+                    </a>
+                    .
+                </p>
+            {% endif %}
+        {% endblock %}
 
-{% css %}
-.passport-qr-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 16px;
-}
-.qr-card {
-    border: 1px solid var(--gray-200);
-    border-radius: 6px;
-    padding: 12px;
-    text-align: center;
-    background: #fff;
-}
-.qr-image img {
-    max-width: 100%;
-    height: auto;
-}
-.qr-label {
-    margin-top: 8px;
-    font-size: 13px;
-}
-@media print {
-    .qr-card { break-inside: avoid; page-break-inside: avoid; }
-    #global-container, #crumbs, .buttons, #qr-site-picker, .field { display: none !important; }
-    .passport-qr-grid { grid-template-columns: repeat(3, 1fr); }
-}
-{% endcss %}
+        {% css %}
+        .passport-qr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            }
+            .qr-card {
+            border: 1px solid var(--gray-200);
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            background: #fff;
+            }
+            .qr-image img {
+            max-width: 100%;
+            height: auto;
+            }
+            .qr-label {
+            margin-top: 8px;
+            font-size: 13px;
+            }
+            @media print {
+            .qr-card { break-inside: avoid; page-break-inside: avoid; }
+            #global-container, #crumbs, .buttons, #qr-site-picker, .field { display: none !important; }
+            .passport-qr-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        {% endcss %}
 
-{% js %}
-(function() {
-    var picker = document.getElementById('qr-site-picker');
-    var cards = document.querySelectorAll('.qr-card');
-
-    function updateQrCodes() {
-        var baseUrl = picker.value.replace(/\/$/, '');
-        cards.forEach(function(card) {
+        {% js %}
+        (function() {
+            var picker = document.getElementById('qr-site-picker');
+            var cards = document.querySelectorAll('.qr-card');
+            
+            function updateQrCodes() {
+            var baseUrl = picker.value.replace(/\/$/, '');
+            cards.forEach(function(card) {
             let code = card.dataset.shortcode;
             let scanUrl = baseUrl + '?q=' + encodeURIComponent(code);
             const qrLogoUrl = 'https://ncc-ccn.replit.app/crown-of-leaves.png';
             let qrApiUrl = `https://quickchart.io/qr?size=450&text=${encodeURIComponent(scanUrl)}&centerImageSizeRatio=0.44&centerImageUrl=${encodeURIComponent(qrLogoUrl)}`;
             card.querySelector('img').src = qrApiUrl;
-        });
-    }
-
-    picker.addEventListener('change', updateQrCodes);
-    updateQrCodes();
-
-    document.getElementById('btn-print').addEventListener('click', function() {
-        window.print();
-    });
-})();
-{% endjs %}
+            card.querySelector('a')?.setAttribute('href', qrApiUrl);
+            });
+            }
+            
+            picker.addEventListener('change', updateQrCodes);
+            updateQrCodes();
+            
+            document.getElementById('btn-print').addEventListener('click', function() {
+            window.print();
+            });
+        })();
+        {% endjs %}
+        
