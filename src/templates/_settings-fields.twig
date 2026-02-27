@@ -108,6 +108,44 @@
     modalStorageKey: 'stamp-passport.woodPanelAsset',
 }) }}
 
+{% set checkedMarkerElements = settings.checkedMarkerAssetId ? craft.assets.id(settings.checkedMarkerAssetId).all() : [] %}
+{{ forms.elementSelectField({
+    label: "Checked Marker Image"|t('stamp-passport'),
+    instructions: "Optional image shown when a location is checked. If not set, a default checkmark badge is used."|t('stamp-passport'),
+    id: 'checkedMarkerAssetId',
+    name: 'checkedMarkerAssetId',
+    elementType: 'craft\\elements\\Asset',
+    criteria: { kind: 'image' },
+    limit: 1,
+    elements: checkedMarkerElements,
+    modalStorageKey: 'stamp-passport.checkedMarkerAsset',
+}) }}
+
+{% set bodyBackgroundElements = settings.bodyBackgroundAssetId ? craft.assets.id(settings.bodyBackgroundAssetId).all() : [] %}
+{{ forms.elementSelectField({
+    label: "Body Background Image"|t('stamp-passport'),
+    instructions: "Optional image used as the page body background. If not set, the default pattern is used."|t('stamp-passport'),
+    id: 'bodyBackgroundAssetId',
+    name: 'bodyBackgroundAssetId',
+    elementType: 'craft\\elements\\Asset',
+    criteria: { kind: 'image' },
+    limit: 1,
+    elements: bodyBackgroundElements,
+    modalStorageKey: 'stamp-passport.bodyBackgroundAsset',
+}) }}
+
+{{ forms.selectField({
+    label: "Body Background Mode"|t('stamp-passport'),
+    instructions: "How the body background image should render."|t('stamp-passport'),
+    id: 'bodyBackgroundMode',
+    name: 'bodyBackgroundMode',
+    value: settings.bodyBackgroundMode ?? 'cover',
+    options: [
+        { label: "Cover"|t('stamp-passport'), value: 'cover' },
+        { label: "Tiled"|t('stamp-passport'), value: 'tiled' },
+    ],
+}) }}
+
 <hr>
 
 <h2>{{ "Analytics"|t('stamp-passport') }}</h2>

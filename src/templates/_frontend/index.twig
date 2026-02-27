@@ -10,6 +10,8 @@
 
 {% set logoUrl     = settings.logoAssetId     ? craft.stampPassport.imageUrl(settings.logoAssetId)     : null %}
 {% set woodPanelUrl = settings.woodPanelAssetId ? craft.stampPassport.imageUrl(settings.woodPanelAssetId) : null %}
+{% set checkedMarkerUrl = settings.checkedMarkerAssetId ? craft.stampPassport.imageUrl(settings.checkedMarkerAssetId) : null %}
+{% set bodyBackgroundUrl = settings.bodyBackgroundAssetId ? craft.stampPassport.imageUrl(settings.bodyBackgroundAssetId) : null %}
 
 {% block title %}{{ settings.pluginName }}{% endblock %}
 
@@ -19,6 +21,16 @@
     <style>
         .passport-header.has-wood-bg {
             --passport-wood-img: url('{{ woodPanelUrl|e }}');
+        }
+    </style>
+    {% endif %}
+    {% if bodyBackgroundUrl %}
+    <style>
+        body.stamp-passport {
+            background-image: url('{{ bodyBackgroundUrl|e }}');
+            background-size: {{ settings.bodyBackgroundMode == 'tiled' ? 'auto' : 'cover' }};
+            background-repeat: {{ settings.bodyBackgroundMode == 'tiled' ? 'repeat' : 'no-repeat' }};
+            background-position: {{ settings.bodyBackgroundMode == 'tiled' ? 'left top' : 'center top' }};
         }
     </style>
     {% endif %}
@@ -96,7 +108,13 @@
                                 <img src="{{ asset.getUrl() }}" alt="" loading="lazy">
                             {% endif %}
                         {% endif %}
-                        <div class="stamp-check hidden" aria-hidden="true">&#10003;</div>
+                        <div class="stamp-check hidden{{ checkedMarkerUrl ? ' has-image' : '' }}" aria-hidden="true">
+                            {% if checkedMarkerUrl %}
+                                <img src="{{ checkedMarkerUrl|e }}" alt="">
+                            {% else %}
+                                &#10003;
+                            {% endif %}
+                        </div>
                     </div>
                 </button>
 

@@ -246,6 +246,19 @@ class CpController extends Controller
         $woodIds = $request->getBodyParam('woodPanelAssetId');
         $settings->woodPanelAssetId = is_array($woodIds) ? ((int)($woodIds[0] ?? 0) ?: null) : ((int)($woodIds ?: 0) ?: null);
 
+        $checkedMarkerIds = $request->getBodyParam('checkedMarkerAssetId');
+        $settings->checkedMarkerAssetId = is_array($checkedMarkerIds)
+            ? ((int)($checkedMarkerIds[0] ?? 0) ?: null)
+            : ((int)($checkedMarkerIds ?: 0) ?: null);
+
+        $bodyBackgroundIds = $request->getBodyParam('bodyBackgroundAssetId');
+        $settings->bodyBackgroundAssetId = is_array($bodyBackgroundIds)
+            ? ((int)($bodyBackgroundIds[0] ?? 0) ?: null)
+            : ((int)($bodyBackgroundIds ?: 0) ?: null);
+
+        $bodyBackgroundMode = (string)$request->getBodyParam('bodyBackgroundMode', $settings->bodyBackgroundMode);
+        $settings->bodyBackgroundMode = in_array($bodyBackgroundMode, ['cover', 'tiled'], true) ? $bodyBackgroundMode : 'cover';
+
         // Per-site display text overrides — strip empty values
         $uiText = $request->getBodyParam('uiText', []);
         $cleaned = [];

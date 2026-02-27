@@ -40,6 +40,15 @@ class Settings extends Model
     /** @var int|null Asset ID for the wood panel header background image */
     public ?int $woodPanelAssetId = null;
 
+    /** @var int|null Asset ID for the checked-location badge image */
+    public ?int $checkedMarkerAssetId = null;
+
+    /** @var int|null Asset ID for the page body background image */
+    public ?int $bodyBackgroundAssetId = null;
+
+    /** @var string Body background display mode when an image is set: "cover" or "tiled" */
+    public string $bodyBackgroundMode = 'cover';
+
     /** @var string Contest version identifier, changes when contest rules change */
     public string $contestVersion = '2026.02';
 
@@ -160,7 +169,8 @@ class Settings extends Model
             [['maxStickers'], 'integer', 'min' => 0],
             [['ga4MeasurementId'], 'match', 'pattern' => '/^G-[A-Z0-9]+$/', 'skipOnEmpty' => true],
             [['freeformDrawFormHandle', 'freeformStickerFormHandle'], 'string', 'max' => 100],
-            [['logoAssetId', 'woodPanelAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
+            [['logoAssetId', 'woodPanelAssetId', 'checkedMarkerAssetId', 'bodyBackgroundAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
+            [['bodyBackgroundMode'], 'in', 'range' => ['cover', 'tiled']],
             [['contestVersion'], 'string', 'max' => 20],
         ];
     }
