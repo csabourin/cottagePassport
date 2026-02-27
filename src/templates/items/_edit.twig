@@ -148,30 +148,34 @@
     </form>
 {% endblock %}
 
-{# ── CKEditor 4 for the description field ── #}
+{# ── CKEditor 5 for the description field (uses craftcms/ckeditor if installed) ── #}
 {% block foot %}
     {{ parent() }}
-    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
-    <script>
-    (function () {
-        var fieldId = 'stamp-desc-{{ currentSite.id }}';
-        if (typeof CKEDITOR === 'undefined' || !document.getElementById(fieldId)) return;
+    {% if craft.app.plugins.getPlugin('ckeditor') %}
+        {# Register CKEditor 5 via the installed craftcms/ckeditor plugin — no external CDN needed #}
+        {% do view.registerAssetBundle('craft\\ckeditor\\web\\assets\\ckeditor\\CkeditorAsset') %}
+        {% js %}
+        (function () {
+            if (typeof CKEditor5 === 'undefined' || typeof CKEditor5.craftcms === 'undefined') return;
+            var el = document.getElementById('stamp-desc-{{ currentSite.id }}');
+            if (!el) return;
 
-        CKEDITOR.replace(fieldId, {
-            toolbar: [
-                { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', '-', 'RemoveFormat'] },
-                { name: 'links',       items: ['Link', 'Unlink'] },
-                { name: 'lists',       items: ['BulletedList', 'NumberedList'] },
-                { name: 'blocks',      items: ['Blockquote'] },
-                { name: 'tools',       items: ['Undo', 'Redo'] },
-            ],
-            removePlugins: 'elementspath',
-            height: 200,
-            /* Prevent CKEditor styles conflicting with Craft CP */
-            bodyClass: 'ck-body',
-        });
-    })();
-    </script>
+            CKEditor5.craftcms.create(el, {
+                toolbar: {
+                    items: [
+                        'bold', 'italic', '|',
+                        'link', '|',
+                        'bulletedList', 'numberedList', '|',
+                        'blockQuote', '|',
+                        'undo', 'redo'
+                    ]
+                },
+                language: '{{ currentSite.language[:2]|lower }}',
+                ui: { viewportOffset: { top: 50 } },
+            });
+        })();
+        {% endjs %}
+    {% endif %}
 {% endblock %}
 
 {# ── Right-hand details sidebar (read-only meta) ── #}
