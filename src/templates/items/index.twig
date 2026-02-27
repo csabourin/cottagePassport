@@ -74,7 +74,7 @@
         {{ redirectInput('stamp-passport/items') }}
 
         <h2>{{ "Display Text"|t('stamp-passport') }}</h2>
-        <p class="light">{{ "Customize all display text per site. Leave fields blank to use built-in defaults for that language."|t('stamp-passport') }}</p>
+        <p class="light">{{ "Customize all display text per site. Leave fields blank to use built-in defaults for that site's language."|t('stamp-passport') }}</p>
 
         {# Site tabs #}
         {% if allSites|length > 1 %}
@@ -83,20 +83,20 @@
                 <button type="button"
                         class="btn{{ loop.first ? ' active' : '' }}"
                         data-site-text-tab="{{ site.handle }}">
-                    {{ site.name }} ({{ site.language[:2]|upper }})
+                    {{ site.name }}
                 </button>
             {% endfor %}
         </div>
         {% endif %}
 
         {% for site in allSites %}
-            {% set lang = site.language[:2] %}
-            {% set defaults = textDefaults[lang] ?? textDefaults['en'] %}
+            {% set lang = site.language[:2]|lower %}
+            {% set defaults = textDefaults[lang] ?? textDefaults['default'] %}
             <div class="stamp-passport-site-text{{ not loop.first ? ' hidden' : '' }}"
                  data-site-text-panel="{{ site.handle }}">
 
                 {% if allSites|length > 1 %}
-                    <h3>{{ site.name }} ({{ lang|upper }})</h3>
+                    <h3>{{ site.name }}</h3>
                 {% endif %}
 
                 <h4 style="margin-top:1.5em">{{ "Header"|t('stamp-passport') }}</h4>

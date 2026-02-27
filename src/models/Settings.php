@@ -10,7 +10,7 @@ class Settings extends Model
     /** @var string Display name shown in the CP navigation */
     public string $pluginName = 'Stamp Passport';
 
-    /** @var string URL prefix for the frontend route (e.g. "passport" → /en/passport) */
+    /** @var string URL prefix for the frontend route (e.g. "passport" -> /passport) */
     public string $routePrefix = 'passport';
 
     /** @var bool Whether geofence validation is enabled for QR check-ins */
@@ -96,49 +96,49 @@ class Settings extends Model
     ];
 
     public const TEXT_DEFAULTS = [
-        'en' => [
-            'orgName' => "National Capital Commission\nCommission de la capitale nationale",
+        'default' => [
+            'orgName' => 'Your Organization',
             'challengeTitle' => 'Challenge',
-            'scanInstructions' => 'Scan all QR codes at official locations to complete your summer bucket list.',
-            'drawModalTitle' => 'Enter the Draw!',
-            'drawModalBody' => "You've unlocked the draw entry! Fill in the form below for a chance to win.",
-            'stickerModalTitle' => 'Memory Makers!',
-            'stickerModalBody' => "Congratulations! You've completed the full bucket list. Claim your limited-edition sticker.",
+            'scanInstructions' => 'Scan all QR codes at participating locations to complete your passport.',
+            'drawModalTitle' => 'Enter the Draw',
+            'drawModalBody' => 'You unlocked draw entry. Complete the form below for a chance to win.',
+            'stickerModalTitle' => 'Completed Passport',
+            'stickerModalBody' => 'You completed every location. Claim your limited-edition sticker.',
             'disclaimerTitle' => 'Before You Begin',
-            'disclaimerBody' => 'Your progress is saved locally and synced online. Use the language toggle to switch between English and French without losing your stamps.',
+            'disclaimerBody' => 'Your progress is saved locally and synced online.',
             'disclaimerButton' => "Got it, let's go!",
-            'alreadyCheckedIn' => 'You already checked in here!',
+            'alreadyCheckedIn' => 'You already checked in here.',
             'checkingLocation' => "Checking your location\u2026",
             'locationError' => 'Could not determine your location. Please allow location access and try again.',
-            'checkinFailed' => 'Check-in failed. Are you at the right location?',
-            'checkedIn' => 'Checked in!',
+            'checkinFailed' => 'Check-in failed. Please confirm you are at the right location.',
+            'checkedIn' => 'Checked in.',
             'qrNotRecognized' => 'This QR code is not recognized.',
             'loadError' => 'Could not load passport data. Please try again later.',
         ],
         'fr' => [
-            'orgName' => "Commission de la capitale nationale\nNational Capital Commission",
-            'challengeTitle' => "Défi",
-            'scanInstructions' => "Scannez tous les codes QR aux emplacements officiels pour compléter votre passeport estival.",
-            'drawModalTitle' => 'Participez au tirage!',
-            'drawModalBody' => "Vous avez débloqué la participation au tirage! Remplissez le formulaire ci-dessous pour courir la chance de gagner.",
-            'stickerModalTitle' => "Créateurs de souvenirs!",
-            'stickerModalBody' => "Félicitations! Vous avez complété le passeport au complet. Réclamez votre autocollant en édition limitée.",
+            'orgName' => 'Votre organisation',
+            'challengeTitle' => 'Defi',
+            'scanInstructions' => 'Scannez tous les codes QR aux emplacements participants pour completer votre passeport.',
+            'drawModalTitle' => 'Participez au tirage',
+            'drawModalBody' => 'Vous avez debloque votre inscription au tirage. Remplissez le formulaire ci-dessous pour courir la chance de gagner.',
+            'stickerModalTitle' => 'Passeport complete',
+            'stickerModalBody' => 'Vous avez complete tous les emplacements. Reclamez votre autocollant en edition limitee.',
             'disclaimerTitle' => 'Avant de commencer',
-            'disclaimerBody' => "Votre progrès est sauvegardé localement et synchronisé en ligne. Utilisez le sélecteur de langue pour passer du français à l'anglais sans perdre vos étampes.",
+            'disclaimerBody' => 'Votre progression est sauvegardee localement et synchronisee en ligne.',
             'disclaimerButton' => "Compris, c'est parti!",
-            'alreadyCheckedIn' => "Vous avez déjà visité cet endroit!",
-            'checkingLocation' => "Vérification de votre position\u2026",
-            'locationError' => "Impossible de déterminer votre position. Veuillez autoriser l'accès à la localisation et réessayer.",
-            'checkinFailed' => "Échec de la validation. \u00cates-vous au bon endroit?",
-            'checkedIn' => "Visite confirmée!",
+            'alreadyCheckedIn' => 'Vous avez deja valide cet emplacement.',
+            'checkingLocation' => "Verification de votre position\u2026",
+            'locationError' => "Impossible de determiner votre position. Veuillez autoriser l'acces a la localisation et reessayer.",
+            'checkinFailed' => "Echec de la validation. Veuillez confirmer que vous etes au bon emplacement.",
+            'checkedIn' => 'Validation reussie.',
             'qrNotRecognized' => "Ce code QR n'est pas reconnu.",
-            'loadError' => "Impossible de charger les données du passeport. Veuillez réessayer plus tard.",
+            'loadError' => 'Impossible de charger les donnees du passeport. Veuillez reessayer plus tard.',
         ],
     ];
 
     /**
      * Get a display text value for the current (or specified) site.
-     * Falls back to built-in language defaults if no admin override is set.
+     * Falls back to built-in defaults (localized by site language when available).
      */
     public function getText(string $key, ?string $siteHandle = null): string
     {
@@ -152,11 +152,17 @@ class Settings extends Model
             return $override;
         }
 
-        // Fall back to built-in defaults by language
         $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
-        $lang = $site ? substr($site->language, 0, 2) : 'en';
+        $lang = $site ? strtolower(substr($site->language, 0, 2)) : null;
 
-        return self::TEXT_DEFAULTS[$lang][$key] ?? self::TEXT_DEFAULTS['en'][$key] ?? '';
+        if ($lang !== null) {
+            $localized = self::TEXT_DEFAULTS[$lang][$key] ?? null;
+            if ($localized !== null && $localized !== '') {
+                return $localized;
+            }
+        }
+
+        return self::TEXT_DEFAULTS['default'][$key] ?? '';
     }
 
     public function defineRules(): array

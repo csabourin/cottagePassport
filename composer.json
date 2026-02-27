@@ -1,8 +1,21 @@
 {
     "name": "csabourin/craft-stamp-passport",
-    "description": "A self-contained Craft CMS 4 plugin for bilingual bucket list / passport experiences with QR code check-ins.",
+    "description": "A self-contained Craft CMS 4 plugin for QR-based passport experiences with geofenced check-ins.",
     "type": "craft-plugin",
-    "license": "proprietary",
+    "license": "MIT",
+    "keywords": [
+        "craft",
+        "craftcms",
+        "plugin",
+        "passport",
+        "qr-code",
+        "geofence"
+    ],
+    "homepage": "https://github.com/csabourin/cottagePassport",
+    "support": {
+        "issues": "https://github.com/csabourin/cottagePassport/issues",
+        "source": "https://github.com/csabourin/cottagePassport"
+    },
     "require": {
         "craftcms/cms": "^4.0"
     },
@@ -12,10 +25,13 @@
         }
     },
     "extra": {
-        "handle": "stamp-passport",
         "name": "Stamp Passport",
-        "developer": "Christian Sabourin",
+        "handle": "stamp-passport",
         "class": "csabourin\\stamppassport\\Plugin",
+        "developer": "Christian Sabourin",
+        "developerUrl": "https://github.com/csabourin",
+        "documentationUrl": "https://github.com/csabourin/cottagePassport#readme",
+        "changelogUrl": "https://github.com/csabourin/cottagePassport/blob/main/CHANGELOG.md",
         "hasCpSettings": true,
         "hasCpSection": true
     }

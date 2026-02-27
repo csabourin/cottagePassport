@@ -1,0 +1,6 @@
+/.claude export-ignore
+/_legacy export-ignore
+/tests export-ignore
+/.gitignore export-ignore
+/.gitkeep export-ignore
+/phpunit.xml.dist export-ignore
