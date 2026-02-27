@@ -146,6 +146,14 @@
     ],
 }) }}
 
+{{ forms.textField({
+    label: "QR Center Image URL"|t('stamp-passport'),
+    instructions: "Optional URL for the image centered in generated QR codes. A square image or circle with transparency is preferable."|t('stamp-passport'),
+    name: 'qrCenterImageUrl',
+    value: settings.qrCenterImageUrl,
+    placeholder: 'https://example.com/qr-center.png',
+}) }}
+
 <hr>
 
 <h2>{{ "Analytics"|t('stamp-passport') }}</h2>

@@ -96,29 +96,38 @@
         }
         {% endcss %}
 
-        {% js %}
-        (function() {
-            var picker = document.getElementById('qr-site-picker');
-            var cards = document.querySelectorAll('.qr-card');
-            
-            function updateQrCodes() {
-            var baseUrl = picker.value.replace(/\/$/, '');
-            cards.forEach(function(card) {
-            let code = card.dataset.shortcode;
-            let scanUrl = baseUrl + '?q=' + encodeURIComponent(code);
-            const qrLogoUrl = 'https://ncc-ccn.replit.app/crown-of-leaves.png';
-            let qrApiUrl = `https://quickchart.io/qr?size=450&text=${encodeURIComponent(scanUrl)}&centerImageSizeRatio=0.44&centerImageUrl=${encodeURIComponent(qrLogoUrl)}`;
+{% js %}
+(function() {
+    var picker = document.getElementById('qr-site-picker');
+    var cards = document.querySelectorAll('.qr-card');
+    var qrCenterImageUrl = {{ (settings.qrCenterImageUrl ?? '')|json_encode|raw }};
+
+    function updateQrCodes() {
+        var baseUrl = picker.value.replace(/\/$/, '');
+        cards.forEach(function(card) {
+            var code = card.dataset.shortcode;
+            var scanUrl = baseUrl + '?q=' + encodeURIComponent(code);
+            var params = new URLSearchParams({
+                size: '450',
+                text: scanUrl
+            });
+
+            if (qrCenterImageUrl) {
+                params.set('centerImageSizeRatio', '0.44');
+                params.set('centerImageUrl', qrCenterImageUrl);
+            }
+
+            var qrApiUrl = 'https://quickchart.io/qr?' + params.toString();
             card.querySelector('img').src = qrApiUrl;
             card.querySelector('a')?.setAttribute('href', qrApiUrl);
-            });
-            }
-            
-            picker.addEventListener('change', updateQrCodes);
-            updateQrCodes();
-            
-            document.getElementById('btn-print').addEventListener('click', function() {
-            window.print();
-            });
-        })();
-        {% endjs %}
-        
+        });
+    }
+
+    picker.addEventListener('change', updateQrCodes);
+    updateQrCodes();
+
+    document.getElementById('btn-print').addEventListener('click', function() {
+        window.print();
+    });
+})();
+{% endjs %}

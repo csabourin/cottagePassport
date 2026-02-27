@@ -258,6 +258,7 @@ class CpController extends Controller
 
         $bodyBackgroundMode = (string)$request->getBodyParam('bodyBackgroundMode', $settings->bodyBackgroundMode);
         $settings->bodyBackgroundMode = in_array($bodyBackgroundMode, ['cover', 'tiled'], true) ? $bodyBackgroundMode : 'cover';
+        $settings->qrCenterImageUrl = trim((string)$request->getBodyParam('qrCenterImageUrl', '')) ?: null;
 
         // Per-site display text overrides — strip empty values
         $uiText = $request->getBodyParam('uiText', []);
