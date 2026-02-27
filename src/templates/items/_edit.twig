@@ -48,6 +48,23 @@
 
         <div id="fields">
 
+            {# Short Code (read-only, shown under the language switcher) #}
+            {% if item %}
+                <div class="meta read-only" style="margin-bottom: 1.5em;">
+                    <div class="field">
+                        <div class="heading">
+                            <label>{{ "Short Code"|t('stamp-passport') }}</label>
+                        </div>
+                        <div class="value">
+                            <code style="font-size:1.1em">{{ item.shortCode }}</code>
+                        </div>
+                        <div class="instructions">
+                            <p class="smalltext light">{{ "Auto-generated. Used in QR code URLs."|t('stamp-passport') }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
             {# Enabled toggle #}
             {{ forms.lightswitchField({
                 label: "Enabled"|t('app'),
@@ -178,39 +195,3 @@
     {% endif %}
 {% endblock %}
 
-{# ── Right-hand details sidebar (read-only meta) ── #}
-{% block details %}
-    <div id="details">
-        {% if item %}
-            <div class="meta read-only">
-                <div class="field">
-                    <div class="heading">
-                        <label>{{ "Short Code"|t('stamp-passport') }}</label>
-                    </div>
-                    <div class="value">
-                        <code style="font-size:1.1em">{{ item.shortCode }}</code>
-                    </div>
-                    <div class="instructions">
-                        <p class="smalltext light">{{ "Auto-generated. Used in QR code URLs."|t('stamp-passport') }}</p>
-                    </div>
-                </div>
-            </div>
-        {% endif %}
-
-        <div class="meta read-only">
-            <div class="field">
-                <div class="heading">
-                    <label>{{ "Sort Order"|t('stamp-passport') }}</label>
-                </div>
-                <div class="value light">
-                    {% if item %}
-                        {{ item.sortOrder }}
-                        <p class="smalltext">{{ "Drag rows in the Items list to reorder."|t('stamp-passport') }}</p>
-                    {% else %}
-                        <span class="light">{{ "Assigned on save."|t('stamp-passport') }}</span>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-{% endblock %}

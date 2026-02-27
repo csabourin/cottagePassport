@@ -149,7 +149,6 @@ class CpController extends Controller
     public function actionReorder(): Response
     {
         $this->requirePostRequest();
-        $this->requireAcceptsJson();
 
         $ids = Craft::$app->getRequest()->getRequiredBodyParam('ids');
         Plugin::$plugin->items->reorder($ids);
