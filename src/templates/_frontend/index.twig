@@ -88,7 +88,7 @@
                         aria-haspopup="dialog"
                         data-item-id="{{ item.id }}"
                         data-item-link-url="{{ content.linkUrl ?? '' }}"
-                        data-item-link-text="{{ content.linkText is not empty ? content.linkText : 'Learn more'|t('stamp-passport') }}">
+                        data-item-link-text="{{ (content is not null and content.linkText is not empty) ? content.linkText : 'Learn more'|t('stamp-passport') }}">
                     <div class="stamp-image">
                         {% if item.imageId %}
                             {% set asset = craft.assets.id(item.imageId).one() %}
