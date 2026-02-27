@@ -24,6 +24,10 @@ class Install extends Migration
 
     private function _createItemsTable(): void
     {
+        if ($this->db->tableExists('{{%stamppassport_items}}')) {
+            return;
+        }
+
         $this->createTable('{{%stamppassport_items}}', [
             'id' => $this->primaryKey(),
             'shortCode' => $this->string(12)->notNull(),
@@ -53,6 +57,10 @@ class Install extends Migration
 
     private function _createItemsContentTable(): void
     {
+        if ($this->db->tableExists('{{%stamppassport_items_content}}')) {
+            return;
+        }
+
         $this->createTable('{{%stamppassport_items_content}}', [
             'id' => $this->primaryKey(),
             'itemId' => $this->integer()->notNull(),
@@ -89,6 +97,10 @@ class Install extends Migration
 
     private function _createContestProgressTable(): void
     {
+        if ($this->db->tableExists('{{%stamppassport_contest_progress}}')) {
+            return;
+        }
+
         $this->createTable('{{%stamppassport_contest_progress}}', [
             'contest_id' => $this->char(36)->notNull(),
             'payload_json' => $this->text()->notNull(),
