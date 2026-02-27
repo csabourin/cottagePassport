@@ -69,6 +69,7 @@ background: linear-gradient(
   rgb(60,68,7) 95%,
   rgb(45,55,6) 100%
 );
+}
 
 .stamp-passport {
     font-family: "Cabin", "Segoe UI", Arial, sans-serif;
@@ -201,6 +202,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(255, 248, 235, 0.88);
+    text-shadow: 0 0 4px black;
     font-family: "Cabin", sans-serif;
     line-height: 1.65;
 }
@@ -210,6 +212,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 .passport-title {
     margin: 0;
     color: #fff;
+    text-shadow: 0 0 4px black;    
     line-height: 1.05;
 }
 
