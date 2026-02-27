@@ -83,6 +83,11 @@ body {
     gap:1rem;
 }
 
+main.passport-main > div, main.passport-main > section, main.passport-main > header {
+    box-shadow: 5px 5px 25px rgba(0,0,0,0.8);
+    border-radius:.5rem;
+}
+
 /* ══════════════════════════════════════════════════════════
    HEADER — dark wood panel
    CSS wood-grain texture fallback (from _legacy/styles-cottage.css).
