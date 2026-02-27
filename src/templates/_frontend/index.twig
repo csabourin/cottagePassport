@@ -82,24 +82,29 @@
             {% set content = item.contents[0] ?? null %}
             <article class="stamp-slot" data-code="{{ item.shortCode }}" data-id="{{ item.id }}">
 
-                <div class="stamp-image">
-                    {% if item.imageId %}
-                        {% set asset = craft.assets.id(item.imageId).one() %}
-                        {% if asset %}
-                            <img src="{{ asset.getUrl() }}" alt="{{ content.title ?? '' }}" loading="lazy">
+                <button class="stamp-image-btn"
+                        type="button"
+                        aria-label="{{ 'Details'|t('stamp-passport') }}: {{ content.title ?? '' }}"
+                        aria-haspopup="dialog"
+                        data-item-id="{{ item.id }}"
+                        data-item-link-url="{{ content.linkUrl ?? '' }}"
+                        data-item-link-text="{{ content.linkText is not empty ? content.linkText : 'Learn more'|t('stamp-passport') }}">
+                    <div class="stamp-image">
+                        {% if item.imageId %}
+                            {% set asset = craft.assets.id(item.imageId).one() %}
+                            {% if asset %}
+                                <img src="{{ asset.getUrl() }}" alt="" loading="lazy">
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
-                    <div class="stamp-check hidden" aria-hidden="true">&#10003;</div>
-                </div>
+                        <div class="stamp-check hidden" aria-hidden="true">&#10003;</div>
+                    </div>
+                </button>
+
+                {# Description HTML stored for the detail modal — not displayed inline #}
+                <template id="item-desc-{{ item.id }}">{{ content.description|default('')|raw }}</template>
 
                 <div class="stamp-info">
                     <h3 class="stamp-title">{{ content.title ?? '' }}</h3>
-                    <p class="stamp-desc">{{ content.description ?? '' }}</p>
-                    {% if content and content.linkUrl %}
-                        <a class="stamp-link" href="{{ content.linkUrl }}" target="_blank" rel="noopener">
-                            {{ content.linkText ?? 'Learn more'|t('stamp-passport') }}
-                        </a>
-                    {% endif %}
                 </div>
 
             </article>
@@ -118,6 +123,24 @@
         </div>
         <p class="progress-text" id="progressText" aria-live="polite"></p>
     </section>
+
+    {# ── Item detail modal (shared, populated by JS on image click) ── #}
+    <div id="itemDetailModal" class="passport-modal hidden"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="itemDetailModalTitle">
+        <div class="passport-modal-backdrop"></div>
+        <div class="passport-modal-content">
+            <button class="passport-modal-close" aria-label="{{ 'Close'|t('stamp-passport') }}">&times;</button>
+            <h2 id="itemDetailModalTitle" class="item-detail-title"></h2>
+            <div class="item-detail-body"></div>
+            <div class="item-detail-footer">
+                <a class="passport-btn passport-btn-secondary item-detail-link hidden"
+                   target="_blank"
+                   rel="noopener noreferrer"></a>
+            </div>
+        </div>
+    </div>
 
     {# ── Draw modal ── #}
     {% set drawHandle = settings.freeformDrawFormHandle %}

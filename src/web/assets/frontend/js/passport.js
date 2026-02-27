@@ -24,6 +24,9 @@
     var currentItem = null;     // Resolved from ?q= param
     var contestCid = null;      // Contest participant ID (UUID v4)
 
+    /* ── Focusable elements query (for focus trap) ── */
+    var FOCUSABLE_SELECTOR = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
+
     /* ═══════════════════════════════════════════
        IndexedDB + localStorage fallback
        ═══════════════════════════════════════════ */
@@ -676,17 +679,58 @@
     }
 
     /* ═══════════════════════════════════════════
+       Focus Trap — WCAG 2.1 SC 2.1.2
+       ═══════════════════════════════════════════ */
+
+    function trapFocus(modal) {
+        function handler(e) {
+            if (e.key !== 'Tab') return;
+            var focusable = qsa(FOCUSABLE_SELECTOR, modal);
+            if (focusable.length < 2) return;
+            var first = focusable[0];
+            var last  = focusable[focusable.length - 1];
+            if (e.shiftKey) {
+                if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+            } else {
+                if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+            }
+        }
+        modal._focusTrapHandler = handler;
+        modal.addEventListener('keydown', handler);
+    }
+
+    function releaseFocusFromModal(modal) {
+        if (modal._focusTrapHandler) {
+            modal.removeEventListener('keydown', modal._focusTrapHandler);
+            modal._focusTrapHandler = null;
+        }
+        var trigger = modal._focusTrigger || null;
+        modal._focusTrigger = null;
+        if (trigger && typeof trigger.focus === 'function') {
+            trigger.focus();
+        }
+    }
+
+    /* ═══════════════════════════════════════════
        Modals
        ═══════════════════════════════════════════ */
 
-    function showModal(id) {
+    function showModal(id, triggerEl) {
         var modal = el(id);
-        if (modal) modal.classList.remove('hidden');
+        if (!modal) return;
+        modal._focusTrigger = triggerEl || null;
+        modal.classList.remove('hidden');
+        /* Move focus inside the modal — close button or first focusable */
+        var focusable = qsa(FOCUSABLE_SELECTOR, modal);
+        if (focusable.length) focusable[0].focus();
+        trapFocus(modal);
     }
 
     function hideModal(id) {
         var modal = el(id);
-        if (modal) modal.classList.add('hidden');
+        if (!modal) return;
+        modal.classList.add('hidden');
+        releaseFocusFromModal(modal);
     }
 
     function bindModals() {
@@ -694,7 +738,7 @@
         qsa('.passport-modal-close').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var modal = btn.closest('.passport-modal');
-                if (modal) modal.classList.add('hidden');
+                if (modal) hideModal(modal.id);
             });
         });
 
@@ -702,8 +746,16 @@
         qsa('.passport-modal-backdrop').forEach(function (bd) {
             bd.addEventListener('click', function () {
                 var modal = bd.closest('.passport-modal');
-                if (modal) modal.classList.add('hidden');
+                if (modal) hideModal(modal.id);
             });
+        });
+
+        /* Escape key — close topmost open modal */
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') return;
+            var openModals = qsa('.passport-modal:not(.hidden)');
+            if (!openModals.length) return;
+            hideModal(openModals[openModals.length - 1].id);
         });
 
         /* Freeform AJAX success hooks */
@@ -736,16 +788,64 @@
             return callback();
         }
 
-        modal.classList.remove('hidden');
+        showModal('disclaimerModal');  /* focuses accept button, traps focus */
 
         var btn = el('disclaimerAccept');
         if (!btn) return callback();
 
         btn.addEventListener('click', function () {
             localStorage.setItem('passportDisclaimerAccepted', '1');
-            modal.classList.add('hidden');
+            hideModal('disclaimerModal');
             callback();
         }, { once: true });
+    }
+
+    /* ═══════════════════════════════════════════
+       Item Detail Modal
+       ═══════════════════════════════════════════ */
+
+    function openItemDetail(btn) {
+        var itemId   = btn.getAttribute('data-item-id');
+        var linkUrl  = btn.getAttribute('data-item-link-url')  || '';
+        var linkText = (btn.getAttribute('data-item-link-text') || '').trim() || 'Learn more';
+
+        /* Title lives in the sibling .stamp-title */
+        var slot    = btn.closest('.stamp-slot');
+        var titleEl = slot ? qs('.stamp-title', slot) : null;
+        var title   = titleEl ? titleEl.textContent.trim() : '';
+
+        /* Description HTML lives in the per-item <template> */
+        var tmpl     = document.getElementById('item-desc-' + itemId);
+        var descHtml = tmpl ? tmpl.innerHTML : '';
+
+        var modal = el('itemDetailModal');
+        if (!modal) return;
+
+        var titleNode = qs('.item-detail-title', modal);
+        var bodyNode  = qs('.item-detail-body',  modal);
+        var linkNode  = qs('.item-detail-link',  modal);
+
+        if (titleNode) titleNode.textContent = title;
+        if (bodyNode)  bodyNode.innerHTML    = descHtml;
+
+        if (linkNode) {
+            if (linkUrl) {
+                linkNode.href        = linkUrl;
+                linkNode.textContent = linkText;
+                linkNode.classList.remove('hidden');
+            } else {
+                linkNode.href = '';
+                linkNode.classList.add('hidden');
+            }
+        }
+
+        showModal('itemDetailModal', btn);  /* btn is focus trigger — returned on close */
+    }
+
+    function bindItemDetailButtons() {
+        qsa('.stamp-image-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () { openItemDetail(btn); });
+        });
     }
 
     /* ═══════════════════════════════════════════
@@ -791,6 +891,9 @@
 
         /* Bind modal interactions */
         bindModals();
+
+        /* Bind item detail buttons (image click → detail modal) */
+        bindItemDetailButtons();
 
         /* Bind language switch links */
         bindLanguageSwitchLinks();

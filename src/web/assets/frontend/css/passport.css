@@ -283,12 +283,30 @@ body {
     100% { transform: scale(1);    opacity: 1;   }
 }
 
-/* ── Image thumbnail (left column) ── */
-.stamp-image {
+/* ── Image button (flex child; wraps .stamp-image) ── */
+.stamp-image-btn {
+    display: block;
     width: 96px;
     height: 96px;
     flex-shrink: 0;
     margin-right: 16px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: var(--passport-radius);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.stamp-image-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 4px 14px rgba(43, 107, 138, 0.35);
+}
+
+/* ── Image thumbnail (visual container inside the button) ── */
+.stamp-image {
+    width: 100%;
+    height: 100%;
     background: #e4ddd4;
     border-radius: var(--passport-radius);
     overflow: hidden;
@@ -359,6 +377,72 @@ body {
 
 .stamp-link:hover {
     color: var(--passport-teal-dark);
+}
+
+/* ══════════════════════════════════════════════════════════
+   ITEM DETAIL MODAL — RTE body content
+   ══════════════════════════════════════════════════════════ */
+
+/* Rich-text body rendered from CKEditor HTML */
+.item-detail-body {
+    font-size: 0.9375rem;
+    color: var(--passport-ink-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.item-detail-body p {
+    margin: 0 0 12px;
+}
+
+.item-detail-body p:last-child {
+    margin-bottom: 0;
+}
+
+.item-detail-body ul,
+.item-detail-body ol {
+    margin: 0 0 12px;
+    padding-left: 1.5em;
+}
+
+.item-detail-body li {
+    margin-bottom: 4px;
+}
+
+/* Links inside RTE: #2b6b8a on #fff — 5.69:1 ✓ AA */
+.item-detail-body a {
+    color: var(--passport-teal);
+    text-decoration: underline;
+}
+
+.item-detail-body a:hover {
+    color: var(--passport-teal-dark);
+}
+
+.item-detail-body strong { font-weight: 700; }
+.item-detail-body em     { font-style: italic; }
+
+.item-detail-body h2,
+.item-detail-body h3,
+.item-detail-body h4 {
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 700;
+    color: var(--passport-teal-dark);
+    margin: 16px 0 8px;
+    line-height: 1.25;
+}
+
+.item-detail-body blockquote {
+    border-left: 3px solid var(--passport-beige);
+    margin: 12px 0;
+    padding: 8px 16px;
+    color: var(--passport-ink-muted);
+    font-style: italic;
+}
+
+/* Footer area containing the optional "Learn more" link */
+.item-detail-footer {
+    margin-top: 8px;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -527,7 +611,7 @@ body {
 
 /* On very small screens shrink the thumbnail */
 @media (max-width: 400px) {
-    .stamp-image {
+    .stamp-image-btn {
         width: 76px;
         height: 76px;
         margin-right: 12px;
