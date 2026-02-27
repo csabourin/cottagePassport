@@ -151,6 +151,9 @@ class CpController extends Controller
         $this->requirePostRequest();
 
         $ids = Craft::$app->getRequest()->getRequiredBodyParam('ids');
+        if (is_string($ids)) {
+            $ids = json_decode($ids, true) ?? [];
+        }
         Plugin::$plugin->items->reorder($ids);
 
         return $this->asJson(['success' => true]);
