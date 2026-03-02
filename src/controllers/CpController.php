@@ -8,7 +8,6 @@ use craft\web\Controller;
 use csabourin\stamppassport\models\Settings;
 use csabourin\stamppassport\Plugin;
 use csabourin\stamppassport\records\ItemRecord;
-use Solspace\Freeform\Freeform as FreeformPlugin;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -216,59 +215,10 @@ class CpController extends Controller
      */
     public function actionSettings(): Response
     {
-        $freeformForms = $this->getFreeformFormOptions();
-
         return $this->renderTemplate('stamp-passport/settings', [
             'settings'     => Plugin::$plugin->getSettings(),
-            'freeformForms' => $freeformForms,
+            'freeformForms' => Plugin::$plugin->getFreeformFormOptions(),
         ]);
-    }
-
-    /**
-     * Returns Freeform form options for CP select fields.
-     */
-    private function getFreeformFormOptions(): ?array
-    {
-        if (!class_exists(FreeformPlugin::class)) {
-            return null;
-        }
-
-        try {
-            $freeform = FreeformPlugin::getInstance();
-            if ($freeform === null) {
-                return null;
-            }
-
-            $forms = null;
-
-            if (isset($freeform->forms) && method_exists($freeform->forms, 'getAllForms')) {
-                $forms = $freeform->forms->getAllForms();
-            } elseif (isset($freeform->formRepository) && method_exists($freeform->formRepository, 'getAllForms')) {
-                $forms = $freeform->formRepository->getAllForms();
-            }
-
-            if (!is_iterable($forms)) {
-                return null;
-            }
-
-            $options = [];
-            foreach ($forms as $form) {
-                $name = $form->name ?? null;
-                $handle = $form->handle ?? null;
-                if ($name !== null && $handle !== null) {
-                    $options[] = [
-                        'label' => (string)$name,
-                        'value' => (string)$handle,
-                    ];
-                }
-            }
-
-            return $options;
-        } catch (\Throwable $e) {
-            Craft::warning('Unable to fetch Freeform forms: ' . $e->getMessage(), __METHOD__);
-
-            return null;
-        }
     }
 
     /**
