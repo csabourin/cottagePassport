@@ -170,7 +170,7 @@
                 <h2 id="drawModalTitle">{{ t.text('drawModalTitle') }}</h2>
                 <p>{{ t.text('drawModalBody') }}</p>
                 <div id="drawFormContainer">
-                    {{ craft.freeform.form(drawHandle, { ajax: true }) }}
+                    {{ craft.freeform.form(drawHandle).render() }}
                 </div>
             </div>
         </div>
@@ -186,7 +186,7 @@
                 <h2 id="stickerModalTitle">{{ t.text('stickerModalTitle') }}</h2>
                 <p>{{ t.text('stickerModalBody') }}</p>
                 <div id="stickerFormContainer">
-                    {{ craft.freeform.form(stickerHandle, { ajax: true }) }}
+                    {{ craft.freeform.form(stickerHandle).render() }}
                 </div>
             </div>
         </div>
