@@ -13,6 +13,7 @@ use csabourin\stamppassport\models\Settings;
 use csabourin\stamppassport\services\ContestProgress;
 use csabourin\stamppassport\services\Items;
 use csabourin\stamppassport\variables\StampPassportVariable;
+use Solspace\Freeform\Freeform as FreeformPlugin;
 use yii\base\Event;
 
 /**
@@ -71,8 +72,59 @@ class Plugin extends BasePlugin
     {
         return Craft::$app->getView()->renderTemplate(
             'stamp-passport/_settings-fields',
-            ['settings' => $this->getSettings()]
+            [
+                'settings' => $this->getSettings(),
+                'freeformForms' => $this->getFreeformFormOptions(),
+            ]
         );
+    }
+
+    /**
+     * Returns Freeform form options for CP select fields.
+     */
+    public function getFreeformFormOptions(): ?array
+    {
+        $freeform = Craft::$app->getPlugins()->getPlugin('freeform');
+
+        if ($freeform === null && class_exists(FreeformPlugin::class)) {
+            $freeform = FreeformPlugin::getInstance();
+        }
+
+        if ($freeform === null) {
+            return null;
+        }
+
+        try {
+            $forms = null;
+
+            if (isset($freeform->forms) && method_exists($freeform->forms, 'getAllForms')) {
+                $forms = $freeform->forms->getAllForms();
+            } elseif (isset($freeform->formRepository) && method_exists($freeform->formRepository, 'getAllForms')) {
+                $forms = $freeform->formRepository->getAllForms();
+            }
+
+            if (!is_iterable($forms)) {
+                return null;
+            }
+
+            $options = [];
+            foreach ($forms as $form) {
+                $name = $form->name ?? null;
+                $handle = $form->handle ?? null;
+                if ($name !== null && $handle !== null) {
+                    $options[] = [
+                        'label' => (string)$name,
+                        'value' => (string)$handle,
+                    ];
+                }
+            }
+
+            return $options;
+        } catch (\Throwable $e) {
+            Craft::warning('Unable to fetch Freeform forms: ' . $e->getMessage(), __METHOD__);
+
+            return null;
+        }
     }
 
     private function _registerCpRoutes(): void
