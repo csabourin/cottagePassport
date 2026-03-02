@@ -794,23 +794,25 @@
             hideModal(openModals[openModals.length - 1].id);
         });
 
-        /* Freeform AJAX success hooks */
-        document.addEventListener('freeform-ajax-success', function (e) {
-            var form = e.target;
-            var drawContainer = el('drawFormContainer');
-            var stickerContainer = el('stickerFormContainer');
+        /* Freeform: freeform-ajax-success is dispatched on document (not the form
+           element), so e.target is document — containment checks always fail.
+           Instead, identify the relevant form by which modal is currently open. */
+        document.addEventListener('freeform-ajax-success', function () {
+            var drawModal    = el('drawModal');
+            var stickerModal = el('stickerModal');
 
-            if (drawContainer && drawContainer.contains(form)) {
+            if (drawModal && !drawModal.classList.contains('hidden')) {
                 localStorage.setItem('passportDrawSubmitted', '1');
                 localStorage.removeItem('passportDrawDismissed');
+                updateReopenButton('drawReopenSection', false);
                 ga4Event('passport_draw_submitted');
-                /* hideModal will see submitted=1 and hide the reopen button */
                 setTimeout(function () { hideModal('drawModal'); }, 2000);
             }
 
-            if (stickerContainer && stickerContainer.contains(form)) {
+            if (stickerModal && !stickerModal.classList.contains('hidden')) {
                 localStorage.setItem('passportStickerSubmitted', '1');
                 localStorage.removeItem('passportStickerDismissed');
+                updateReopenButton('stickerReopenSection', false);
                 ga4Event('passport_sticker_submitted');
                 setTimeout(function () { hideModal('stickerModal'); }, 2000);
             }
@@ -991,6 +993,27 @@
 
         ga4Event('passport_page_view', { items_total: itemsData.length });
     }
+
+    /* ═══════════════════════════════════════════
+       Freeform AJAX — early opt-in
+       ═══════════════════════════════════════════ */
+
+    /* freeform-ready fires on the form element (may not bubble), so we use
+       capture phase to intercept it reliably. We enable AJAX mode only for
+       forms inside our modal containers; all other Freeform forms are unaffected.
+       This listener is registered synchronously before init() so it is always
+       in place before Freeform initialises the forms on DOMContentLoaded. */
+    document.addEventListener('freeform-ready', function (e) {
+        var form = e.target;
+        var drawContainer    = el('drawFormContainer');
+        var stickerContainer = el('stickerFormContainer');
+        if (form && (
+            (drawContainer    && drawContainer.contains(form))    ||
+            (stickerContainer && stickerContainer.contains(form))
+        )) {
+            e.options.ajax = true;
+        }
+    }, true /* capture */);
 
     /* Boot */
     if (document.readyState === 'loading') {
