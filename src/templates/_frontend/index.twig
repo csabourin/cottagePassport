@@ -38,6 +38,9 @@
 
 {% block content %}
 
+{% set drawHandle    = settings.freeformDrawFormHandle %}
+{% set stickerHandle = settings.freeformStickerFormHandle %}
+
     {# ── Header — wood panel with circular logo ── #}
     <header class="passport-header{{ woodPanelUrl ? ' has-wood-bg' : '' }}">
 
@@ -142,6 +145,22 @@
         <p class="progress-text" id="progressText" aria-live="polite"></p>
     </section>
 
+    {# ── Reopen form buttons (shown by JS when dismissed but not yet submitted) ── #}
+    {% if drawHandle %}
+    <div id="drawReopenSection" class="passport-reopen hidden">
+        <button id="drawReopenBtn" type="button" class="passport-btn passport-btn-secondary" aria-haspopup="dialog">
+            {{ 'Reopen draw entry form'|t('stamp-passport') }}
+        </button>
+    </div>
+    {% endif %}
+    {% if stickerHandle %}
+    <div id="stickerReopenSection" class="passport-reopen hidden">
+        <button id="stickerReopenBtn" type="button" class="passport-btn passport-btn-secondary" aria-haspopup="dialog">
+            {{ 'Reopen sticker request form'|t('stamp-passport') }}
+        </button>
+    </div>
+    {% endif %}
+
     {# ── Item detail modal (shared, populated by JS on image click) ── #}
     <div id="itemDetailModal" class="passport-modal hidden"
          role="dialog"
@@ -161,7 +180,6 @@
     </div>
 
     {# ── Draw modal ── #}
-    {% set drawHandle = settings.freeformDrawFormHandle %}
     {% if drawHandle %}
         <div id="drawModal" class="passport-modal hidden" role="dialog" aria-labelledby="drawModalTitle">
             <div class="passport-modal-backdrop"></div>
@@ -177,7 +195,6 @@
     {% endif %}
 
     {# ── Sticker modal ── #}
-    {% set stickerHandle = settings.freeformStickerFormHandle %}
     {% if stickerHandle %}
         <div id="stickerModal" class="passport-modal hidden" role="dialog" aria-labelledby="stickerModalTitle">
             <div class="passport-modal-backdrop"></div>

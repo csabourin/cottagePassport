@@ -520,6 +520,16 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 }
 
 /* ══════════════════════════════════════════════════════════
+   REOPEN FORM BUTTON SECTION
+   ══════════════════════════════════════════════════════════ */
+.passport-reopen {
+    text-align: center;
+    padding: 16px 20px;
+    background: var(--passport-cream);
+    border-top: 1px solid #e0d8cc;
+}
+
+/* ══════════════════════════════════════════════════════════
    MODALS
    ══════════════════════════════════════════════════════════ */
 .passport-modal {

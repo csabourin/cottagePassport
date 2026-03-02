@@ -665,6 +665,9 @@
                 if (localStorage.getItem('passportDrawDismissed') !== '1') {
                     showModal('drawModal');
                     ga4Event('passport_draw_eligible', { stamps: count });
+                } else {
+                    /* Previously dismissed — show reopen button */
+                    updateReopenButton('drawReopenSection', true);
                 }
             }
         }
@@ -672,8 +675,13 @@
         /* Sticker: all items completed */
         if (count >= itemsData.length && itemsData.length > 0) {
             if (localStorage.getItem('passportStickerSubmitted') !== '1') {
-                showModal('stickerModal');
-                ga4Event('passport_bucket_list_complete', { stamps: count });
+                if (localStorage.getItem('passportStickerDismissed') !== '1') {
+                    showModal('stickerModal');
+                    ga4Event('passport_bucket_list_complete', { stamps: count });
+                } else {
+                    /* Previously dismissed — show reopen button */
+                    updateReopenButton('stickerReopenSection', true);
+                }
             }
         }
     }
@@ -726,11 +734,39 @@
         trapFocus(modal);
     }
 
+    function updateReopenButton(sectionId, show) {
+        var section = el(sectionId);
+        if (!section) return;
+        if (show) {
+            section.classList.remove('hidden');
+        } else {
+            section.classList.add('hidden');
+        }
+    }
+
     function hideModal(id) {
         var modal = el(id);
         if (!modal) return;
         modal.classList.add('hidden');
         releaseFocusFromModal(modal);
+
+        /* Track dismissed state for form modals saved in localStorage */
+        if (id === 'drawModal') {
+            if (localStorage.getItem('passportDrawSubmitted') !== '1') {
+                localStorage.setItem('passportDrawDismissed', '1');
+                updateReopenButton('drawReopenSection', true);
+            } else {
+                updateReopenButton('drawReopenSection', false);
+            }
+        }
+        if (id === 'stickerModal') {
+            if (localStorage.getItem('passportStickerSubmitted') !== '1') {
+                localStorage.setItem('passportStickerDismissed', '1');
+                updateReopenButton('stickerReopenSection', true);
+            } else {
+                updateReopenButton('stickerReopenSection', false);
+            }
+        }
     }
 
     function bindModals() {
@@ -766,16 +802,34 @@
 
             if (drawContainer && drawContainer.contains(form)) {
                 localStorage.setItem('passportDrawSubmitted', '1');
+                localStorage.removeItem('passportDrawDismissed');
                 ga4Event('passport_draw_submitted');
+                /* hideModal will see submitted=1 and hide the reopen button */
                 setTimeout(function () { hideModal('drawModal'); }, 2000);
             }
 
             if (stickerContainer && stickerContainer.contains(form)) {
                 localStorage.setItem('passportStickerSubmitted', '1');
+                localStorage.removeItem('passportStickerDismissed');
                 ga4Event('passport_sticker_submitted');
                 setTimeout(function () { hideModal('stickerModal'); }, 2000);
             }
         });
+    }
+
+    function bindReopenButtons() {
+        var drawBtn = el('drawReopenBtn');
+        if (drawBtn) {
+            drawBtn.addEventListener('click', function () {
+                showModal('drawModal', drawBtn);
+            });
+        }
+        var stickerBtn = el('stickerReopenBtn');
+        if (stickerBtn) {
+            stickerBtn.addEventListener('click', function () {
+                showModal('stickerModal', stickerBtn);
+            });
+        }
     }
 
     /* ═══════════════════════════════════════════
@@ -891,6 +945,9 @@
 
         /* Bind modal interactions */
         bindModals();
+
+        /* Bind reopen form buttons */
+        bindReopenButtons();
 
         /* Bind item detail buttons (image click → detail modal) */
         bindItemDetailButtons();
