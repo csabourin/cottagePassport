@@ -173,11 +173,22 @@
         {% do view.registerAssetBundle('craft\\ckeditor\\web\\assets\\ckeditor\\CkeditorAsset') %}
         {% js %}
         (function () {
-            if (typeof CKEditor5 === 'undefined' || typeof CKEditor5.craftcms === 'undefined') return;
             var el = document.getElementById('stamp-desc-{{ currentSite.id }}');
             if (!el) return;
 
-            CKEditor5.craftcms.create(el, {
+            // Locate ClassicEditor however the craftcms/ckeditor bundle exposes it.
+            var ClassicEditor =
+                (typeof window.ClassicEditor !== 'undefined' && window.ClassicEditor) ||
+                (window.CKEditor5 && (
+                    (window.CKEditor5.editor         && window.CKEditor5.editor.ClassicEditor)        ||
+                    (window.CKEditor5.editorClassic  && window.CKEditor5.editorClassic.ClassicEditor) ||
+                    window.CKEditor5.ClassicEditor
+                )) ||
+                null;
+
+            if (!ClassicEditor) return;
+
+            ClassicEditor.create(el, {
                 toolbar: {
                     items: [
                         'bold', 'italic', '|',
@@ -189,6 +200,16 @@
                 },
                 language: '{{ currentSite.language[:2]|lower }}',
                 ui: { viewportOffset: { top: 50 } },
+            }).then(function (editor) {
+                // Sync editor HTML back to the hidden textarea before the form posts.
+                var form = el.closest('form');
+                if (form) {
+                    form.addEventListener('submit', function () {
+                        editor.updateSourceElement();
+                    });
+                }
+            }).catch(function (err) {
+                console.error('[stamp-passport] CKEditor init error:', err);
             });
         })();
         {% endjs %}
