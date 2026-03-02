@@ -173,35 +173,21 @@
         {% do view.registerAssetBundle('craft\\ckeditor\\web\\assets\\ckeditor\\CkeditorAsset') %}
         {% js %}
         (function () {
+            if (typeof CKEditor5 === 'undefined' || !CKEditor5.craftcms) return;
             var el = document.getElementById('stamp-desc-{{ currentSite.id }}');
             if (!el) return;
 
-            // Locate ClassicEditor however the craftcms/ckeditor bundle exposes it.
-            var ClassicEditor =
-                (typeof window.ClassicEditor !== 'undefined' && window.ClassicEditor) ||
-                (window.CKEditor5 && (
-                    (window.CKEditor5.editor         && window.CKEditor5.editor.ClassicEditor)        ||
-                    (window.CKEditor5.editorClassic  && window.CKEditor5.editorClassic.ClassicEditor) ||
-                    window.CKEditor5.ClassicEditor
-                )) ||
-                null;
-
-            if (!ClassicEditor) return;
-
-            ClassicEditor.create(el, {
-                toolbar: {
-                    items: [
-                        'bold', 'italic', '|',
-                        'link', '|',
-                        'bulletedList', 'numberedList', '|',
-                        'blockQuote', '|',
-                        'undo', 'redo'
-                    ]
-                },
+            CKEditor5.craftcms.create(el, {
+                toolbar: [
+                    'bold', 'italic', '|',
+                    'link', '|',
+                    'bulletedList', 'numberedList', '|',
+                    'blockQuote', '|',
+                    'undo', 'redo'
+                ],
                 language: '{{ currentSite.language[:2]|lower }}',
-                ui: { viewportOffset: { top: 50 } },
             }).then(function (editor) {
-                // Sync editor HTML back to the hidden textarea before the form posts.
+                // Ensure the hidden textarea is updated before the form posts.
                 var form = el.closest('form');
                 if (form) {
                     form.addEventListener('submit', function () {
