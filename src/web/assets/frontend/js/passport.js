@@ -235,7 +235,15 @@
                 answers: {},
                 score: stepsCompleted.length,
                 badges: [],
-                custom: { stampTimestamps: stampTimestamps }
+                custom: {
+                    stampTimestamps: stampTimestamps,
+                    formStates: {
+                        drawSubmitted:    localStorage.getItem('passportDrawSubmitted')   === '1',
+                        drawDismissed:    localStorage.getItem('passportDrawDismissed')   === '1',
+                        stickerSubmitted: localStorage.getItem('passportStickerSubmitted') === '1',
+                        stickerDismissed: localStorage.getItem('passportStickerDismissed') === '1'
+                    }
+                }
             },
             updatedAt: new Date().toISOString()
         };
@@ -295,7 +303,30 @@
 
         var mergedSteps = Object.keys(allSteps);
 
-        var changed = mergedSteps.length !== serverSteps.length ||
+        /* Merge form states — submitted is permanent and overrides dismissed */
+        var localFs  = (local.progress  && local.progress.custom  && local.progress.custom.formStates)  || {};
+        var serverFs = (server.progress && server.progress.custom && server.progress.custom.formStates) || {};
+
+        var drawSubmitted    = !!(localFs.drawSubmitted    || serverFs.drawSubmitted);
+        var stickerSubmitted = !!(localFs.stickerSubmitted || serverFs.stickerSubmitted);
+        var drawDismissed    = !drawSubmitted    && !!(localFs.drawDismissed    || serverFs.drawDismissed);
+        var stickerDismissed = !stickerSubmitted && !!(localFs.stickerDismissed || serverFs.stickerDismissed);
+
+        var mergedFs = {
+            drawSubmitted:    drawSubmitted,
+            drawDismissed:    drawDismissed,
+            stickerSubmitted: stickerSubmitted,
+            stickerDismissed: stickerDismissed
+        };
+
+        var serverFs2 = (server.progress && server.progress.custom && server.progress.custom.formStates) || {};
+        var fsChanged = mergedFs.drawSubmitted    !== !!serverFs2.drawSubmitted    ||
+                        mergedFs.drawDismissed    !== !!serverFs2.drawDismissed    ||
+                        mergedFs.stickerSubmitted !== !!serverFs2.stickerSubmitted ||
+                        mergedFs.stickerDismissed !== !!serverFs2.stickerDismissed;
+
+        var changed = fsChanged ||
+            mergedSteps.length !== serverSteps.length ||
             mergedSteps.some(function (s) { return serverSteps.indexOf(s) === -1; });
 
         return {
@@ -308,7 +339,10 @@
                     answers: {},
                     score: mergedSteps.length,
                     badges: [],
-                    custom: { stampTimestamps: mergedTs }
+                    custom: {
+                        stampTimestamps: mergedTs,
+                        formStates: mergedFs
+                    }
                 },
                 updatedAt: new Date().toISOString()
             }
@@ -328,6 +362,24 @@
                     collectedAt: ts[code] || new Date().toISOString()
                 });
             }
+        }
+
+        /* Apply form states — submitted is sticky; dismissed only applied when
+           the form has not already been submitted locally. */
+        var fs = (payload.progress && payload.progress.custom && payload.progress.custom.formStates) || {};
+
+        if (fs.drawSubmitted) {
+            localStorage.setItem('passportDrawSubmitted', '1');
+            localStorage.removeItem('passportDrawDismissed');
+        } else if (fs.drawDismissed && localStorage.getItem('passportDrawSubmitted') !== '1') {
+            localStorage.setItem('passportDrawDismissed', '1');
+        }
+
+        if (fs.stickerSubmitted) {
+            localStorage.setItem('passportStickerSubmitted', '1');
+            localStorage.removeItem('passportStickerDismissed');
+        } else if (fs.stickerDismissed && localStorage.getItem('passportStickerSubmitted') !== '1') {
+            localStorage.setItem('passportStickerDismissed', '1');
         }
     }
 
@@ -479,7 +531,16 @@
                     }
                 }
 
-                if (steps.length === 0) return;
+                var beaconFs = {
+                    drawSubmitted:    localStorage.getItem('passportDrawSubmitted')   === '1',
+                    drawDismissed:    localStorage.getItem('passportDrawDismissed')   === '1',
+                    stickerSubmitted: localStorage.getItem('passportStickerSubmitted') === '1',
+                    stickerDismissed: localStorage.getItem('passportStickerDismissed') === '1'
+                };
+                var hasFormState = beaconFs.drawSubmitted || beaconFs.drawDismissed ||
+                                   beaconFs.stickerSubmitted || beaconFs.stickerDismissed;
+
+                if (steps.length === 0 && !hasFormState) return;
 
                 payload.payload = {
                     schemaVersion: 1,
@@ -489,7 +550,7 @@
                         answers: {},
                         score: steps.length,
                         badges: [],
-                        custom: { stampTimestamps: ts }
+                        custom: { stampTimestamps: ts, formStates: beaconFs }
                     },
                     updatedAt: new Date().toISOString()
                 };
@@ -755,6 +816,7 @@
             if (localStorage.getItem('passportDrawSubmitted') !== '1') {
                 localStorage.setItem('passportDrawDismissed', '1');
                 updateReopenButton('drawReopenSection', true);
+                scheduleSyncDebounced();
             } else {
                 updateReopenButton('drawReopenSection', false);
             }
@@ -763,6 +825,7 @@
             if (localStorage.getItem('passportStickerSubmitted') !== '1') {
                 localStorage.setItem('passportStickerDismissed', '1');
                 updateReopenButton('stickerReopenSection', true);
+                scheduleSyncDebounced();
             } else {
                 updateReopenButton('stickerReopenSection', false);
             }
@@ -806,6 +869,7 @@
                 localStorage.removeItem('passportDrawDismissed');
                 updateReopenButton('drawReopenSection', false);
                 ga4Event('passport_draw_submitted');
+                scheduleSyncDebounced();
                 setTimeout(function () { hideModal('drawModal'); }, 2000);
             }
 
@@ -814,6 +878,7 @@
                 localStorage.removeItem('passportStickerDismissed');
                 updateReopenButton('stickerReopenSection', false);
                 ga4Event('passport_sticker_submitted');
+                scheduleSyncDebounced();
                 setTimeout(function () { hideModal('stickerModal'); }, 2000);
             }
         });
