@@ -81,48 +81,31 @@ class Plugin extends BasePlugin
 
     /**
      * Returns Freeform form options for CP select fields.
+     * Returns null when Freeform is not installed (template falls back to a text input).
+     * Queries the database directly to avoid Freeform API version differences.
      */
     public function getFreeformFormOptions(): ?array
     {
-        $freeform = Craft::$app->getPlugins()->getPlugin('freeform');
+        // Return null (not an empty array) when Freeform is absent so the
+        // template shows a plain text field instead of an empty dropdown.
+        $freeformInstalled = Craft::$app->getPlugins()->getPlugin('freeform') !== null
+            || class_exists(FreeformPlugin::class);
 
-        if ($freeform === null && class_exists(FreeformPlugin::class)) {
-            $freeform = FreeformPlugin::getInstance();
-        }
-
-        if ($freeform === null) {
+        if (!$freeformInstalled) {
             return null;
         }
 
         try {
-            $forms = null;
+            $rows = Craft::$app->getDb()
+                ->createCommand('SELECT [[name]], [[handle]] FROM {{%freeform_forms}} ORDER BY [[name]]')
+                ->queryAll();
 
-            if (isset($freeform->forms) && method_exists($freeform->forms, 'getAllForms')) {
-                $forms = $freeform->forms->getAllForms();
-            } elseif (isset($freeform->formRepository) && method_exists($freeform->formRepository, 'getAllForms')) {
-                $forms = $freeform->formRepository->getAllForms();
-            }
-
-            if (!is_iterable($forms)) {
-                return null;
-            }
-
-            $options = [];
-            foreach ($forms as $form) {
-                $name = $form->name ?? null;
-                $handle = $form->handle ?? null;
-                if ($name !== null && $handle !== null) {
-                    $options[] = [
-                        'label' => (string)$name,
-                        'value' => (string)$handle,
-                    ];
-                }
-            }
-
-            return $options;
+            return array_map(
+                static fn(array $row) => ['label' => $row['name'], 'value' => $row['handle']],
+                $rows
+            );
         } catch (\Throwable $e) {
             Craft::warning('Unable to fetch Freeform forms: ' . $e->getMessage(), __METHOD__);
-
             return null;
         }
     }
