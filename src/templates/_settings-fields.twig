@@ -62,21 +62,45 @@
 
 <h2>{{ "Freeform Integration"|t('stamp-passport') }}</h2>
 
-{{ forms.textField({
-    label: "Draw Form Handle"|t('stamp-passport'),
-    instructions: "Freeform form handle for the end-of-season draw entry."|t('stamp-passport'),
-    name: 'freeformDrawFormHandle',
-    value: settings.freeformDrawFormHandle,
-    placeholder: 'passportDraw',
-}) }}
+{% if freeformForms is not null %}
 
-{{ forms.textField({
-    label: "Sticker Form Handle"|t('stamp-passport'),
-    instructions: "Freeform form handle for the Memory Makers sticker request."|t('stamp-passport'),
-    name: 'freeformStickerFormHandle',
-    value: settings.freeformStickerFormHandle,
-    placeholder: 'passportSticker',
-}) }}
+    {{ forms.selectField({
+        label: "Draw Form"|t('stamp-passport'),
+        instructions: "Freeform form shown when the visitor qualifies for the draw."|t('stamp-passport'),
+        id: 'freeformDrawFormHandle',
+        name: 'freeformDrawFormHandle',
+        value: settings.freeformDrawFormHandle ?? '',
+        options: [{ label: '— None —'|t('stamp-passport'), value: '' }]|merge(freeformForms),
+    }) }}
+
+    {{ forms.selectField({
+        label: "Sticker Form"|t('stamp-passport'),
+        instructions: "Freeform form shown when the visitor completes every location."|t('stamp-passport'),
+        id: 'freeformStickerFormHandle',
+        name: 'freeformStickerFormHandle',
+        value: settings.freeformStickerFormHandle ?? '',
+        options: [{ label: '— None —'|t('stamp-passport'), value: '' }]|merge(freeformForms),
+    }) }}
+
+{% else %}
+
+    {{ forms.textField({
+        label: "Draw Form Handle"|t('stamp-passport'),
+        instructions: "Freeform form handle for the end-of-season draw entry."|t('stamp-passport'),
+        name: 'freeformDrawFormHandle',
+        value: settings.freeformDrawFormHandle,
+        placeholder: 'passportDraw',
+    }) }}
+
+    {{ forms.textField({
+        label: "Sticker Form Handle"|t('stamp-passport'),
+        instructions: "Freeform form handle for the Memory Makers sticker request."|t('stamp-passport'),
+        name: 'freeformStickerFormHandle',
+        value: settings.freeformStickerFormHandle,
+        placeholder: 'passportSticker',
+    }) }}
+
+{% endif %}
 
 <hr>
 

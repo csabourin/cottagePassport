@@ -215,8 +215,25 @@ class CpController extends Controller
      */
     public function actionSettings(): Response
     {
+        // Fetch Freeform forms for the select field — null if Freeform is not installed.
+        $freeformForms = null;
+        try {
+            $freeformPlugin = Craft::$app->getPlugins()->getPlugin('freeform');
+            if ($freeformPlugin !== null) {
+                $forms = $freeformPlugin->forms->getAllForms();
+                $freeformForms = [];
+                foreach ($forms as $form) {
+                    $freeformForms[] = ['label' => $form->name, 'value' => $form->handle];
+                }
+            }
+        } catch (\Throwable $e) {
+            // Freeform API unavailable — fall back to text input in template
+            $freeformForms = null;
+        }
+
         return $this->renderTemplate('stamp-passport/settings', [
-            'settings' => Plugin::$plugin->getSettings(),
+            'settings'     => Plugin::$plugin->getSettings(),
+            'freeformForms' => $freeformForms,
         ]);
     }
 
