@@ -136,7 +136,6 @@ class Settings extends Model
             'checkedIn' => 'Validation réussie.',
             'qrNotRecognized' => "Ce code QR n'est pas reconnu.",
             'loadError' => 'Impossible de charger les données du passeport. Veuillez réessayer plus tard.',
-            'Reopen draw entry form' => 'Ré-ouvrir le formulaire du tirage',
         ],
     ];
     

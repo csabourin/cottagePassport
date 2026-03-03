@@ -928,7 +928,7 @@
     function openItemDetail(btn) {
         var itemId   = btn.getAttribute('data-item-id');
         var linkUrl  = btn.getAttribute('data-item-link-url')  || '';
-        var linkText = (btn.getAttribute('data-item-link-text') || '').trim() || 'Learn more';
+        var linkText = (btn.getAttribute('data-item-link-text') || '').trim() || TXT.learnMore || 'Learn more';
 
         /* Title lives in the sibling .stamp-title */
         var slot    = btn.closest('.stamp-slot');
@@ -1083,10 +1083,10 @@
     /* Boot */
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function () {
-            init().catch(function (err) { showStatus('Error: ' + err.message); });
+            init().catch(function (err) { showStatus((TXT.errorPrefix || 'Error: ') + err.message); });
         });
     } else {
-        init().catch(function (err) { showStatus('Error: ' + err.message); });
+        init().catch(function (err) { showStatus((TXT.errorPrefix || 'Error: ') + err.message); });
     }
 
 })();
