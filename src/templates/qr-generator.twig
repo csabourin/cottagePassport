@@ -140,41 +140,39 @@
             ].join('');
         }).join('');
 
-        return [
-            '<!doctype html>',
-            '<html lang="en">',
-            '<head>',
-            '<meta charset="utf-8">',
-            '<meta name="viewport" content="width=device-width, initial-scale=1">',
-            '<title>Printable QR Codes</title>',
-            '<style>',
-            'body { margin: 16px; background: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }',
-            '.print-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }',
-            '.print-card { border: 1px solid #d1d5db; padding: 6px 6px 8px; text-align: center; break-inside: avoid; page-break-inside: avoid; }',
-            '.print-card img { width: 130px; height: 130px; display: block; margin: 0 auto 4px; }',
-            '.print-card-title { font-size: 14px; line-height: 1.2; color: #1f2937; }',
-            '@media print { @page { size: Letter portrait; margin: 0.3in; } body { margin: 0; } .print-card-title { font-size: 8pt; } }',
-            '</style>',
-            '</head>',
-            '<body>',
-            '<section class="print-grid" aria-label="Printable QR code sheet">' + cardHtml + '</section>',
-            '<script>',
-            '(function(){',
-            '  var images = Array.prototype.slice.call(document.images);',
-            '  var remaining = images.length;',
-            '  function done(){ setTimeout(function(){ window.print(); }, 120); }',
-            '  if (!remaining) { done(); return; }',
-            '  images.forEach(function(img){',
-            '    function finish(){ remaining -= 1; if (remaining <= 0) { done(); } }',
-            '    if (img.complete) { finish(); return; }',
-            '    img.addEventListener("load", finish, { once: true });',
-            '    img.addEventListener("error", finish, { once: true });',
-            '  });',
-            '})();',
-            '<\/script>',
-            '</body>',
-            '</html>'
-        ].join('');
+        return `<!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Printable QR Codes</title>
+        <style>
+        body { margin: 16px; background: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        .print-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+        .print-card { border: 1px solid #d1d5db; padding: 6px 6px 8px; text-align: center; break-inside: avoid; page-break-inside: avoid; }
+        .print-card img { width: 130px; height: 130px; display: block; margin: 0 auto 4px; }
+        .print-card-title { font-size: 14px; line-height: 1.2; color: #1f2937; }
+        @media print { @page { size: Letter portrait; margin: 0.3in; } body { margin: 0; } .print-card-title { font-size: 8pt; } }
+        </style>
+    </head>
+    <body>
+        <section class="print-grid" aria-label="Printable QR code sheet">${cardHtml}</section>
+        <script>
+        (function(){
+            var images = Array.prototype.slice.call(document.images);
+            var remaining = images.length;
+            function done(){ setTimeout(function(){ window.print(); }, 120); }
+            if (!remaining) { done(); return; }
+            images.forEach(function(img){
+            function finish(){ remaining -= 1; if (remaining <= 0) { done(); } }
+            if (img.complete) { finish(); return; }
+            img.addEventListener("load", finish, { once: true });
+            img.addEventListener("error", finish, { once: true });
+            });
+        })();
+        <\/script>
+    </body>
+    </html>`;
     }
 
     document.getElementById('btn-print').addEventListener('click', function() {
