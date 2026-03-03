@@ -35,6 +35,7 @@
             {{ "Print All QR Codes"|t('stamp-passport') }}
         </button>
     </div>
+    <input type="hidden" id="qr-center-image-url" value="{{ (settings.qrCenterImageUrl ?? '')|e('html_attr') }}">
 
     {% if items|length %}
         <div id="qr-grid" class="passport-qr-grid">
@@ -95,7 +96,8 @@
 (function() {
     var picker = document.getElementById('qr-site-picker');
     var cards = document.querySelectorAll('.qr-card');
-    var qrCenterImageUrl = {{ (settings.qrCenterImageUrl ?? '')|json_encode|raw }};
+    var qrCenterImageUrlInput = document.getElementById('qr-center-image-url');
+    var qrCenterImageUrl = qrCenterImageUrlInput ? qrCenterImageUrlInput.value : '';
 
     function updateQrCodes() {
         var baseUrl = picker.value.replace(/\/$/, '');
@@ -114,7 +116,10 @@
 
             var qrApiUrl = 'https://quickchart.io/qr?' + params.toString();
             card.querySelector('img').src = qrApiUrl;
-            card.querySelector('a')?.setAttribute('href', qrApiUrl);
+            var link = card.querySelector('a');
+            if (link) {
+                link.setAttribute('href', qrApiUrl);
+            }
         });
     }
 
@@ -163,7 +168,8 @@
     document.getElementById('btn-print').addEventListener('click', function() {
         var printCards = Array.from(cards).map(function(card) {
             var img = card.querySelector('img');
-            var title = card.querySelector('.qr-label strong')?.textContent?.trim() || card.dataset.shortcode;
+            var titleEl = card.querySelector('.qr-label strong');
+            var title = titleEl && titleEl.textContent ? titleEl.textContent.trim() : card.dataset.shortcode;
             return {
                 title: title,
                 imageUrl: img ? img.src : ''
