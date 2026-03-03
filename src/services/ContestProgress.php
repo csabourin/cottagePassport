@@ -108,6 +108,10 @@ class ContestProgress extends Component
 
         $payloadJson = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
+        if ($payloadJson === false) {
+            return ['ok' => false, 'error' => 'payload_encoding_failed'];
+        }
+
         if (strlen($payloadJson) > self::MAX_PAYLOAD_SIZE) {
             return ['ok' => false, 'error' => 'payload_too_large'];
         }

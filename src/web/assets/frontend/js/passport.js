@@ -952,6 +952,56 @@
        Item Detail Modal
        ═══════════════════════════════════════════ */
 
+    /**
+     * Strip all but a safe subset of HTML tags and attributes.
+     * Prevents XSS when injecting admin-authored description HTML into the DOM.
+     */
+    function sanitizeDescHtml(html) {
+        var SAFE_TAGS = ['P','BR','STRONG','EM','B','I','U','UL','OL','LI',
+                         'A','SPAN','BLOCKQUOTE','HR','H1','H2','H3','H4','H5','H6'];
+
+        var doc = (new DOMParser()).parseFromString(html, 'text/html');
+
+        function cleanDocNode(srcNode, dstNode) {
+            Array.from(srcNode.childNodes).forEach(function (child) {
+                if (child.nodeType === 3) {
+                    dstNode.appendChild(document.createTextNode(child.textContent));
+                    return;
+                }
+                if (child.nodeType !== 1) return; // skip comments, PIs, etc.
+
+                if (SAFE_TAGS.indexOf(child.tagName) === -1) {
+                    // Unwrap unsafe element: recurse its children into the parent
+                    cleanDocNode(child, dstNode);
+                    return;
+                }
+
+                var copy = document.createElement(child.tagName);
+                if (child.tagName === 'A') {
+                    var href = child.getAttribute('href') || '';
+                    if (href) {
+                        try {
+                            var proto = new URL(href, location.href).protocol;
+                            if (proto === 'http:' || proto === 'https:') {
+                                copy.setAttribute('href', href);
+                            }
+                        } catch (e) { /* discard malformed URLs */ }
+                    }
+                    var rel = child.getAttribute('rel');
+                    if (rel) copy.setAttribute('rel', rel);
+                    var target = child.getAttribute('target');
+                    if (target) copy.setAttribute('target', target);
+                }
+                cleanDocNode(child, copy);
+                dstNode.appendChild(copy);
+            });
+        }
+
+        var out = document.createElement('div');
+        cleanDocNode(doc.body, out);
+        return out.innerHTML;
+    }
+
     function openItemDetail(btn) {
         var itemId   = btn.getAttribute('data-item-id');
         var linkUrl  = btn.getAttribute('data-item-link-url')  || '';
@@ -974,11 +1024,20 @@
         var linkNode  = qs('.item-detail-link',  modal);
 
         if (titleNode) titleNode.textContent = title;
-        if (bodyNode)  bodyNode.innerHTML    = descHtml;
+        if (bodyNode)  bodyNode.innerHTML    = sanitizeDescHtml(descHtml);
 
         if (linkNode) {
+            var safeUrl = '';
             if (linkUrl) {
-                linkNode.href        = linkUrl;
+                try {
+                    var parsed = new URL(linkUrl, location.href);
+                    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+                        safeUrl = parsed.href;
+                    }
+                } catch (e) { /* malformed URL — leave safeUrl empty */ }
+            }
+            if (safeUrl) {
+                linkNode.href        = safeUrl;
                 linkNode.textContent = linkText;
                 linkNode.classList.remove('hidden');
             } else {

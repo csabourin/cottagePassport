@@ -200,11 +200,15 @@ class Items extends Component
 
     private function _generateShortCode(): string
     {
-        do {
+        $maxAttempts = 20;
+        for ($i = 0; $i < $maxAttempts; $i++) {
             $code = strtolower(StringHelper::randomString(8));
-        } while (ItemRecord::find()->where(['shortCode' => $code])->exists());
+            if (!ItemRecord::find()->where(['shortCode' => $code])->exists()) {
+                return $code;
+            }
+        }
 
-        return $code;
+        throw new \RuntimeException('Failed to generate a unique short code after ' . $maxAttempts . ' attempts.');
     }
 
     private function _getNextSortOrder(): int

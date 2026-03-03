@@ -83,6 +83,11 @@ class ApiController extends Controller
         $lat = (float)$request->getRequiredBodyParam('latitude');
         $lng = (float)$request->getRequiredBodyParam('longitude');
 
+        if (!is_finite($lat) || $lat < -90.0 || $lat > 90.0 ||
+            !is_finite($lng) || $lng < -180.0 || $lng > 180.0) {
+            throw new \yii\web\BadRequestHttpException('Invalid coordinates.');
+        }
+
         $result = Plugin::$plugin->items->validateGeofence($shortCode, $lat, $lng);
 
         if (!$result['item']) {
