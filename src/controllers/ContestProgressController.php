@@ -16,6 +16,10 @@ use yii\web\Response;
  */
 class ContestProgressController extends Controller
 {
+    private const WRITE_RATE_LIMIT_WINDOW_SECONDS = 60;
+    private const WRITE_RATE_LIMIT_PER_CID_MAX = 40;
+    private const WRITE_RATE_LIMIT_PER_IP_MAX = 120;
+
     protected array|bool|int $allowAnonymous = true;
 
     public function beforeAction($action): bool
@@ -58,11 +62,17 @@ class ContestProgressController extends Controller
             return $this->asJson(['ok' => false, 'error' => 'invalid_cid']);
         }
 
+        $writeToken = $service->issueWriteToken($cid);
+
         $result = $service->getProgress($cid);
 
         if (!$result['ok']) {
             $this->response->setStatusCode(404);
-            return $this->asJson(['ok' => false, 'error' => $result['error']]);
+            return $this->asJson([
+                'ok' => false,
+                'error' => $result['error'],
+                'writeToken' => $writeToken,
+            ]);
         }
 
         $record = $result['record'];
@@ -73,16 +83,17 @@ class ContestProgressController extends Controller
             'revision' => (int)$record->revision,
             'payload' => json_decode($record->payload_json, true),
             'serverUpdatedAt' => $record->updated_at,
+            'writeToken' => $writeToken,
         ]);
     }
 
     /**
      * POST api/contest-progress
-     * Body: { cid, payload, clientRevision }
+     * Body: { cid, payload, clientRevision, writeToken }
      */
     private function _handlePost(\craft\web\Request $request): Response
     {
-        $contentType = $request->getContentType();
+        $contentType = (string)$request->getContentType();
         if (stripos($contentType, 'application/json') === false) {
             $this->response->setStatusCode(415);
             return $this->asJson(['ok' => false, 'error' => 'content_type_must_be_json']);
@@ -98,6 +109,7 @@ class ContestProgressController extends Controller
         $cid = $body['cid'] ?? '';
         $payload = $body['payload'] ?? null;
         $clientRevision = $body['clientRevision'] ?? null;
+        $writeToken = $body['writeToken'] ?? '';
 
         if (!$cid || !is_string($cid)) {
             $this->response->setStatusCode(400);
@@ -114,11 +126,30 @@ class ContestProgressController extends Controller
             return $this->asJson(['ok' => false, 'error' => 'missing_client_revision']);
         }
 
+        if (!is_string($writeToken) || $writeToken === '') {
+            $this->response->setStatusCode(401);
+            return $this->asJson(['ok' => false, 'error' => 'missing_write_token']);
+        }
+
         $service = Plugin::$plugin->contestProgress;
 
         if (!$service->isValidCid($cid)) {
             $this->response->setStatusCode(400);
             return $this->asJson(['ok' => false, 'error' => 'invalid_cid']);
+        }
+
+        if (!$this->_enforceWriteRateLimit($cid)) {
+            return $this->asJson(['ok' => false, 'error' => 'rate_limited']);
+        }
+
+        $writeTokenResult = $service->validateWriteToken($cid, $writeToken);
+        if (!$writeTokenResult['ok']) {
+            $this->response->setStatusCode(401);
+            return $this->asJson([
+                'ok' => false,
+                'error' => $writeTokenResult['error'],
+                'writeToken' => $service->issueWriteToken($cid),
+            ]);
         }
 
         $result = $service->upsertProgress($cid, $payload, (int)$clientRevision);
@@ -132,6 +163,7 @@ class ContestProgressController extends Controller
                     'serverRevision' => $result['serverRevision'],
                     'serverPayload' => $result['serverPayload'],
                     'serverUpdatedAt' => $result['serverUpdatedAt'],
+                    'writeToken' => $service->issueWriteToken($cid),
                 ]);
             }
 
@@ -141,7 +173,11 @@ class ContestProgressController extends Controller
                 $this->response->setStatusCode(400);
             }
 
-            return $this->asJson(['ok' => false, 'error' => $result['error']]);
+            return $this->asJson([
+                'ok' => false,
+                'error' => $result['error'],
+                'writeToken' => $service->issueWriteToken($cid),
+            ]);
         }
 
         return $this->asJson([
@@ -149,6 +185,35 @@ class ContestProgressController extends Controller
             'cid' => $cid,
             'revision' => $result['revision'],
             'serverUpdatedAt' => $result['serverUpdatedAt'],
+            'writeToken' => $service->issueWriteToken($cid),
         ]);
+    }
+
+    private function _enforceWriteRateLimit(string $cid): bool
+    {
+        $request = Craft::$app->getRequest();
+        $ip = $request->getUserIP() ?? 'unknown';
+        $bucket = (int)floor(time() / self::WRITE_RATE_LIMIT_WINDOW_SECONDS);
+
+        $cache = Craft::$app->getCache();
+        $ttl = self::WRITE_RATE_LIMIT_WINDOW_SECONDS + 5;
+
+        $perCidKey = 'stamp-passport:contest-progress:write-rate:cid:' . sha1($ip . '|' . $cid . '|' . $bucket);
+        $perCidCurrent = $cache->get($perCidKey);
+        $perCidCount = $perCidCurrent === false ? 1 : ((int)$perCidCurrent + 1);
+        $cache->set($perCidKey, $perCidCount, $ttl);
+
+        $perIpKey = 'stamp-passport:contest-progress:write-rate:ip:' . sha1($ip . '|' . $bucket);
+        $perIpCurrent = $cache->get($perIpKey);
+        $perIpCount = $perIpCurrent === false ? 1 : ((int)$perIpCurrent + 1);
+        $cache->set($perIpKey, $perIpCount, $ttl);
+
+        if ($perCidCount > self::WRITE_RATE_LIMIT_PER_CID_MAX || $perIpCount > self::WRITE_RATE_LIMIT_PER_IP_MAX) {
+            $this->response->setStatusCode(429);
+            $this->response->getHeaders()->set('Retry-After', (string)self::WRITE_RATE_LIMIT_WINDOW_SECONDS);
+            return false;
+        }
+
+        return true;
     }
 }

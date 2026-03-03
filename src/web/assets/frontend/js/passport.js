@@ -23,6 +23,7 @@
     var itemsData = [];         // Loaded from API
     var currentItem = null;     // Resolved from ?q= param
     var contestCid = null;      // Contest participant ID (UUID v4)
+    var contestWriteToken = null; // Session-bound anonymous write capability
 
     /* ── Focusable elements query (for focus trap) ── */
     var FOCUSABLE_SELECTOR = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
@@ -280,20 +281,48 @@
         var res = await fetch(CFG.contestProgressUrl + '?cid=' + encodeURIComponent(cid), {
             headers: { Accept: 'application/json' }
         });
-        return res.json();
+        var data = await res.json();
+        if (data && typeof data.writeToken === 'string' && data.writeToken) {
+            contestWriteToken = data.writeToken;
+        }
+        return data;
     }
 
     async function pushRemoteProgress(cid, payload, clientRevision) {
-        var res = await fetch(CFG.contestProgressUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify({
-                cid: cid,
-                payload: payload,
-                clientRevision: clientRevision
-            })
-        });
-        return res.json();
+        if (!contestWriteToken) {
+            try {
+                await fetchRemoteProgress(cid);
+            } catch (e) {
+                // If we cannot hydrate a token right now, let the write fail gracefully.
+            }
+        }
+
+        async function sendWrite() {
+            var res = await fetch(CFG.contestProgressUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({
+                    cid: cid,
+                    payload: payload,
+                    clientRevision: clientRevision,
+                    writeToken: contestWriteToken || ''
+                })
+            });
+            var data = await res.json();
+            if (data && typeof data.writeToken === 'string' && data.writeToken) {
+                contestWriteToken = data.writeToken;
+            }
+            return data;
+        }
+
+        var data = await sendWrite();
+        if (data && (data.error === 'missing_write_token' || data.error === 'invalid_write_token' || data.error === 'expired_write_token')) {
+            if (contestWriteToken) {
+                data = await sendWrite();
+            }
+        }
+
+        return data;
     }
 
     /* ═══════════════════════════════════════════
@@ -431,6 +460,15 @@
         var payload = getOutbox();
         if (!payload || !contestCid) return;
 
+        if (!contestWriteToken) {
+            try {
+                await fetchRemoteProgress(contestCid);
+            } catch (e) {
+                // Token hydration failed; keep outbox for later.
+            }
+            if (!contestWriteToken) return;
+        }
+
         var rev = getLastServerRevision();
         try {
             var result = await pushRemoteProgress(contestCid, payload, rev);
@@ -532,13 +570,14 @@
     }
 
     function syncBeforeUnload() {
-        if (!contestCid || !CFG.contestProgressUrl || !navigator.onLine) return;
+        if (!contestCid || !CFG.contestProgressUrl || !navigator.onLine || !contestWriteToken) return;
 
         try {
             var payload = {
                 cid: contestCid,
                 payload: null,
-                clientRevision: getLastServerRevision()
+                clientRevision: getLastServerRevision(),
+                writeToken: contestWriteToken
             };
 
             // Best-effort: use sendBeacon if available

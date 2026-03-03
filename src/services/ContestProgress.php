@@ -10,6 +10,9 @@ class ContestProgress extends Component
 {
     /** Maximum payload size in bytes */
     public const MAX_PAYLOAD_SIZE = 32768; // 32 KB
+    /** Anonymous write token lifetime in seconds */
+    public const WRITE_TOKEN_TTL = 600; // 10 minutes
+    private const WRITE_TOKEN_PURPOSE = 'stamp-passport.contest-progress.write-token';
 
     /**
      * Validate that a string is a valid UUID v4.
@@ -68,6 +71,95 @@ class ContestProgress extends Component
     public function computeHash(string $json): string
     {
         return hash('sha256', $json);
+    }
+
+    /**
+     * Mint an anonymous session-bound write token for a specific CID.
+     *
+     * The token is signed with Craft's security key and includes:
+     * - CID
+     * - current anonymous session ID
+     * - expiration timestamp
+     */
+    public function issueWriteToken(string $cid): string
+    {
+        if (!$this->isValidCid($cid)) {
+            throw new \InvalidArgumentException('Invalid CID for write token issuance.');
+        }
+
+        $session = Craft::$app->getSession();
+        if (!$session->getIsActive()) {
+            $session->open();
+        }
+
+        $payload = [
+            'cid' => $cid,
+            'sid' => (string)$session->getId(),
+            'exp' => time() + self::WRITE_TOKEN_TTL,
+        ];
+
+        $payloadJson = json_encode($payload, JSON_UNESCAPED_SLASHES);
+        if ($payloadJson === false) {
+            throw new \RuntimeException('Failed to encode write token payload.');
+        }
+
+        $signed = Craft::$app->getSecurity()->hashData($payloadJson, self::WRITE_TOKEN_PURPOSE);
+        return $this->_b64urlEncode($signed);
+    }
+
+    /**
+     * Validate an anonymous write token for a CID.
+     *
+     * @return array{ok: bool, error?: string}
+     */
+    public function validateWriteToken(string $cid, string $token): array
+    {
+        if (!$this->isValidCid($cid)) {
+            return ['ok' => false, 'error' => 'invalid_cid'];
+        }
+
+        if ($token === '') {
+            return ['ok' => false, 'error' => 'missing_write_token'];
+        }
+
+        $signed = $this->_b64urlDecode($token);
+        if ($signed === null) {
+            return ['ok' => false, 'error' => 'invalid_write_token'];
+        }
+
+        $payloadJson = Craft::$app->getSecurity()->validateData($signed, self::WRITE_TOKEN_PURPOSE);
+        if ($payloadJson === false) {
+            return ['ok' => false, 'error' => 'invalid_write_token'];
+        }
+
+        $payload = json_decode($payloadJson, true);
+        if (!is_array($payload) || !isset($payload['cid'], $payload['sid'], $payload['exp'])) {
+            return ['ok' => false, 'error' => 'invalid_write_token'];
+        }
+
+        if (!is_string($payload['cid']) || !is_string($payload['sid']) || !is_numeric($payload['exp'])) {
+            return ['ok' => false, 'error' => 'invalid_write_token'];
+        }
+
+        if (!hash_equals($cid, $payload['cid'])) {
+            return ['ok' => false, 'error' => 'invalid_write_token'];
+        }
+
+        $session = Craft::$app->getSession();
+        if (!$session->getIsActive()) {
+            $session->open();
+        }
+
+        $currentSessionId = (string)$session->getId();
+        if ($currentSessionId === '' || !hash_equals($currentSessionId, $payload['sid'])) {
+            return ['ok' => false, 'error' => 'invalid_write_token'];
+        }
+
+        if ((int)$payload['exp'] < time()) {
+            return ['ok' => false, 'error' => 'expired_write_token'];
+        }
+
+        return ['ok' => true];
     }
 
     /**
@@ -197,5 +289,21 @@ class ContestProgress extends Component
             'revision' => $newRevision,
             'serverUpdatedAt' => $now,
         ];
+    }
+
+    private function _b64urlEncode(string $value): string
+    {
+        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
+    }
+
+    private function _b64urlDecode(string $value): ?string
+    {
+        $remainder = strlen($value) % 4;
+        if ($remainder !== 0) {
+            $value .= str_repeat('=', 4 - $remainder);
+        }
+
+        $decoded = base64_decode(strtr($value, '-_', '+/'), true);
+        return $decoded === false ? null : $decoded;
     }
 }
