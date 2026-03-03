@@ -138,7 +138,6 @@ class Settings extends Model
             'loadError' => 'Impossible de charger les données du passeport. Veuillez réessayer plus tard.',
             'Reopen draw entry form' => 'Ré-ouvrir le formulaire du tirage',
         ],
-        ],
     ];
 
     /**
