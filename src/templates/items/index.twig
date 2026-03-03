@@ -111,6 +111,14 @@
                 }) }}
 
                 {{ forms.textField({
+                    label: textLabels['challengeName'],
+                    instructions: "Light-weight name shown before the challenge title in the page header."|t('stamp-passport'),
+                    name: 'uiText[' ~ site.handle ~ '][challengeName]',
+                    value: settings.uiText[site.handle]['challengeName'] ?? '',
+                    placeholder: defaults['challengeName'],
+                }) }}
+
+                {{ forms.textField({
                     label: textLabels['challengeTitle'],
                     instructions: "Bold title shown after the header logo."|t('stamp-passport'),
                     name: 'uiText[' ~ site.handle ~ '][challengeTitle]',

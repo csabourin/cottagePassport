@@ -60,6 +60,7 @@ class Settings extends Model
 
     public const TEXT_KEYS = [
         'orgName',
+        'challengeName',
         'challengeTitle',
         'scanInstructions',
         'drawModalTitle',
@@ -80,6 +81,7 @@ class Settings extends Model
 
     public const TEXT_LABELS = [
         'orgName' => 'Organization Name',
+        'challengeName' => 'Challenge Name',
         'challengeTitle' => 'Challenge Title',
         'scanInstructions' => 'Scan Instructions',
         'drawModalTitle' => 'Draw Modal Title',
@@ -101,6 +103,7 @@ class Settings extends Model
     public const TEXT_DEFAULTS = [
         'default' => [
             'orgName' => 'Your Organization',
+            'challengeName' => 'Stamp Passport',
             'challengeTitle' => 'Challenge',
             'scanInstructions' => 'Scan all QR codes at participating locations to complete your passport.',
             'drawModalTitle' => 'Enter the Draw',
@@ -120,6 +123,7 @@ class Settings extends Model
         ],
         'fr' => [
             'orgName' => 'Votre organisation',
+            'challengeName' => 'Stamp Passport',
             'challengeTitle' => 'Défi',
             'scanInstructions' => 'Scannez tous les codes QR aux emplacements participants pour compléter votre passeport.',
             'drawModalTitle' => 'Participez au tirage',
