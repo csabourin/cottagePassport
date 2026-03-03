@@ -17,7 +17,7 @@ use Solspace\Freeform\Freeform as FreeformPlugin;
 use yii\base\Event;
 
 /**
- * Stamp Passport plugin for Craft CMS 4
+ * Stamp Passport plugin for Craft CMS 4/5
  *
  * @property Items $items
  * @property ContestProgress $contestProgress

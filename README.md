@@ -13,8 +13,8 @@ Stamp Passport is a Craft CMS plugin for QR-based passport or challenge experien
 
 ## Requirements
 
-- Craft CMS 4.x
-- PHP 8.0+
+- Craft CMS 4.x or 5.x
+- PHP 8.0+ for Craft 4, PHP 8.2+ for Craft 5
 
 ## Installation
 

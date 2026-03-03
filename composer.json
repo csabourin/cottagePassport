@@ -1,6 +1,6 @@
 {
     "name": "csabourin/craft-stamp-passport",
-    "description": "A self-contained Craft CMS 4 plugin for QR-based passport experiences with geofenced check-ins.",
+    "description": "A self-contained Craft CMS 4/5 plugin for QR-based passport experiences with geofenced check-ins.",
     "type": "craft-plugin",
     "license": "MIT",
     "keywords": [
@@ -17,7 +17,7 @@
         "source": "https://github.com/csabourin/cottagePassport"
     },
     "require": {
-        "craftcms/cms": "^4.0"
+        "craftcms/cms": "^4.0 || ^5.0"
     },
     "autoload": {
         "psr-4": {
