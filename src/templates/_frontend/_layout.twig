@@ -29,39 +29,166 @@
     {# ── Early language redirect — runs before body to prevent flicker ── #}
     <script>
     (function(){
+        var html = document.documentElement;
+        var unlocked = false;
+        function unlock() {
+            if (unlocked) return;
+            unlocked = true;
+            html.style.visibility = '';
+        }
+
+        // Hold paint until language routing decision is complete.
+        html.style.visibility = 'hidden';
+        setTimeout(unlock, 800);
+
         try {
-            var currentLang = '{{ currentSite.language[:2] }}';
+            var currentLang = '{{ currentSite.language[:2] }}'.toLowerCase();
             var sites = {{ sitesJson|json_encode|raw }};
             var params = new URL(window.location.href).searchParams;
+            var LS_KEY = 'passport:langChoice';
+            var DB_NAME = 'stamp-passport';
+            var DB_VERSION = 2;
+            var META_STORE = 'meta';
+            var META_KEY = 'langChoice';
 
-            // If user arrived via explicit language switch or cross-domain link, record their choice
+            function normalizeLang(lang) {
+                return ((lang || '').substring(0, 2)).toLowerCase();
+            }
+
+            function findSiteByLang(lang) {
+                for (var i = 0; i < sites.length; i++) {
+                    if ((sites[i].lang || '').toLowerCase() === lang) return sites[i];
+                }
+                return null;
+            }
+
+            function writeLocalLang(lang) {
+                try { localStorage.setItem(LS_KEY, lang); } catch (e) {}
+            }
+
+            function readLocalLang() {
+                try { return normalizeLang(localStorage.getItem(LS_KEY)); } catch (e) { return ''; }
+            }
+
+            function writeIdbLang(lang) {
+                return new Promise(function(resolve) {
+                    try {
+                        var req = indexedDB.open(DB_NAME, DB_VERSION);
+                        req.onupgradeneeded = function () {
+                            var d = req.result;
+                            if (!d.objectStoreNames.contains(META_STORE))
+                                d.createObjectStore(META_STORE, { keyPath: 'key' });
+                        };
+                        req.onsuccess = function () {
+                            try {
+                                var d = req.result;
+                                var tx = d.transaction(META_STORE, 'readwrite');
+                                tx.objectStore(META_STORE).put({
+                                    key: META_KEY,
+                                    value: lang,
+                                    updatedAt: new Date().toISOString()
+                                });
+                                tx.oncomplete = function () { try { d.close(); } catch (e) {} resolve(); };
+                                tx.onerror = function () { try { d.close(); } catch (e) {} resolve(); };
+                            } catch (e) { resolve(); }
+                        };
+                        req.onerror = function () { resolve(); };
+                        req.onblocked = function () { resolve(); };
+                    } catch (e) { resolve(); }
+                });
+            }
+
+            function readIdbLang() {
+                return new Promise(function(resolve) {
+                    try {
+                        var req = indexedDB.open(DB_NAME, DB_VERSION);
+                        req.onupgradeneeded = function () {
+                            var d = req.result;
+                            if (!d.objectStoreNames.contains(META_STORE))
+                                d.createObjectStore(META_STORE, { keyPath: 'key' });
+                        };
+                        req.onsuccess = function () {
+                            try {
+                                var d = req.result;
+                                var tx = d.transaction(META_STORE, 'readonly');
+                                var getReq = tx.objectStore(META_STORE).get(META_KEY);
+                                getReq.onsuccess = function () {
+                                    var rec = getReq.result;
+                                    var lang = normalizeLang(rec && rec.value);
+                                    try { d.close(); } catch (e) {}
+                                    resolve(lang || '');
+                                };
+                                getReq.onerror = function () {
+                                    try { d.close(); } catch (e) {}
+                                    resolve('');
+                                };
+                            } catch (e) { resolve(''); }
+                        };
+                        req.onerror = function () { resolve(''); };
+                        req.onblocked = function () { resolve(''); };
+                    } catch (e) { resolve(''); }
+                });
+            }
+
+            function persistLangChoice(lang) {
+                var normalized = normalizeLang(lang);
+                if (!normalized) return Promise.resolve('');
+                writeLocalLang(normalized);
+                return writeIdbLang(normalized).then(function () { return normalized; });
+            }
+
+            function redirectToLang(lang) {
+                var normalized = normalizeLang(lang);
+                var site = findSiteByLang(normalized);
+                if (!site || site.current || normalized === currentLang) return false;
+                persistLangChoice(normalized).then(function () {
+                    window.location.replace(site.url);
+                }, function () {
+                    window.location.replace(site.url);
+                });
+                return true;
+            }
+
+            function getDevicePreferredLang() {
+                var browserLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+                for (var i = 0; i < browserLangs.length; i++) {
+                    var lang = normalizeLang(browserLangs[i]);
+                    if (!lang) continue;
+                    if (findSiteByLang(lang)) return lang;
+                }
+                return '';
+            }
+
+            // If user arrived via explicit language switch or cross-domain link, record their choice.
             if (params.has('lang') || params.has('cid')) {
-                localStorage.setItem('passport:langChoice', currentLang);
+                persistLangChoice(currentLang).then(unlock, unlock);
                 return;
             }
 
-            // If user previously made an explicit language choice, respect it
-            if (localStorage.getItem('passport:langChoice')) return;
-
-            // Detect browser preferred language
-            var browserLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
-            var preferred = '';
-            for (var i = 0; i < browserLangs.length; i++) {
-                var l = (browserLangs[i] || '').substring(0, 2).toLowerCase();
-                if (l) { preferred = l; break; }
+            // Prefer an already saved choice first.
+            var localChoice = readLocalLang();
+            if (localChoice) {
+                if (redirectToLang(localChoice)) return;
+                persistLangChoice(localChoice).then(unlock, unlock);
+                return;
             }
 
-            if (!preferred || preferred === currentLang) return;
-
-            // Find a matching site
-            for (var j = 0; j < sites.length; j++) {
-                if (sites[j].lang === preferred && !sites[j].current) {
-                    localStorage.setItem('passport:langChoice', preferred);
-                    window.location.replace(sites[j].url);
+            // No local value: check IndexedDB, then fallback to device language.
+            readIdbLang().then(function (savedChoice) {
+                if (savedChoice) {
+                    if (redirectToLang(savedChoice)) return;
+                    persistLangChoice(savedChoice).then(unlock, unlock);
                     return;
                 }
-            }
-        } catch(e) {}
+                var preferred = getDevicePreferredLang();
+                if (preferred && redirectToLang(preferred)) return;
+                unlock();
+            }, function () {
+                var preferred = getDevicePreferredLang();
+                if (preferred && redirectToLang(preferred)) return;
+                unlock();
+            });
+        } catch(e) { unlock(); }
     })();
     </script>
 

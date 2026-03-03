@@ -34,6 +34,8 @@
     var DB_NAME    = 'stamp-passport';
     var DB_VERSION = 2;
     var LS_PREFIX  = 'passportData:';
+    var LANG_LS_KEY = 'passport:langChoice';
+    var LANG_META_KEY = 'langChoice';
 
     function initDB() {
         return new Promise(function (resolve) {
@@ -95,6 +97,27 @@
     async function putMeta(data) {
         lsWrite('meta', data.key, data);
         if (db) await idbReq(store('meta', 'readwrite').put(data));
+    }
+
+    function normalizeLang(lang) {
+        return ((lang || '').substring(0, 2)).toLowerCase();
+    }
+
+    async function persistLanguageChoice(lang) {
+        var normalized = normalizeLang(lang);
+        if (!normalized) return;
+
+        try { localStorage.setItem(LANG_LS_KEY, normalized); } catch (e) {}
+
+        if (db) {
+            try {
+                await idbReq(store('meta', 'readwrite').put({
+                    key: LANG_META_KEY,
+                    value: normalized,
+                    updatedAt: new Date().toISOString()
+                }));
+            } catch (e) {}
+        }
     }
 
     /* ═══════════════════════════════════════════
@@ -173,7 +196,7 @@
         // If user arrived with ?lang=, record explicit language choice
         var urlLang = params.get('lang');
         if (urlLang) {
-            try { localStorage.setItem('passport:langChoice', urlLang); } catch (ex) {}
+            persistLanguageChoice(urlLang).catch(function () {});
         }
 
         if (urlCid && isValidUUID(urlCid)) {
@@ -584,9 +607,13 @@
                     var baseHref = link.getAttribute('data-passport-href') || link.getAttribute('href');
                     if (baseHref) {
                         e.preventDefault();
-                        // Record explicit language choice so auto-redirect doesn't fight it
-                        try { localStorage.setItem('passport:langChoice', targetLang); } catch (ex) {}
-                        window.location.href = languageSwitchUrl(baseHref);
+                        var nextHref = languageSwitchUrl(baseHref);
+                        // Record explicit language choice so auto-redirect doesn't fight it.
+                        persistLanguageChoice(targetLang).then(function () {
+                            window.location.href = nextHref;
+                        }, function () {
+                            window.location.href = nextHref;
+                        });
                     }
                 });
             })(links[i]);
@@ -596,7 +623,7 @@
     // Expose for external language switch integrations
     window.__PASSPORT_LANG_SWITCH__ = function (targetBaseUrl, targetLang) {
         if (targetLang) {
-            try { localStorage.setItem('passport:langChoice', targetLang); } catch (ex) {}
+            persistLanguageChoice(targetLang).catch(function () {});
         }
         return languageSwitchUrl(targetBaseUrl);
     };
