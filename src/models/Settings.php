@@ -139,6 +139,7 @@ class Settings extends Model
             'Reopen draw entry form' => 'Ré-ouvrir le formulaire du tirage',
         ],
     ];
+    
 
     /**
      * Get a display text value for the current (or specified) site.
