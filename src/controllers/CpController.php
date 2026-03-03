@@ -261,10 +261,10 @@ class CpController extends Controller
         $settings->bodyBackgroundMode = in_array($bodyBackgroundMode, ['cover', 'tiled'], true) ? $bodyBackgroundMode : 'cover';
         $settings->qrCenterImageUrl = trim((string)$request->getBodyParam('qrCenterImageUrl', '')) ?: null;
 
-        // Per-site display text overrides — strip empty values
-        $uiText = $request->getBodyParam('uiText', []);
-        $cleaned = [];
+        // Preserve existing display text unless this payload is explicitly submitted.
+        $uiText = $request->getBodyParam('uiText', null);
         if (is_array($uiText)) {
+            $cleaned = [];
             foreach ($uiText as $handle => $texts) {
                 if (!is_array($texts)) {
                     continue;
@@ -276,8 +276,8 @@ class CpController extends Controller
                     }
                 }
             }
+            $settings->uiText = $cleaned;
         }
-        $settings->uiText = $cleaned;
 
         if (!$settings->validate()) {
             Craft::$app->getSession()->setError(Craft::t('stamp-passport', 'Settings not saved.'));
