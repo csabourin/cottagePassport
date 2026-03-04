@@ -15,95 +15,6 @@
 
 <hr>
 
-<h2>{{ "Geofence"|t('stamp-passport') }}</h2>
-
-{{ forms.lightswitchField({
-    label: "Enable Geofence"|t('stamp-passport'),
-    instructions: "When enabled, visitors must be within the configured radius of a location to check in."|t('stamp-passport'),
-    name: 'enableGeofence',
-    on: settings.enableGeofence,
-}) }}
-
-{{ forms.textField({
-    label: "Geofence Radius (metres)"|t('stamp-passport'),
-    name: 'geofenceRadius',
-    value: settings.geofenceRadius,
-    type: 'number',
-    min: 50,
-    max: 10000,
-    size: 10,
-}) }}
-
-<hr>
-
-<h2>{{ "Prizes"|t('stamp-passport') }}</h2>
-
-{{ forms.textField({
-    label: "Draw Threshold"|t('stamp-passport'),
-    instructions: "Number of stamps required before the draw entry form appears."|t('stamp-passport'),
-    name: 'drawThreshold',
-    value: settings.drawThreshold,
-    type: 'number',
-    min: 1,
-    size: 5,
-}) }}
-
-{{ forms.textField({
-    label: "Max Stickers"|t('stamp-passport'),
-    instructions: "Maximum number of sticker prizes available (0 = unlimited)."|t('stamp-passport'),
-    name: 'maxStickers',
-    value: settings.maxStickers,
-    type: 'number',
-    min: 0,
-    size: 5,
-}) }}
-
-<hr>
-
-<h2>{{ "Freeform Integration"|t('stamp-passport') }}</h2>
-
-{% if freeformForms is not null %}
-
-    {{ forms.selectField({
-        label: "Draw Form"|t('stamp-passport'),
-        instructions: "Freeform form shown when the visitor qualifies for the draw."|t('stamp-passport'),
-        id: 'freeformDrawFormHandle',
-        name: 'freeformDrawFormHandle',
-        value: settings.freeformDrawFormHandle ?? '',
-        options: [{ label: '— None —'|t('stamp-passport'), value: '' }]|merge(freeformForms),
-    }) }}
-
-    {{ forms.selectField({
-        label: "Sticker Form"|t('stamp-passport'),
-        instructions: "Freeform form shown when the visitor completes every location."|t('stamp-passport'),
-        id: 'freeformStickerFormHandle',
-        name: 'freeformStickerFormHandle',
-        value: settings.freeformStickerFormHandle ?? '',
-        options: [{ label: '— None —'|t('stamp-passport'), value: '' }]|merge(freeformForms),
-    }) }}
-
-{% else %}
-
-    {{ forms.textField({
-        label: "Draw Form Handle"|t('stamp-passport'),
-        instructions: "Freeform form handle for the end-of-season draw entry."|t('stamp-passport'),
-        name: 'freeformDrawFormHandle',
-        value: settings.freeformDrawFormHandle,
-        placeholder: 'passportDraw',
-    }) }}
-
-    {{ forms.textField({
-        label: "Sticker Form Handle"|t('stamp-passport'),
-        instructions: "Freeform form handle for the Memory Makers sticker request."|t('stamp-passport'),
-        name: 'freeformStickerFormHandle',
-        value: settings.freeformStickerFormHandle,
-        placeholder: 'passportSticker',
-    }) }}
-
-{% endif %}
-
-<hr>
-
 <h2>{{ "Appearance"|t('stamp-passport') }}</h2>
 
 {% set logoElements = settings.logoAssetId ? craft.assets.id(settings.logoAssetId).all() : [] %}
@@ -117,6 +28,19 @@
     limit: 1,
     elements: logoElements,
     modalStorageKey: 'stamp-passport.logoAsset',
+}) }}
+
+{% set faviconElements = settings.faviconAssetId ? craft.assets.id(settings.faviconAssetId).all() : [] %}
+{{ forms.elementSelectField({
+    label: "Favicon"|t('stamp-passport'),
+    instructions: "Browser tab icon for the frontend page. Recommended: 32×32 or 64×64 PNG."|t('stamp-passport'),
+    id: 'faviconAssetId',
+    name: 'faviconAssetId',
+    elementType: 'craft\\elements\\Asset',
+    criteria: { kind: 'image' },
+    limit: 1,
+    elements: faviconElements,
+    modalStorageKey: 'stamp-passport.faviconAsset',
 }) }}
 
 {% set woodElements = settings.woodPanelAssetId ? craft.assets.id(settings.woodPanelAssetId).all() : [] %}
@@ -206,12 +130,93 @@
 }());
 </script>
 
+<h3>{{ "Brand Colors"|t('stamp-passport') }}</h3>
+<p class="instructions">{{ "Override the default palette. Leave blank to use CSS defaults. Full hex values only (#rrggbb)."|t('stamp-passport') }}</p>
+
+{{ forms.colorField({
+    label: "Primary Color"|t('stamp-passport'),
+    instructions: "Buttons, progress bar, links, and focus rings. Default: #2b6b8a"|t('stamp-passport'),
+    id: 'primaryColor',
+    name: 'primaryColor',
+    value: settings.primaryColor ?? '',
+}) }}
+
+{{ forms.colorField({
+    label: "Primary Color (Dark)"|t('stamp-passport'),
+    instructions: "Hover and active states. Default: #1e5068"|t('stamp-passport'),
+    id: 'primaryColorDark',
+    name: 'primaryColorDark',
+    value: settings.primaryColorDark ?? '',
+}) }}
+
+{{ forms.colorField({
+    label: "Accent Color"|t('stamp-passport'),
+    instructions: "Checked stamp indicator and success states. Default: #2d5a27"|t('stamp-passport'),
+    id: 'accentColor',
+    name: 'accentColor',
+    value: settings.accentColor ?? '',
+}) }}
+
+<hr>
+
+<h2>{{ "Social Sharing"|t('stamp-passport') }}</h2>
+
+<p class="instructions">{{ "Open Graph meta tags control how the page appears when shared on social media. Per-site title and description are set under Display Text → \"OG / Social Share Title\" and \"OG / Social Share Description\"."|t('stamp-passport') }}</p>
+
+{% set ogImageElements = settings.ogImageAssetId ? craft.assets.id(settings.ogImageAssetId).all() : [] %}
+{{ forms.elementSelectField({
+    label: "OG Share Image"|t('stamp-passport'),
+    instructions: "Image used for og:image when this page is shared on social networks. Recommended: 1200×630 px."|t('stamp-passport'),
+    id: 'ogImageAssetId',
+    name: 'ogImageAssetId',
+    elementType: 'craft\\elements\\Asset',
+    criteria: { kind: 'image' },
+    limit: 1,
+    elements: ogImageElements,
+    modalStorageKey: 'stamp-passport.ogImageAsset',
+}) }}
+
+<hr>
+
+<h2>{{ "QR Code Appearance"|t('stamp-passport') }}</h2>
+
 {{ forms.textField({
     label: "QR Center Image URL"|t('stamp-passport'),
     instructions: "Optional URL for the image centered in generated QR codes. A square image or circle with transparency is preferable."|t('stamp-passport'),
     name: 'qrCenterImageUrl',
     value: settings.qrCenterImageUrl,
     placeholder: 'https://example.com/qr-center.png',
+}) }}
+
+{{ forms.colorField({
+    label: "QR Foreground Color"|t('stamp-passport'),
+    instructions: "Color of the QR code dots. Default: #000000 (black). Ensure high contrast with the background color."|t('stamp-passport'),
+    id: 'qrForegroundColor',
+    name: 'qrForegroundColor',
+    value: settings.qrForegroundColor ?? '#000000',
+}) }}
+
+{{ forms.colorField({
+    label: "QR Background Color"|t('stamp-passport'),
+    instructions: "Background color behind the QR code. Default: #ffffff (white)."|t('stamp-passport'),
+    id: 'qrBackgroundColor',
+    name: 'qrBackgroundColor',
+    value: settings.qrBackgroundColor ?? '#ffffff',
+}) }}
+
+<hr>
+
+<h2>{{ "Custom CSS"|t('stamp-passport') }}</h2>
+
+{{ forms.textareaField({
+    label: "Custom CSS"|t('stamp-passport'),
+    instructions: "Raw CSS injected at the end of the frontend &lt;head&gt;. Use as an escape hatch for advanced customization. Maximum 10 000 characters."|t('stamp-passport'),
+    id: 'customCss',
+    name: 'customCss',
+    value: settings.customCss ?? '',
+    rows: 10,
+    class: 'code',
+    maxlength: 10000,
 }) }}
 
 <hr>
@@ -225,3 +230,110 @@
     value: settings.ga4MeasurementId,
     placeholder: 'G-XXXXXXXXXX',
 }) }}
+
+<hr>
+
+<h2>{{ "UI Behavior"|t('stamp-passport') }}</h2>
+
+{{ forms.lightswitchField({
+    label: "Show Language Switcher"|t('stamp-passport'),
+    instructions: "Display the language-switcher nav in the header. Disable for single-language sites."|t('stamp-passport'),
+    name: 'showLanguageSwitcher',
+    on: settings.showLanguageSwitcher,
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Require Disclaimer Acknowledgement"|t('stamp-passport'),
+    instructions: "Show the \"Before You Begin\" disclaimer modal on first visit. Disable for simpler flows where no privacy notice is needed."|t('stamp-passport'),
+    name: 'requireDisclaimerAck',
+    on: settings.requireDisclaimerAck,
+}) }}
+
+<hr>
+
+<h2>{{ "Geofence"|t('stamp-passport') }}</h2>
+
+{{ forms.lightswitchField({
+    label: "Enable Geofence"|t('stamp-passport'),
+    instructions: "When enabled, visitors must be within the configured radius of a location to check in."|t('stamp-passport'),
+    name: 'enableGeofence',
+    on: settings.enableGeofence,
+}) }}
+
+{{ forms.textField({
+    label: "Geofence Radius (metres)"|t('stamp-passport'),
+    name: 'geofenceRadius',
+    value: settings.geofenceRadius,
+    type: 'number',
+    min: 50,
+    max: 10000,
+    size: 10,
+}) }}
+
+<hr>
+
+<h2>{{ "Prizes"|t('stamp-passport') }}</h2>
+
+{{ forms.textField({
+    label: "Draw Threshold"|t('stamp-passport'),
+    instructions: "Number of stamps required before the draw entry form appears."|t('stamp-passport'),
+    name: 'drawThreshold',
+    value: settings.drawThreshold,
+    type: 'number',
+    min: 1,
+    size: 5,
+}) }}
+
+{{ forms.textField({
+    label: "Max Stickers"|t('stamp-passport'),
+    instructions: "Maximum number of sticker prizes available (0 = unlimited)."|t('stamp-passport'),
+    name: 'maxStickers',
+    value: settings.maxStickers,
+    type: 'number',
+    min: 0,
+    size: 5,
+}) }}
+
+<hr>
+
+<h2>{{ "Freeform Integration"|t('stamp-passport') }}</h2>
+
+{% if freeformForms is not null %}
+
+    {{ forms.selectField({
+        label: "Draw Form"|t('stamp-passport'),
+        instructions: "Freeform form shown when the visitor qualifies for the draw."|t('stamp-passport'),
+        id: 'freeformDrawFormHandle',
+        name: 'freeformDrawFormHandle',
+        value: settings.freeformDrawFormHandle ?? '',
+        options: [{ label: '— None —'|t('stamp-passport'), value: '' }]|merge(freeformForms),
+    }) }}
+
+    {{ forms.selectField({
+        label: "Sticker Form"|t('stamp-passport'),
+        instructions: "Freeform form shown when the visitor completes every location."|t('stamp-passport'),
+        id: 'freeformStickerFormHandle',
+        name: 'freeformStickerFormHandle',
+        value: settings.freeformStickerFormHandle ?? '',
+        options: [{ label: '— None —'|t('stamp-passport'), value: '' }]|merge(freeformForms),
+    }) }}
+
+{% else %}
+
+    {{ forms.textField({
+        label: "Draw Form Handle"|t('stamp-passport'),
+        instructions: "Freeform form handle for the end-of-season draw entry."|t('stamp-passport'),
+        name: 'freeformDrawFormHandle',
+        value: settings.freeformDrawFormHandle,
+        placeholder: 'passportDraw',
+    }) }}
+
+    {{ forms.textField({
+        label: "Sticker Form Handle"|t('stamp-passport'),
+        instructions: "Freeform form handle for the Memory Makers sticker request."|t('stamp-passport'),
+        name: 'freeformStickerFormHandle',
+        value: settings.freeformStickerFormHandle,
+        placeholder: 'passportSticker',
+    }) }}
+
+{% endif %}

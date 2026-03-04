@@ -978,7 +978,7 @@
 
     function showDisclaimerOnce(callback) {
         var modal = el('disclaimerModal');
-        if (!modal || localStorage.getItem('passportDisclaimerAccepted') === '1') {
+        if (!modal || localStorage.getItem('passportDisclaimerAccepted') === '1' || CFG.requireDisclaimerAck === false) {
             return callback();
         }
 

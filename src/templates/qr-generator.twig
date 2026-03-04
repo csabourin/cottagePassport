@@ -36,6 +36,8 @@
         </button>
     </div>
     <input type="hidden" id="qr-center-image-url" value="{{ (settings.qrCenterImageUrl ?? '')|e('html_attr') }}">
+    <input type="hidden" id="qr-fg-color" value="{{ (settings.qrForegroundColor ?? '')|e('html_attr') }}">
+    <input type="hidden" id="qr-bg-color" value="{{ (settings.qrBackgroundColor ?? '')|e('html_attr') }}">
 
     {% if items|length %}
         <div id="qr-grid" class="passport-qr-grid">
@@ -98,6 +100,8 @@
     var cards = document.querySelectorAll('.qr-card');
     var qrCenterImageUrlInput = document.getElementById('qr-center-image-url');
     var qrCenterImageUrl = qrCenterImageUrlInput ? qrCenterImageUrlInput.value : '';
+    var qrFgColor = (document.getElementById('qr-fg-color') || {}).value || '';
+    var qrBgColor = (document.getElementById('qr-bg-color') || {}).value || '';
 
     function updateQrCodes() {
         var baseUrl = picker.value.replace(/\/$/, '');
@@ -112,6 +116,12 @@
             if (qrCenterImageUrl) {
                 params.set('centerImageSizeRatio', '0.44');
                 params.set('centerImageUrl', qrCenterImageUrl);
+            }
+            if (qrFgColor) {
+                params.set('dark', qrFgColor.replace('#', ''));
+            }
+            if (qrBgColor) {
+                params.set('light', qrBgColor.replace('#', ''));
             }
 
             var qrApiUrl = 'https://quickchart.io/qr?' + params.toString();

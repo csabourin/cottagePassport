@@ -24,7 +24,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    {# ── Favicon ── #}
+    {% set faviconUrl = craft.stampPassport.imageUrl(craft.stampPassport.settings.faviconAssetId) %}
+    {% if faviconUrl %}<link rel="icon" href="{{ faviconUrl|e('html_attr') }}" type="image/png">{% endif %}
+
     <title>{% block title %}{{ craft.stampPassport.settings.pluginName }}{% endblock %}</title>
+
+    {# ── Open Graph / Social Sharing meta tags ── #}
+    {% set ogTitle    = craft.stampPassport.text('ogTitle') %}
+    {% set ogDesc     = craft.stampPassport.text('ogDescription') %}
+    {% set ogImageUrl = craft.stampPassport.imageUrl(craft.stampPassport.settings.ogImageAssetId) %}
+    {% if ogTitle %}<meta property="og:title" content="{{ ogTitle|e('html_attr') }}">{% endif %}
+    {% if ogDesc  %}<meta property="og:description" content="{{ ogDesc|e('html_attr') }}">{% endif %}
+    {% if ogImageUrl %}<meta property="og:image" content="{{ ogImageUrl|e('html_attr') }}">{% endif %}
+    {% if ogTitle or ogDesc or ogImageUrl %}
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ craft.app.request.absoluteUrl|e('html_attr') }}">
+    {% endif %}
 
     {# ── Early language redirect — runs before body to prevent flicker ── #}
     <script>
@@ -194,6 +211,23 @@
 
     {% block head %}{% endblock %}
 
+    {# ── Brand color CSS variable overrides — injected after stylesheet, so vars win ── #}
+    {% set _s = craft.stampPassport.settings %}
+    {% if _s.primaryColor or _s.primaryColorDark or _s.accentColor %}
+    <style>
+    :root {
+        {% if _s.primaryColor %}--passport-teal: {{ _s.primaryColor|e }};--passport-focus: {{ _s.primaryColor|e }};{% endif %}
+        {% if _s.primaryColorDark %}--passport-teal-dark: {{ _s.primaryColorDark|e }};{% endif %}
+        {% if _s.accentColor %}--passport-green: {{ _s.accentColor|e }};{% endif %}
+    }
+    </style>
+    {% endif %}
+
+    {# ── Custom CSS escape hatch — always last, wins specificity ── #}
+    {% if _s.customCss %}
+    <style id="stamp-passport-custom-css">{{ _s.customCss|raw }}</style>
+    {% endif %}
+
     {# GA4 — only if configured #}
     {% set ga4Id = craft.stampPassport.settings.ga4MeasurementId %}
     {% if ga4Id %}
@@ -225,6 +259,8 @@
             enableGeofence: {{ craft.stampPassport.settings.enableGeofence ? 'true' : 'false' }},
             contestProgressUrl: '{{ craft.stampPassport.contestProgressUrl()|e("js") }}',
             contestVersion: '{{ craft.stampPassport.settings.contestVersion|e("js") }}',
+            showLanguageSwitcher: {{ craft.stampPassport.settings.showLanguageSwitcher ? 'true' : 'false' }},
+            requireDisclaimerAck: {{ craft.stampPassport.settings.requireDisclaimerAck ? 'true' : 'false' }},
             lang: '{{ currentSite.language[:2] }}',
             sites: {{ sitesJson|json_encode|raw }},
             text: {

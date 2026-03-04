@@ -328,6 +328,49 @@ class CpController extends Controller
 
         $settings->qrCenterImageUrl = trim((string)$request->getBodyParam('qrCenterImageUrl', '')) ?: null;
 
+        // ── Brand Colors ──────────────────────────────────────────────────────
+        foreach (['primaryColor', 'primaryColorDark', 'accentColor'] as $colorField) {
+            $val = trim((string)$request->getBodyParam($colorField, ''));
+            $val = preg_replace('/[^#0-9a-fA-F]/', '', $val);
+            if ($val !== '' && $val[0] !== '#') {
+                $val = '#' . $val;
+            }
+            $settings->$colorField = $val !== '' ? $val : null;
+        }
+
+        // ── OG Image & Favicon ────────────────────────────────────────────────
+        $ogImageIds = $request->getBodyParam('ogImageAssetId');
+        $settings->ogImageAssetId = is_array($ogImageIds)
+            ? ((int)($ogImageIds[0] ?? 0) ?: null)
+            : ((int)($ogImageIds ?: 0) ?: null);
+
+        $faviconIds = $request->getBodyParam('faviconAssetId');
+        $settings->faviconAssetId = is_array($faviconIds)
+            ? ((int)($faviconIds[0] ?? 0) ?: null)
+            : ((int)($faviconIds ?: 0) ?: null);
+
+        // ── Custom CSS ────────────────────────────────────────────────────────
+        $customCss = (string)$request->getBodyParam('customCss', '');
+        // Neutralize </style> injection vectors before storing.
+        $customCss = str_replace('</style', '<\/style', $customCss);
+        $customCss = mb_substr($customCss, 0, 10000);
+        $settings->customCss = $customCss !== '' ? $customCss : null;
+
+        // ── UI Behavior Flags ─────────────────────────────────────────────────
+        // Craft lightswitches POST '1' when on and '' when off.
+        $settings->showLanguageSwitcher = (bool)$request->getBodyParam('showLanguageSwitcher', true);
+        $settings->requireDisclaimerAck = (bool)$request->getBodyParam('requireDisclaimerAck', true);
+
+        // ── QR Code Colors ────────────────────────────────────────────────────
+        foreach (['qrForegroundColor', 'qrBackgroundColor'] as $colorField) {
+            $val = trim((string)$request->getBodyParam($colorField, ''));
+            $val = preg_replace('/[^#0-9a-fA-F]/', '', $val);
+            if ($val !== '' && $val[0] !== '#') {
+                $val = '#' . $val;
+            }
+            $settings->$colorField = $val !== '' ? $val : null;
+        }
+
         // Preserve existing display text unless this payload is explicitly submitted.
         $uiText = $request->getBodyParam('uiText', null);
         if (is_array($uiText)) {

@@ -60,7 +60,7 @@
 
         {# ── Language switcher (top-right) ── #}
         {% set allSites = craft.app.sites.allSites %}
-        {% if allSites|length > 1 %}
+        {% if allSites|length > 1 and settings.showLanguageSwitcher %}
         <nav class="passport-lang-nav" aria-label="{{ 'Language'|t('stamp-passport') }}">
             {% for site in allSites %}
                 {% if site.id != currentSite.id %}

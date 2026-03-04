@@ -68,6 +68,42 @@ class Settings extends Model
     public array $contestRules = [];
     // Per-site keys: linkText, modalContent (HTML), fullRulesText, fullRulesUrl
 
+    // ── Brand Colors ──────────────────────────────────────────────────────────
+    /** @var string|null Primary brand color (overrides --passport-teal CSS var). Full hex: #rrggbb */
+    public ?string $primaryColor = null;
+
+    /** @var string|null Dark variant of primary color (overrides --passport-teal-dark CSS var) */
+    public ?string $primaryColorDark = null;
+
+    /** @var string|null Accent color (overrides --passport-green CSS var) */
+    public ?string $accentColor = null;
+
+    // ── Social / OG Meta ─────────────────────────────────────────────────────
+    /** @var int|null Asset ID for the Open Graph og:image (globally applied) */
+    public ?int $ogImageAssetId = null;
+
+    // ── Favicon ───────────────────────────────────────────────────────────────
+    /** @var int|null Asset ID for the browser favicon shown on the frontend */
+    public ?int $faviconAssetId = null;
+
+    // ── Custom CSS ────────────────────────────────────────────────────────────
+    /** @var string|null Raw CSS injected into a <style> block in the frontend <head>. Max 10 000 chars */
+    public ?string $customCss = null;
+
+    // ── UI Behavior ───────────────────────────────────────────────────────────
+    /** @var bool Whether the language-switcher nav is rendered. Default true */
+    public bool $showLanguageSwitcher = true;
+
+    /** @var bool Whether the disclaimer modal is shown on first visit. Default true */
+    public bool $requireDisclaimerAck = true;
+
+    // ── QR Code Appearance ────────────────────────────────────────────────────
+    /** @var string|null Foreground (dot) color for generated QR codes. Null → #000000 */
+    public ?string $qrForegroundColor = null;
+
+    /** @var string|null Background color for generated QR codes. Null → #ffffff */
+    public ?string $qrBackgroundColor = null;
+
     public const TEXT_KEYS = [
         'orgName',
         'challengeName',
@@ -87,6 +123,8 @@ class Settings extends Model
         'checkedIn',
         'qrNotRecognized',
         'loadError',
+        'ogTitle',
+        'ogDescription',
     ];
 
     public const TEXT_LABELS = [
@@ -108,6 +146,8 @@ class Settings extends Model
         'checkedIn' => 'Checked In',
         'qrNotRecognized' => 'QR Not Recognized',
         'loadError' => 'Load Error',
+        'ogTitle' => 'OG / Social Share Title',
+        'ogDescription' => 'OG / Social Share Description',
     ];
 
     public const TEXT_DEFAULTS = [
@@ -130,6 +170,8 @@ class Settings extends Model
             'checkedIn' => 'Checked in.',
             'qrNotRecognized' => 'This QR code is not recognized.',
             'loadError' => 'Could not load passport data. Please try again later.',
+            'ogTitle' => '',
+            'ogDescription' => '',
         ],
         'fr' => [
             'orgName' => 'Votre organisation',
@@ -150,6 +192,8 @@ class Settings extends Model
             'checkedIn' => 'Validation réussie.',
             'qrNotRecognized' => "Ce code QR n'est pas reconnu.",
             'loadError' => 'Impossible de charger les données du passeport. Veuillez réessayer plus tard.',
+            'ogTitle' => '',
+            'ogDescription' => '',
         ],
     ];
     
@@ -200,6 +244,10 @@ class Settings extends Model
             [['bodyBackgroundSize'], 'string', 'max' => 50],
             [['bodyBackgroundColor'], 'string', 'max' => 50],
             [['contestVersion'], 'string', 'max' => 20],
+            [['primaryColor', 'primaryColorDark', 'accentColor', 'qrForegroundColor', 'qrBackgroundColor'], 'string', 'max' => 50],
+            [['primaryColor', 'primaryColorDark', 'accentColor', 'qrForegroundColor', 'qrBackgroundColor'], 'match', 'pattern' => '/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/', 'skipOnEmpty' => true],
+            [['ogImageAssetId', 'faviconAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
+            [['customCss'], 'string', 'max' => 10000],
         ];
     }
 }
