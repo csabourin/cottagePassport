@@ -17,6 +17,11 @@
     --passport-ink-muted:  #5a4f43;   /* 6.79:1 on white  ✓ AA (darkened from #6b5d4e) */
     --passport-radius:     4px;
     --passport-focus:      #2b6b8a;
+    --passport-wood-max-width: 800px;
+    --passport-wood-ratio-w: 480;
+    --passport-wood-ratio-h: 307;
+    --passport-scan-overlap: 18px;
+    --passport-cloth-side-color: #2f211c;
 }
 
 /* ── Reset ── */
@@ -89,6 +94,7 @@ background: linear-gradient(
     flex-direction: column;
     padding-bottom: 48px;
     gap:1rem;
+    position: relative;
 }
 
 main.passport-main > div, main.passport-main > section, main.passport-main > header {
@@ -128,6 +134,18 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 /* Custom wood-panel image uploaded via plugin settings */
 .passport-header.has-wood-bg {
     background-image: var(--passport-wood-img);
+    background-color: transparent;
+    box-shadow:none;
+    border-radius:0;
+    aspect-ratio: 480 / 307;
+    top: 0;
+    width: min(100vw, var(--passport-wood-max-width));
+    max-width: none;
+    align-self: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
 }
 
 /* ── Language switcher (top-right of header)
@@ -246,6 +264,16 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     color: var(--passport-ink);
     border-bottom: 1px solid #e0d8cc;
     line-height: 1.5;
+    position: relative;
+    z-index: 3;
+}
+
+/* Keep the strip tucked slightly under an absolute wood header. */
+.passport-header.has-wood-bg + .passport-scan-strip {
+    margin-top: calc(
+        (min(100vw, var(--passport-wood-max-width)) * var(--passport-wood-ratio-h) / var(--passport-wood-ratio-w))
+        - var(--passport-scan-overlap)
+    );
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -659,6 +687,14 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     .passport-main {
         max-width: calc(100% - 24px); /* 12 px plaid each side */
         margin: 16px 12px 0;
+    }
+}
+
+@media (min-width: 801px) {
+    .passport-header.has-wood-bg {
+        /* Paint left/right side bands behind the 800px cloth image area. */
+        box-shadow: 0 0 0 100vmax var(--passport-cloth-side-color);
+        clip-path: inset(0 -100vmax);
     }
 }
 
