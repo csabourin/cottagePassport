@@ -690,6 +690,13 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     color: #fff;
 }
 
+.passport-contest-rules-strip {
+    background: var(--passport-paper);
+    padding: .5rem;
+    display: flex;
+    justify-content: center;
+ }
+
 /* ══════════════════════════════════════════════════════════
    UTILITY
    ══════════════════════════════════════════════════════════ */
