@@ -11,7 +11,7 @@
 
 {% block content %}
     <p class="light" style="margin-bottom: 24px;">
-        {{- "The Contest Rules section appears below the scan strip on the frontend only when a site has a Link Text value set. Leave all fields empty for a site to hide it."|t('stamp-passport') -}}
+        {{ - "The Contest Rules section appears below the scan strip on the frontend only when a site has a Link Text value set. Leave all fields empty for a site to hide it."|t('stamp-passport') - }}
     </p>
 
     <form method="post" accept-charset="UTF-8">
@@ -20,7 +20,9 @@
         {{ redirectInput('stamp-passport/contest-rules') }}
 
         {% for site in allSites %}
-            <h2>{{ site.name }}</h2>
+            <h2>
+                {{ site.name }}
+            </h2>
 
             {{ forms.textField({
                 label: "Rules Link Text"|t('stamp-passport'),
@@ -29,14 +31,35 @@
                 value: contestRules[site.handle].linkText ?? '',
             }) }}
 
-            {{ forms.textareaField({
-                label: "Rules Modal Content"|t('stamp-passport'),
-                instructions: "HTML content displayed inside the rules modal. Supports rich text when CKEditor is installed."|t('stamp-passport'),
-                id: 'stamp-rules-content-' ~ site.handle,
-                name: 'contestRules[' ~ site.handle ~ '][modalContent]',
-                value: contestRules[site.handle].modalContent ?? '',
-                rows: 14,
-            }) }}
+            {# 1. Get the Field Type from the Schema #}
+            {% set ckeditorField = craft.app.fields.createField({
+    type: 'craft\\ckeditor\\Field',
+    handle: 'modalContent',
+    columnType: 'text',
+    {# Optional: Specify a config if you have a .json file in config/ckeditor/ #}
+    {# configConditionals: [{ 
+        config: 'Standard.json' 
+    }] #}
+}) %}
+
+            {# 2. Render the Field Input #}
+            <div class="field">
+                <div class="heading">
+                    <label>
+                        {{ "Rules Modal Content"|t('stamp-passport') }}
+                    </label>
+                    <div class="instructions">
+                        {{ "HTML content displayed inside the rules modal."|t('stamp-passport') }}
+                    </div>
+                </div>
+                <div class="input ltr">
+                    {{ ckeditorField.getInputHtml(
+            contestRules[site.handle].modalContent ?? '',
+            null,
+            'contestRules[' ~ site.handle ~ '][modalContent]'
+        )|raw }}
+                </div>
+            </div>
 
             {{ forms.textField({
                 label: "Full Rules Link Text"|t('stamp-passport'),
@@ -57,47 +80,14 @@
 
             {% if not loop.last %}
                 <hr style="margin: 32px 0;">
-            {% endif %}
-        {% endfor %}
+                {% endif %}
+            {% endfor %}
 
-        <div class="buttons">
-            <button type="submit" class="btn submit">{{ "Save"|t('app') }}</button>
-        </div>
-    </form>
-{% endblock %}
-
-{# ── CKEditor 5 for each site's modal content textarea (optional dependency) ── #}
-{% block foot %}
-    {{ parent() }}
-    {% if craft.app.plugins.getPlugin('ckeditor') %}
-        {# Register the field asset bundle which includes the Craft-specific bridge #}
-        {% do view.registerAssetBundle('craft\\ckeditor\\web\\assets\\field\\FieldAsset') %}
-        
-        {% js %}
-            (function() {
-                // Wait for Craft to be ready and CKEditor to load
-                var initCKEditor = function() {
-                    if (typeof CKEditor5 === 'undefined') {
-                        setTimeout(initCKEditor, 50);
-                        return;
-                    }
-
-                    {% for site in allSites %}
-                        var el = document.getElementById('stamp-rules-content-{{ site.handle }}');
-                        if (el && !el.dataset.ckeditorInitialized) {
-                            ClassicEditor.create(el, {
-                                toolbar: ['bold', 'italic', '|', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo'],
-                                // Craft specific: remove this if using vanilla ClassicEditor
-                                licenseKey: '' 
-                            }).then(editor => {
-                                el.dataset.ckeditorInitialized = 'true';
-                            });
-                        }
-                    {% endfor %}
-                };
-
-                initCKEditor();
-            })();
-        {% endjs %}
-    {% endif %}
-{% endblock %}
+            <div class="buttons">
+                <button type="submit" class="btn submit">
+                    {{ "Save"|t('app') }}
+                </button>
+            </div>
+        </form>
+    {% endblock %}
+    
