@@ -50,6 +50,8 @@ body {
     margin: 0;
     font-size: 16px;        /* establish 1 rem = 16 px baseline */
     min-height: 100vh;
+    /* Extend background under the iOS status bar when viewport-fit=cover */
+    padding-top: env(safe-area-inset-top, 0px);
     background-color: #747B4C;
 background: linear-gradient(
   to bottom,
@@ -688,6 +690,18 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     .passport-main {
         max-width: calc(100% - 24px); /* 12 px plaid each side */
         margin: 16px 12px 0;
+    }
+
+    /* When a full-bleed wood-panel image is present, remove the top margin so
+       the header image reaches the very top of the viewport. */
+    .passport-main:has(.passport-header.has-wood-bg) {
+        margin-top: 0;
+    }
+
+    /* Give the scan strip more breathing room below the header text on narrow screens.
+       Reduce the overlap so the strip starts lower and doesn't crowd the title. */
+    :root {
+        --passport-scan-overlap: 4px;
     }
 }
 
