@@ -70,36 +70,34 @@
 {% block foot %}
     {{ parent() }}
     {% if craft.app.plugins.getPlugin('ckeditor') %}
-        {% do view.registerAssetBundle('craft\\ckeditor\\web\\assets\\ckeditor\\CkeditorAsset') %}
+        {# Register the field asset bundle which includes the Craft-specific bridge #}
+        {% do view.registerAssetBundle('craft\\ckeditor\\web\\assets\\field\\FieldAsset') %}
+        
         {% js %}
-        (function () {
-            if (typeof CKEditor5 === 'undefined' || !CKEditor5.craftcms) return;
-            {% for site in allSites %}
-            (function () {
-                var el = document.getElementById('stamp-rules-content-{{ site.handle }}');
-                if (!el) return;
-                CKEditor5.craftcms.create(el, {
-                    toolbar: [
-                        'bold', 'italic', '|',
-                        'link', '|',
-                        'bulletedList', 'numberedList', '|',
-                        'blockQuote', '|',
-                        'undo', 'redo'
-                    ],
-                    language: '{{ site.language[:2]|lower }}',
-                }).then(function (editor) {
-                    var form = el.closest('form');
-                    if (form) {
-                        form.addEventListener('submit', function () {
-                            editor.updateSourceElement();
-                        });
+            (function() {
+                // Wait for Craft to be ready and CKEditor to load
+                var initCKEditor = function() {
+                    if (typeof CKEditor5 === 'undefined') {
+                        setTimeout(initCKEditor, 50);
+                        return;
                     }
-                }).catch(function (err) {
-                    console.error('[stamp-passport] CKEditor init error:', err);
-                });
+
+                    {% for site in allSites %}
+                        var el = document.getElementById('stamp-rules-content-{{ site.handle }}');
+                        if (el && !el.dataset.ckeditorInitialized) {
+                            ClassicEditor.create(el, {
+                                toolbar: ['bold', 'italic', '|', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo'],
+                                // Craft specific: remove this if using vanilla ClassicEditor
+                                licenseKey: '' 
+                            }).then(editor => {
+                                el.dataset.ckeditorInitialized = 'true';
+                            });
+                        }
+                    {% endfor %}
+                };
+
+                initCKEditor();
             })();
-            {% endfor %}
-        })();
         {% endjs %}
     {% endif %}
 {% endblock %}
