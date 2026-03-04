@@ -11,7 +11,7 @@
     --passport-teal-dark:  #1e5068;   /* 7.55:1 on white  ✓ AA */
     --passport-green:      #2d5a27;   /* 8.29:1 on white  ✓ AA */
     --passport-cream:      #f5f0e8;
-    --passport-paper:      #faf7f2;
+    --passport-paper:      #f2e0c8;
     --passport-beige:      #d4b896;
     --passport-ink:        #1e1a17;   /* 16.9:1 on white  ✓ AA */
     --passport-ink-muted:  #5a4f43;   /* 6.79:1 on white  ✓ AA (darkened from #6b5d4e) */
@@ -248,10 +248,12 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 .passport-title-bold {
     display: block;
     font-family: "Cabin", "Segoe UI", Arial, sans-serif;
-    font-size: clamp(2rem, 7vw, 2.8rem);
+    font-size: clamp(2rem, 8vw, 2.8rem);
+    line-height: 2.5rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+    padding: 1.2rem;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -307,7 +309,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 .stamp-slot {
     display: block;
     border-bottom: 1px solid #ede5d8;
-    background: #fff;
+    background: var(--passport-paper);
     position: relative;
     transition: background 0.15s;
 }
@@ -352,8 +354,8 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 
 /* Item thumbnail */
 .stamp-image {
-    width: 96px;
-    height: 96px;
+    width: 113px;
+    height: 113px;
     flex-shrink: 0;
     background: #e4ddd4;
     border-radius: var(--passport-radius);
@@ -371,7 +373,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 }
 
 .stamp-slot:not(.collected) .stamp-image img {
-    filter: grayscale(1);
+    filter: grayscale(1) contrast(0.3) brightness(1.6);
 }
 
 .stamp-slot.collected .stamp-image img {
@@ -383,15 +385,15 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     position: absolute;
     top: 5px;
     right: 5px;
-    width: 26px;
-    height: 26px;
+    width: 36px;
+    height: 36px;
     background: var(--passport-green);
     color: #fff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 700;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
