@@ -31,35 +31,14 @@
                 value: contestRules[site.handle].linkText ?? '',
             }) }}
 
-            {# 1. Get the Field Type from the Schema #}
-            {% set ckeditorField = craft.app.fields.createField({
-    type: 'craft\\ckeditor\\Field',
-    handle: 'modalContent',
-    columnType: 'text',
-    {# Optional: Specify a config if you have a .json file in config/ckeditor/ #}
-    {# configConditionals: [{ 
-        config: 'Standard.json' 
-    }] #}
-}) %}
-
-            {# 2. Render the Field Input #}
-            <div class="field">
-                <div class="heading">
-                    <label>
-                        {{ "Rules Modal Content"|t('stamp-passport') }}
-                    </label>
-                    <div class="instructions">
-                        {{ "HTML content displayed inside the rules modal."|t('stamp-passport') }}
-                    </div>
-                </div>
-                <div class="input ltr">
-                    {{ ckeditorField.getInputHtml(
-            contestRules[site.handle].modalContent ?? '',
-            null,
-            'contestRules[' ~ site.handle ~ '][modalContent]'
-        )|raw }}
-                </div>
-            </div>
+            {{ forms.textareaField({
+                label: "Rules Modal Content"|t('stamp-passport'),
+                instructions: "HTML content displayed inside the rules modal."|t('stamp-passport'),
+                name: 'contestRules[' ~ site.handle ~ '][modalContent]',
+                value: contestRules[site.handle].modalContent ?? '',
+                rows: 8,
+                class: 'code',
+            }) }}
 
             {{ forms.textField({
                 label: "Full Rules Link Text"|t('stamp-passport'),
