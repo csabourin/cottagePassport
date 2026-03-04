@@ -27,10 +27,24 @@
     {% if bodyBackgroundUrl %}
     <style>
         body.stamp-passport {
+            {% if settings.bodyBackgroundMode == 'tiled' %}
             background-image: url('{{ bodyBackgroundUrl|e }}');
-            background-size: {{ settings.bodyBackgroundMode == 'tiled' ? 'auto' : 'cover' }};
-            background-repeat: {{ settings.bodyBackgroundMode == 'tiled' ? 'repeat' : 'no-repeat' }};
-            background-position: {{ settings.bodyBackgroundMode == 'tiled' ? 'left top' : 'center top' }};
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: left top;
+            {% elseif settings.bodyBackgroundMode == 'custom' %}
+            background-image: url('{{ bodyBackgroundUrl|e }}');
+            background-size: {{ settings.bodyBackgroundSize ?? '800px' }};
+            background-repeat: no-repeat;
+            background-position: center top;
+            {% if settings.bodyBackgroundColor %}background-color: {{ settings.bodyBackgroundColor }};{% endif %}
+            {% else %}
+            background-image: url('{{ bodyBackgroundUrl|e }}');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center top;
+            {% if settings.bodyBackgroundColor %}background-color: {{ settings.bodyBackgroundColor }};{% endif %}
+            {% endif %}
         }
     </style>
     {% endif %}

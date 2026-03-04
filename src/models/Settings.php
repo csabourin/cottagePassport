@@ -49,8 +49,14 @@ class Settings extends Model
     /** @var string|null Optional URL used as a center image in generated QR codes */
     public ?string $qrCenterImageUrl = null;
 
-    /** @var string Body background display mode when an image is set: "cover" or "tiled" */
+    /** @var string Body background display mode when an image is set: "cover", "tiled", or "custom" */
     public string $bodyBackgroundMode = 'cover';
+
+    /** @var string Custom background-size value used when bodyBackgroundMode is "custom" */
+    public string $bodyBackgroundSize = '800px';
+
+    /** @var string|null Optional background color shown behind the body background image (not used for tiled mode) */
+    public ?string $bodyBackgroundColor = null;
 
     /** @var string Contest version identifier, changes when contest rules change */
     public string $contestVersion = '2026.02';
@@ -186,7 +192,10 @@ class Settings extends Model
             [['qrCenterImageUrl'], 'string', 'max' => 2048],
             [['qrCenterImageUrl'], 'url', 'skipOnEmpty' => true],
             [['logoAssetId', 'woodPanelAssetId', 'checkedMarkerAssetId', 'bodyBackgroundAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
-            [['bodyBackgroundMode'], 'in', 'range' => ['cover', 'tiled']],
+            [['bodyBackgroundMode'], 'in', 'range' => ['cover', 'tiled', 'custom']],
+            [['bodyBackgroundSize'], 'string', 'max' => 50],
+            [['bodyBackgroundColor'], 'string', 'max' => 50],
+            [['bodyBackgroundColor'], 'match', 'pattern' => '/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|[a-z]+)?$/', 'skipOnEmpty' => true],
             [['contestVersion'], 'string', 'max' => 20],
         ];
     }

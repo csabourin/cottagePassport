@@ -167,8 +167,44 @@
     options: [
         { label: "Cover"|t('stamp-passport'), value: 'cover' },
         { label: "Tiled"|t('stamp-passport'), value: 'tiled' },
+        { label: "Custom size"|t('stamp-passport'), value: 'custom' },
     ],
 }) }}
+
+<div id="bodyBackgroundSizeField" style="{{ (settings.bodyBackgroundMode ?? 'cover') != 'custom' ? 'display:none' : '' }}">
+{{ forms.textField({
+    label: "Custom Background Size"|t('stamp-passport'),
+    instructions: "CSS background-size value (e.g. 800px, 50%, contain)."|t('stamp-passport'),
+    id: 'bodyBackgroundSize',
+    name: 'bodyBackgroundSize',
+    value: settings.bodyBackgroundSize ?? '800px',
+    placeholder: '800px',
+}) }}
+</div>
+
+<div id="bodyBackgroundColorField" style="{{ (settings.bodyBackgroundMode ?? 'cover') == 'tiled' ? 'display:none' : '' }}">
+{{ forms.colorField({
+    label: "Background Color"|t('stamp-passport'),
+    instructions: "Fill color shown behind the background image (not applicable for tiled mode)."|t('stamp-passport'),
+    id: 'bodyBackgroundColor',
+    name: 'bodyBackgroundColor',
+    value: settings.bodyBackgroundColor ?? '',
+}) }}
+</div>
+
+<script>
+(function () {
+    var modeSelect = document.getElementById('bodyBackgroundMode');
+    var sizeField  = document.getElementById('bodyBackgroundSizeField');
+    var colorField = document.getElementById('bodyBackgroundColorField');
+    function updateFields() {
+        var v = modeSelect.value;
+        sizeField.style.display  = v === 'custom' ? '' : 'none';
+        colorField.style.display = v === 'tiled'  ? 'none' : '';
+    }
+    modeSelect.addEventListener('change', updateFields);
+}());
+</script>
 
 {{ forms.textField({
     label: "QR Center Image URL"|t('stamp-passport'),

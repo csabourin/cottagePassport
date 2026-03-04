@@ -258,7 +258,14 @@ class CpController extends Controller
             : ((int)($bodyBackgroundIds ?: 0) ?: null);
 
         $bodyBackgroundMode = (string)$request->getBodyParam('bodyBackgroundMode', $settings->bodyBackgroundMode);
-        $settings->bodyBackgroundMode = in_array($bodyBackgroundMode, ['cover', 'tiled'], true) ? $bodyBackgroundMode : 'cover';
+        $settings->bodyBackgroundMode = in_array($bodyBackgroundMode, ['cover', 'tiled', 'custom'], true) ? $bodyBackgroundMode : 'cover';
+
+        $bodyBackgroundSize = trim((string)$request->getBodyParam('bodyBackgroundSize', $settings->bodyBackgroundSize));
+        $settings->bodyBackgroundSize = $bodyBackgroundSize !== '' ? $bodyBackgroundSize : '800px';
+
+        $bodyBackgroundColor = trim((string)$request->getBodyParam('bodyBackgroundColor', ''));
+        $settings->bodyBackgroundColor = $bodyBackgroundColor !== '' ? $bodyBackgroundColor : null;
+
         $settings->qrCenterImageUrl = trim((string)$request->getBodyParam('qrCenterImageUrl', '')) ?: null;
 
         // Preserve existing display text unless this payload is explicitly submitted.

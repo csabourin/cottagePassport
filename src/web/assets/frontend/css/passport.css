@@ -79,6 +79,7 @@ background: linear-gradient(
 .stamp-passport {
     font-family: "Cabin", "Segoe UI", Arial, sans-serif;
     color: var(--passport-ink);
+    background-color: var(--passport-cloth-side-color);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -88,7 +89,7 @@ background: linear-gradient(
    ══════════════════════════════════════════════════════════ */
 .passport-main {
     max-width: 560px;
-    margin: 16px auto 0;    /* top margin → plaid visible above booklet */
+    margin: 0 auto 0;    /* top margin → plaid visible above booklet */
     min-height: calc(100vh - 16px);
     display: flex;
     flex-direction: column;
@@ -690,13 +691,6 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     }
 }
 
-@media (min-width: 801px) {
-    .passport-header.has-wood-bg {
-        /* Paint left/right side bands behind the 800px cloth image area. */
-        box-shadow: 0 0 0 100vmax var(--passport-cloth-side-color);
-        clip-path: inset(0 -100vmax);
-    }
-}
 
 /* On very small screens shrink the thumbnail */
 @media (max-width: 400px) {
