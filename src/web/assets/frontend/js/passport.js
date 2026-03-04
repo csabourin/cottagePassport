@@ -1089,7 +1089,7 @@
     }
 
     function bindItemDetailButtons() {
-        qsa('.stamp-image-btn').forEach(function (btn) {
+        qsa('.stamp-slot-btn').forEach(function (btn) {
             btn.addEventListener('click', function () { openItemDetail(btn); });
         });
     }
@@ -1141,7 +1141,7 @@
         /* Bind reopen form buttons */
         bindReopenButtons();
 
-        /* Bind item detail buttons (image click → detail modal) */
+        /* Bind item detail buttons (full row click → detail modal) */
         bindItemDetailButtons();
 
         /* Bind language switch links */

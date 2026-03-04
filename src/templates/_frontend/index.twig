@@ -110,8 +110,7 @@
         {% for item in items %}
             {% set content = item.contents[0] ?? null %}
             <article class="stamp-slot" data-code="{{ item.shortCode }}" data-id="{{ item.id }}">
-
-                <button class="stamp-image-btn"
+                <button class="stamp-slot-btn"
                         type="button"
                         aria-label="{{ 'Details'|t('stamp-passport') }}: {{ content.title ?? '' }}"
                         aria-haspopup="dialog"
@@ -133,15 +132,13 @@
                             {% endif %}
                         </div>
                     </div>
+                    <div class="stamp-info">
+                        <h3 class="stamp-title">{{ content.title ?? '' }}</h3>
+                    </div>
+                    <span class="stamp-slot-chevron" aria-hidden="true">&#8250;</span>
                 </button>
-
                 {# Description HTML stored for the detail modal — not displayed inline #}
                 <template id="item-desc-{{ item.id }}">{{ content.description|default('')|raw }}</template>
-
-                <div class="stamp-info">
-                    <h3 class="stamp-title">{{ content.title ?? '' }}</h3>
-                </div>
-
             </article>
         {% endfor %}
     </section>

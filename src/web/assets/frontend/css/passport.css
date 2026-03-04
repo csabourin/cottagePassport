@@ -303,12 +303,9 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     flex-direction: column;
 }
 
-/* Each item — horizontal card: image left, text right */
+/* Each item row */
 .stamp-slot {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    padding: 16px 20px;
+    display: block;
     border-bottom: 1px solid #ede5d8;
     background: #fff;
     position: relative;
@@ -329,34 +326,40 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     100% { transform: scale(1);    opacity: 1;   }
 }
 
-/* ── Image button (flex child; wraps .stamp-image) ── */
-.stamp-image-btn {
-    display: block;
+/* Full-row button so the whole item opens the detail modal */
+.stamp-slot-btn {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
+    font: inherit;
+}
+
+.stamp-slot-btn:focus-visible {
+    outline: 2px solid rgba(43, 107, 138, 0.45);
+    outline-offset: -2px;
+}
+
+.stamp-slot-btn:hover .stamp-image {
+    box-shadow: 0 4px 14px rgba(43, 107, 138, 0.22);
+}
+
+/* Item thumbnail */
+.stamp-image {
     width: 96px;
     height: 96px;
     flex-shrink: 0;
-    margin-right: 16px;
-    padding: 0;
-    border: none;
-    background: none;
-    cursor: pointer;
-    border-radius: var(--passport-radius);
-    transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.stamp-image-btn:hover {
-    transform: scale(1.04);
-    box-shadow: 0 4px 14px rgba(43, 107, 138, 0.35);
-}
-
-/* ── Image thumbnail (visual container inside the button) ── */
-.stamp-image {
-    width: 100%;
-    height: 100%;
     background: #e4ddd4;
     border-radius: var(--passport-radius);
     overflow: hidden;
     position: relative;
+    transition: box-shadow 0.15s;
 }
 
 .stamp-image img {
@@ -419,6 +422,18 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 .stamp-info {
     flex: 1;
     min-width: 0;
+}
+
+.stamp-slot-chevron {
+    align-self: center;
+    color: rgba(64, 64, 64, 0.34);
+    font-size: 1.4rem;
+    line-height: 1;
+    margin-left: 8px;
+}
+
+.stamp-slot-btn:hover .stamp-slot-chevron {
+    color: rgba(64, 64, 64, 0.5);
 }
 
 .stamp-title {
@@ -708,14 +723,14 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 
 /* On very small screens shrink the thumbnail */
 @media (max-width: 400px) {
-    .stamp-image-btn {
+    .stamp-image {
         width: 76px;
         height: 76px;
-        margin-right: 12px;
     }
 
-    .stamp-slot {
+    .stamp-slot-btn {
         padding: 14px 16px;
+        gap: 12px;
     }
 
     .passport-header {
