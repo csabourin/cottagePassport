@@ -390,6 +390,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     background: var(--passport-green);
     color: #fff;
     border-radius: 50%;
+    border:0.5px solid #fff;
     display: flex;
     align-items: center;
     justify-content: center;
