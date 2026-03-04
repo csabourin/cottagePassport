@@ -211,6 +211,61 @@ class CpController extends Controller
     }
 
     /**
+     * Contest rules page.
+     */
+    public function actionContestRules(): Response
+    {
+        return $this->renderTemplate('stamp-passport/contest-rules', [
+            'settings'     => Plugin::$plugin->getSettings(),
+            'contestRules' => Plugin::$plugin->getSettings()->contestRules,
+            'allSites'     => Craft::$app->getSites()->getAllSites(),
+        ]);
+    }
+
+    /**
+     * Save contest rules (POST).
+     */
+    public function actionSaveContestRules(): ?Response
+    {
+        $this->requirePostRequest();
+
+        $request  = Craft::$app->getRequest();
+        $settings = Plugin::$plugin->getSettings();
+
+        $raw     = $request->getBodyParam('contestRules', []);
+        $cleaned = [];
+
+        if (is_array($raw)) {
+            foreach ($raw as $handle => $fields) {
+                if (!is_array($fields)) {
+                    continue;
+                }
+                $linkText      = trim((string)($fields['linkText'] ?? ''));
+                $modalContent  = trim((string)($fields['modalContent'] ?? ''));
+                $fullRulesText = trim((string)($fields['fullRulesText'] ?? ''));
+                $fullRulesUrl  = trim((string)($fields['fullRulesUrl'] ?? ''));
+
+                // Only store entries that have at least a link label
+                if ($linkText !== '') {
+                    $cleaned[$handle] = [
+                        'linkText'      => $linkText,
+                        'modalContent'  => $modalContent,
+                        'fullRulesText' => $fullRulesText,
+                        'fullRulesUrl'  => $fullRulesUrl,
+                    ];
+                }
+            }
+        }
+
+        $settings->contestRules = $cleaned;
+
+        Craft::$app->getPlugins()->savePluginSettings(Plugin::$plugin, $settings->toArray());
+        Craft::$app->getSession()->setNotice(Craft::t('stamp-passport', 'Contest rules saved.'));
+
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
      * Plugin settings page.
      */
     public function actionSettings(): Response

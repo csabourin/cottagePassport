@@ -172,6 +172,21 @@
     </div>
     {% endif %}
 
+        {# ── Contest Rules strip (optional — shown only when linkText is configured for this site) ── #}
+    {% set contestRules = settings.contestRules[currentSite.handle] ?? {} %}
+    {% if contestRules.linkText is defined and contestRules.linkText is not empty %}
+    <div class="passport-contest-rules-strip">
+        <button type="button"
+                class="passport-rules-trigger"
+                id="contestRulesTrigger"
+                aria-haspopup="dialog"
+                aria-controls="contestRulesModal"
+                data-open-modal="contestRulesModal">
+            {{ contestRules.linkText|e }}
+        </button>
+    </div>
+    {% endif %}
+
     {# ── Item detail modal (shared, populated by JS on image click) ── #}
     <div id="itemDetailModal" class="passport-modal hidden"
          role="dialog"
@@ -218,6 +233,34 @@
                 </div>
             </div>
         </div>
+    {% endif %}
+
+    {# ── Contest Rules modal (optional — mirrors strip condition above) ── #}
+    {% if contestRules.linkText is defined and contestRules.linkText is not empty %}
+    <div id="contestRulesModal"
+         class="passport-modal hidden"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="contestRulesModalTitle">
+        <div class="passport-modal-backdrop"></div>
+        <div class="passport-modal-content">
+            <button class="passport-modal-close" aria-label="{{ 'Close'|t('stamp-passport') }}">&times;</button>
+            <h2 id="contestRulesModalTitle">{{ contestRules.linkText|e }}</h2>
+            <div class="contest-rules-body">{{ contestRules.modalContent|default('')|raw }}</div>
+            {% if contestRules.fullRulesUrl is defined and contestRules.fullRulesUrl is not empty %}
+            <div class="contest-rules-footer">
+                <a href="{{ contestRules.fullRulesUrl|e }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="passport-btn passport-btn-secondary">
+                    {{ contestRules.fullRulesText is defined and contestRules.fullRulesText is not empty
+                        ? contestRules.fullRulesText|e
+                        : 'Read the full rules'|t('stamp-passport') }}
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
     {% endif %}
 
     {# ── Disclaimer modal (shown once) ── #}

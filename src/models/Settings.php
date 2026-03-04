@@ -64,6 +64,10 @@ class Settings extends Model
     /** @var array Per-site display text overrides, keyed by site handle */
     public array $uiText = [];
 
+    /** @var array Per-site contest rules content, keyed by site handle */
+    public array $contestRules = [];
+    // Per-site keys: linkText, modalContent (HTML), fullRulesText, fullRulesUrl
+
     public const TEXT_KEYS = [
         'orgName',
         'challengeName',

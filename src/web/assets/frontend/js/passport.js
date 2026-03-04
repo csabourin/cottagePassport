@@ -907,6 +907,13 @@
             });
         });
 
+        /* Generic open triggers: <button data-open-modal="modalId"> */
+        qsa('[data-open-modal]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                showModal(btn.getAttribute('data-open-modal'), btn);
+            });
+        });
+
         /* Backdrop close */
         qsa('.passport-modal-backdrop').forEach(function (bd) {
             bd.addEventListener('click', function () {
