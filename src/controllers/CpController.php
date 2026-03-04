@@ -264,6 +264,11 @@ class CpController extends Controller
         $settings->bodyBackgroundSize = $bodyBackgroundSize !== '' ? $bodyBackgroundSize : '800px';
 
         $bodyBackgroundColor = trim((string)$request->getBodyParam('bodyBackgroundColor', ''));
+        // Strip any characters not valid in CSS colors; normalize bare hex to include '#'.
+        $bodyBackgroundColor = preg_replace('/[^#0-9a-fA-F()%.,\- ]/', '', $bodyBackgroundColor);
+        if ($bodyBackgroundColor !== '' && $bodyBackgroundColor[0] !== '#' && ctype_xdigit($bodyBackgroundColor)) {
+            $bodyBackgroundColor = '#' . $bodyBackgroundColor;
+        }
         $settings->bodyBackgroundColor = $bodyBackgroundColor !== '' ? $bodyBackgroundColor : null;
 
         $settings->qrCenterImageUrl = trim((string)$request->getBodyParam('qrCenterImageUrl', '')) ?: null;

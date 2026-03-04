@@ -195,7 +195,6 @@ class Settings extends Model
             [['bodyBackgroundMode'], 'in', 'range' => ['cover', 'tiled', 'custom']],
             [['bodyBackgroundSize'], 'string', 'max' => 50],
             [['bodyBackgroundColor'], 'string', 'max' => 50],
-            [['bodyBackgroundColor'], 'match', 'pattern' => '/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|[a-z]+)?$/', 'skipOnEmpty' => true],
             [['contestVersion'], 'string', 'max' => 20],
         ];
     }
