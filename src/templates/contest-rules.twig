@@ -29,17 +29,18 @@
                 value: contestRules[site.handle].linkText ?? '',
             }) }}
 
-            {% set modalContentId = 'stamp-rules-content-' ~ site.handle %}
-
-            {{ forms.field({
+            {{ forms.textareaField({
                 label: "Rules Modal Content"|t('stamp-passport'),
                 instructions: "HTML content displayed inside the rules modal. Supports rich text when CKEditor is installed."|t('stamp-passport'),
-                id: modalContentId,
-            }, '<textarea id="' ~ modalContentId ~ '" name="contestRules[' ~ site.handle ~ '][modalContent]" class="text fullwidth code nicetext" rows="14">' ~ (contestRules[site.handle].modalContent ?? '')|e ~ '</textarea>') }}
+                id: 'stamp-rules-content-' ~ site.handle,
+                name: 'contestRules[' ~ site.handle ~ '][modalContent]',
+                value: contestRules[site.handle].modalContent ?? '',
+                rows: 14,
+            }) }}
 
             {{ forms.textField({
                 label: "Full Rules Link Text"|t('stamp-passport'),
-                instructions: "Label for the link shown at the bottom of the modal. Defaults to "Read the full rules" if left empty."|t('stamp-passport'),
+                instructions: 'Label for the link shown at the bottom of the modal. Defaults to "Read the full rules" if left empty.'|t('stamp-passport'),
                 name: 'contestRules[' ~ site.handle ~ '][fullRulesText]',
                 value: contestRules[site.handle].fullRulesText ?? '',
                 placeholder: 'Read the full rules'|t('stamp-passport'),
