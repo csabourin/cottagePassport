@@ -637,7 +637,7 @@ $logoUrl           = $settings['logoUrl'] ?? null;
 $woodPanelUrl      = $settings['woodPanelUrl'] ?? null;
 $checkedMarkerUrl  = $settings['checkedMarkerUrl'] ?? null;
 $bodyBgUrl         = $settings['bodyBackgroundUrl'] ?? null;
-$bodyBgMode        = $settings['bodyBackgroundMode'] ?? 'cover';
+$bodyBgMode        = $settings['bodyBackgroundMode'] ?? 'custom';
 $bodyBgSize        = $settings['bodyBackgroundSize'] ?? '800px';
 $bodyBgColor       = $settings['bodyBackgroundColor'] ?? null;
 $primaryColor      = $settings['primaryColor'] ?? null;
@@ -843,8 +843,8 @@ header('Cache-Control: no-cache');
         <?php if ($bodyBgColor): ?>background-color: <?= h($bodyBgColor) ?>;<?php endif; ?>
         <?php else: ?>
         background-image: url('<?= h($bodyBgUrl) ?>');
-        background-size: cover;
-        background-repeat: no-repeat;
+        background-size: 800px;
+        background-repeat: repeat-y;
         background-position: center top;
         <?php if ($bodyBgColor): ?>background-color: <?= h($bodyBgColor) ?>;<?php endif; ?>
         <?php endif; ?>
