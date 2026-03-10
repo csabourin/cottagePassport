@@ -1,0 +1,100 @@
+{
+  "_comment": "Stamp Passport — flat-file settings (replaces the Craft CP settings interface).",
+
+  "pluginName": "Stamp Passport",
+  "routePrefix": "passport",
+
+  "enableGeofence": true,
+  "geofenceRadius": 550,
+
+  "drawThreshold": 5,
+  "maxStickers": 100,
+
+  "contestVersion": "2026.02",
+
+  "showLanguageSwitcher": true,
+  "requireDisclaimerAck": true,
+
+  "ga4MeasurementId": null,
+
+  "primaryColor": null,
+  "primaryColorDark": null,
+  "accentColor": null,
+
+  "logoUrl": null,
+  "woodPanelUrl": null,
+  "checkedMarkerUrl": null,
+  "bodyBackgroundUrl": null,
+  "bodyBackgroundMode": "cover",
+  "bodyBackgroundSize": "800px",
+  "bodyBackgroundColor": null,
+
+  "faviconUrl": null,
+  "ogImageUrl": null,
+
+  "qrCenterImageUrl": null,
+  "qrForegroundColor": null,
+  "qrBackgroundColor": null,
+
+  "customCss": null,
+
+  "writeTokenSecret": "change-me-to-a-long-random-secret",
+
+  "sites": [
+    {
+      "handle": "default",
+      "lang":   "en",
+      "name":   "English",
+      "url":    "/",
+      "current": true
+    }
+  ],
+
+  "uiText": {
+    "default": {
+      "orgName":          "National Capital Commission",
+      "challengeName":    "Stamp Passport",
+      "challengeTitle":   "Outdoor Challenge",
+      "scanInstructions": "Scan the QR code at each location to collect your stamp.",
+      "disclaimerTitle":  "Before You Begin",
+      "disclaimerBody":   "Your progress is saved on this device and synced online. Location access is used only to verify you are at the right spot.",
+      "disclaimerButton": "Got it, let\u2019s go!",
+      "alreadyCheckedIn": "You already checked in here.",
+      "checkingLocation": "Checking your location\u2026",
+      "locationError":    "Could not determine your location. Please allow location access and try again.",
+      "checkinFailed":    "Check-in failed. Please confirm you are at the right location.",
+      "checkedIn":        "Checked in!",
+      "qrNotRecognized":  "This QR code is not recognized.",
+      "loadError":        "Could not load passport data. Please try again later.",
+      "ogTitle":          "",
+      "ogDescription":    ""
+    },
+    "fr": {
+      "orgName":          "Commission de la Capitale Nationale",
+      "challengeName":    "Stamp Passport",
+      "challengeTitle":   "D\u00e9fi plein air",
+      "scanInstructions": "Scannez le code QR \u00e0 chaque emplacement pour obtenir votre tampon.",
+      "disclaimerTitle":  "Avant de commencer",
+      "disclaimerBody":   "Votre progression est sauvegard\u00e9e sur cet appareil et synchronis\u00e9e en ligne. La localisation est utilis\u00e9e uniquement pour v\u00e9rifier que vous \u00eates au bon endroit.",
+      "disclaimerButton": "Compris, c\u2019est parti\u00a0!",
+      "alreadyCheckedIn": "Vous avez d\u00e9j\u00e0 valid\u00e9 cet emplacement.",
+      "checkingLocation": "V\u00e9rification de votre position\u2026",
+      "locationError":    "Impossible de d\u00e9terminer votre position. Veuillez autoriser l\u2019acc\u00e8s \u00e0 la localisation et r\u00e9essayer.",
+      "checkinFailed":    "\u00c9chec de la validation. Veuillez confirmer que vous \u00eates au bon emplacement.",
+      "checkedIn":        "Validation r\u00e9ussie\u00a0!",
+      "qrNotRecognized":  "Ce code QR n\u2019est pas reconnu.",
+      "loadError":        "Impossible de charger les donn\u00e9es du passeport. Veuillez r\u00e9essayer plus tard.",
+      "ogTitle":          "",
+      "ogDescription":    ""
+    }
+  },
+
+  "contestRules": {
+    "default": {
+      "linkText":      "",
+      "modalContent":  "",
+      "fullRulesUrl":  "",
+      "fullRulesText": ""
+    }
+  }
+}
