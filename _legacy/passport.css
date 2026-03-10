@@ -1,0 +1,759 @@
+/* ============================================================
+   STAMP PASSPORT — Bucket List Challenge Theme
+   Draws from _legacy/styles.css (plaid) and _legacy/styles-cottage.css (wood)
+   WCAG 2.2 AA compliant — mobile-first
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cabin:wght@400;600;700&family=Playfair+Display:wght@400;700&display=swap');
+
+:root {
+    --passport-teal:       #2b6b8a;   /* 5.69:1 on white  ✓ AA */
+    --passport-teal-dark:  #1e5068;   /* 7.55:1 on white  ✓ AA */
+    --passport-green:      #2d5a27;   /* 8.29:1 on white  ✓ AA */
+    --passport-cream:      #f5f0e8;
+    --passport-paper:      #f2e0c8;
+    --passport-beige:      #d4b896;
+    --passport-ink:        #1e1a17;   /* 16.9:1 on white  ✓ AA */
+    --passport-ink-muted:  #5a4f43;   /* 6.79:1 on white  ✓ AA (darkened from #6b5d4e) */
+    --passport-radius:     4px;
+    --passport-focus:      #2b6b8a;
+    --passport-wood-max-width: 800px;
+    --passport-wood-ratio-w: 480;
+    --passport-wood-ratio-h: 307;
+    --passport-scan-overlap: 18px;
+    --passport-cloth-side-color: #2f211c;
+}
+
+/* ── Reset ── */
+.stamp-passport *,
+.stamp-passport *::before,
+.stamp-passport *::after {
+    box-sizing: border-box;
+}
+
+/* ══════════════════════════════════════════════════════════
+   FOCUS — WCAG 2.2 SC 2.4.11 (Focus Appearance)
+   3 px outline, 3:1 contrast on adjacent colour ✓
+   ══════════════════════════════════════════════════════════ */
+.stamp-passport a:focus-visible,
+.stamp-passport button:focus-visible,
+.stamp-passport [tabindex]:focus-visible {
+    outline: 3px solid var(--passport-focus);
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   BODY — bold red-and-black buffalo plaid (from _legacy/styles.css)
+   ══════════════════════════════════════════════════════════ */
+body {
+    margin: 0;
+    font-size: 16px;        /* establish 1 rem = 16 px baseline */
+    min-height: 100vh;
+    /* Extend background under the iOS status bar when viewport-fit=cover */
+    padding-top: env(safe-area-inset-top, 0px);
+    background-color: #747B4C;
+background: linear-gradient(
+  to bottom,
+  rgb(93,124,161) 0%,
+  rgb(79,123,158) 5%,
+  rgb(48,102,125) 10%,
+  rgb(63,110,120) 16%,
+  rgb(75,110,97) 21%,
+  rgb(126,135,112) 26%,
+  rgb(172,156,130) 32%,
+  rgb(227,194,174) 37%,
+  rgb(237,203,174) 42%,
+  rgb(186,156,97) 47%,
+  rgb(106,109,9) 53%,
+  rgb(97,95,18) 58%,
+  rgb(142,139,31) 63%,
+  rgb(109,109,12) 68%,
+  rgb(104,110,15) 74%,
+  rgb(101,107,8) 79%,
+  rgb(74,79,13) 84%,
+  rgb(92,99,9) 89%,
+  rgb(60,68,7) 95%,
+  rgb(45,55,6) 100%
+);
+}
+
+.stamp-passport {
+    font-family: "Cabin", "Segoe UI", Arial, sans-serif;
+    color: var(--passport-ink);
+    background-color: var(--passport-cloth-side-color);
+}
+
+/* ══════════════════════════════════════════════════════════
+   MAIN CONTAINER — narrow booklet centred on plaid
+   16 px of plaid shows above; on screens ≤ 608 px the 12 px
+   side margins let the plaid peek through.
+   ══════════════════════════════════════════════════════════ */
+.passport-main {
+    max-width: 560px;
+    margin: 0 auto 0;    /* top margin → plaid visible above booklet */
+    min-height: calc(100vh - 16px);
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 48px;
+    gap:1rem;
+    position: relative;
+}
+
+main.passport-main > div, main.passport-main > section, main.passport-main > header {
+    box-shadow: 5px 5px 25px rgba(0,0,0,0.8);
+    border-radius:.5rem;
+}
+
+/* ══════════════════════════════════════════════════════════
+   HEADER — dark wood panel
+   CSS wood-grain texture fallback (from _legacy/styles-cottage.css).
+   Overridden by .has-wood-bg + --passport-wood-img when an image is set.
+   ══════════════════════════════════════════════════════════ */
+.passport-header {
+    position: relative;
+    background-color: #5c4033;
+    background-image:
+        repeating-linear-gradient(2deg,
+            transparent 0px, transparent 3px,
+            rgba(90, 60, 30, 0.35) 3px, rgba(90, 60, 30, 0.35) 4px,
+            transparent 4px, transparent 12px),
+        repeating-linear-gradient(178deg,
+            transparent 0px, transparent 60px,
+            rgba(120, 80, 40, 0.2) 60px, rgba(120, 80, 40, 0.2) 62px,
+            transparent 62px, transparent 140px),
+        repeating-linear-gradient(1deg,
+            rgba(100, 70, 40, 0.15) 0px,
+            rgba(80, 55, 30, 0.25) 18px,
+            rgba(110, 80, 45, 0.1) 36px,
+            rgba(90, 62, 35, 0.2) 54px),
+        linear-gradient(180deg, #7a5f46 0%, #6b5340 40%, #5c4733 100%);
+    background-size: cover;
+    background-position: center top;
+    padding: 32px 28px 28px;
+    text-align: center;
+}
+
+/* Custom wood-panel image uploaded via plugin settings */
+.passport-header.has-wood-bg {
+    background-image: var(--passport-wood-img);
+    background-color: transparent;
+    box-shadow:none;
+    border-radius:0;
+    aspect-ratio: 480 / 307;
+    top: 0;
+    width: min(100vw, var(--passport-wood-max-width));
+    max-width: none;
+    align-self: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+}
+
+/* ── Language switcher (top-right of header)
+   Near-white on dark wood: ~9.7:1 ✓ AA
+   44×44 px touch target ✓ WCAG 2.5.5                       ── */
+.passport-lang-nav {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+}
+
+.passport-lang-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 6px 12px;
+    font-family: "Cabin", sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #fff;
+    text-decoration: none;
+    border: 1.5px solid rgba(255, 248, 235, 0.5);
+    border-radius: var(--passport-radius);
+    background: rgba(0, 0, 0, 0.18);
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.passport-lang-link:hover,
+.passport-lang-link:focus-visible {
+    background: rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 248, 235, 0.85);
+}
+
+/* ── Circular logo ── */
+.passport-header-logo {
+    margin-bottom: 12px;
+}
+
+.passport-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    /* Ring border: light cream — 5.6:1 contrast vs. dark wood ✓ */
+    border: 2px solid rgba(255, 248, 235, 0.65);
+    display: block;
+    margin: 0 auto;
+}
+
+.passport-logo-placeholder {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.09);
+    border: 2px solid rgba(255, 248, 235, 0.45);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    line-height: 1;
+}
+
+/* ── Organisation name
+   Near-white on dark wood: ~5.6:1 ✓ AA at 0.7 rem         ── */
+.passport-org {
+    margin: 0 0 14px;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 248, 235, 0.88);
+    text-shadow: 0 0 4px black;
+    font-family: "Cabin", sans-serif;
+    line-height: 1.65;
+}
+
+/* ── Page title (light serif + bold caps)
+   White on dark wood: ~9.7:1 ✓ AA                         ── */
+.passport-title {
+    margin: 0;
+    color: #fff;
+    text-shadow: 0 0 4px black;    
+    line-height: 1.05;
+}
+
+.passport-title-light {
+    display: block;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1.4rem, 4vw, 1.9rem);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+}
+
+.passport-title-bold {
+    display: block;
+    font-family: "Cabin", "Segoe UI", Arial, sans-serif;
+    font-size: clamp(2rem, 8vw, 2.8rem);
+    line-height: 2.5rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 1.2rem;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCAN INSTRUCTION STRIP
+   #1e1a17 on #f5f0e8: 16.5:1 ✓ AA
+   ══════════════════════════════════════════════════════════ */
+.passport-scan-strip {
+    background: var(--passport-cream);
+    padding: 16px 24px;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--passport-ink);
+    border-bottom: 1px solid #e0d8cc;
+    line-height: 1.5;
+    position: relative;
+    z-index: 3;
+}
+
+/* Keep the strip tucked slightly under an absolute wood header. */
+.passport-header.has-wood-bg + .passport-scan-strip {
+    margin-top: calc(
+        (min(100vw, var(--passport-wood-max-width)) * var(--passport-wood-ratio-h) / var(--passport-wood-ratio-w))
+        - var(--passport-scan-overlap)
+    );
+}
+
+/* ══════════════════════════════════════════════════════════
+   STATUS (JS-populated scan feedback)
+   #fff on #2b6b8a: 7.8:1 ✓ AA
+   ══════════════════════════════════════════════════════════ */
+.passport-status {
+    text-align: center;
+    padding: 12px 20px;
+    background: var(--passport-teal);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+/* ══════════════════════════════════════════════════════════
+   ITEM LIST
+   ══════════════════════════════════════════════════════════ */
+.passport-grid {
+    background: var(--passport-paper);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Each item row */
+.stamp-slot {
+    display: block;
+    border-bottom: 1px solid #ede5d8;
+    background: var(--passport-paper);
+    position: relative;
+    transition: background 0.15s;
+}
+
+.stamp-slot.collected {
+    background: #f5fdf4;
+}
+
+.stamp-slot.just-collected {
+    animation: stampPop 0.5s ease-out;
+}
+
+@keyframes stampPop {
+    0%   { transform: scale(0.98); opacity: 0.6; }
+    60%  { transform: scale(1.01); }
+    100% { transform: scale(1);    opacity: 1;   }
+}
+
+/* Full-row button so the whole item opens the detail modal */
+.stamp-slot-btn {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
+    font: inherit;
+}
+
+.stamp-slot-btn:focus-visible {
+    outline: 2px solid rgba(43, 107, 138, 0.45);
+    outline-offset: -2px;
+}
+
+.stamp-slot-btn:hover .stamp-image {
+    box-shadow: 0 4px 14px rgba(43, 107, 138, 0.22);
+}
+
+/* Item thumbnail */
+.stamp-image {
+    width: 113px;
+    height: 113px;
+    flex-shrink: 0;
+    background: #e4ddd4;
+    border-radius: var(--passport-radius);
+    overflow: hidden;
+    position: relative;
+    transition: box-shadow 0.15s;
+}
+
+.stamp-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: filter 0.2s ease;
+}
+
+.stamp-slot:not(.collected) .stamp-image img {
+    filter: grayscale(1) contrast(0.3) brightness(1.6);
+}
+
+.stamp-slot.collected .stamp-image img {
+    filter: grayscale(0);
+}
+
+/* Green check badge — decorative, not interactive */
+.stamp-check {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 36px;
+    height: 36px;
+    background: var(--passport-green);
+    color: #fff;
+    border-radius: 50%;
+    border:0.5px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.stamp-check.has-image {
+    inset: 0;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    box-shadow: none;
+    border-radius: var(--passport-radius);
+}
+
+.stamp-check.has-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: var(--passport-radius);
+}
+
+/* ── Text content (right column)
+   .stamp-title  #2b6b8a on #fff : 5.69:1 ✓ AA
+   .stamp-desc   #5a4f43 on #fff : 6.79:1 ✓ AA
+   ── */
+.stamp-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.stamp-slot-chevron {
+    align-self: center;
+    color: rgba(64, 64, 64, 0.34);
+    font-size: 3rem;
+    line-height: 1;
+    margin-left: 8px;
+}
+
+.stamp-slot-btn:hover .stamp-slot-chevron {
+    color: rgba(64, 64, 64, 0.5);
+}
+
+.stamp-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--passport-teal);
+    margin: 0 0 6px;
+    line-height: 1.3;
+}
+
+.stamp-slot.collected .stamp-title {
+    color: var(--passport-green);
+}
+
+.stamp-desc {
+    font-size: 0.9375rem;   /* 15 px — legible on mobile */
+    color: var(--passport-ink-muted);
+    margin: 0 0 8px;
+    line-height: 1.5;
+}
+
+/* .stamp-link: #2b6b8a on #fff : 5.69:1 ✓ AA */
+.stamp-link {
+    font-size: 0.9rem;
+    color: var(--passport-teal);
+    text-decoration: underline;  /* always underlined: WCAG 1.4.1 */
+    font-weight: 600;
+}
+
+.stamp-link:hover {
+    color: var(--passport-teal-dark);
+}
+
+/* ══════════════════════════════════════════════════════════
+   ITEM DETAIL MODAL — RTE body content
+   ══════════════════════════════════════════════════════════ */
+
+/* Rich-text body rendered from CKEditor HTML */
+.item-detail-body {
+    font-size: 0.9375rem;
+    color: var(--passport-ink-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.item-detail-body p {
+    margin: 0 0 12px;
+}
+
+.item-detail-body p:last-child {
+    margin-bottom: 0;
+}
+
+.item-detail-body ul,
+.item-detail-body ol {
+    margin: 0 0 12px;
+    padding-left: 1.5em;
+}
+
+.item-detail-body li {
+    margin-bottom: 4px;
+}
+
+/* Links inside RTE: #2b6b8a on #fff — 5.69:1 ✓ AA */
+.item-detail-body a {
+    color: var(--passport-teal);
+    text-decoration: underline;
+}
+
+.item-detail-body a:hover {
+    color: var(--passport-teal-dark);
+}
+
+.item-detail-body strong { font-weight: 700; }
+.item-detail-body em     { font-style: italic; }
+
+.item-detail-body h2,
+.item-detail-body h3,
+.item-detail-body h4 {
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 700;
+    color: var(--passport-teal-dark);
+    margin: 16px 0 8px;
+    line-height: 1.25;
+}
+
+.item-detail-body blockquote {
+    border-left: 3px solid var(--passport-beige);
+    margin: 12px 0;
+    padding: 8px 16px;
+    color: var(--passport-ink-muted);
+    font-style: italic;
+}
+
+/* Footer area containing the optional "Learn more" link */
+.item-detail-footer {
+    margin-top: 8px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PROGRESS BAR
+   ══════════════════════════════════════════════════════════ */
+.passport-progress {
+    background: var(--passport-cream);
+    padding: 16px 20px;
+    border-top: 1px solid #e0d8cc;
+}
+
+.progress-bar {
+    height: 12px;
+    background: #ddd4c5;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--passport-green), var(--passport-teal));
+    border-radius: 6px;
+    transition: width 0.6s ease;
+}
+
+/* #5a4f43 on #f5f0e8: ~6.5:1 ✓ AA */
+.progress-text {
+    text-align: center;
+    font-size: 0.9375rem;
+    color: var(--passport-ink-muted);
+    margin: 10px 0 0;
+}
+
+/* ══════════════════════════════════════════════════════════
+   REOPEN FORM BUTTON SECTION
+   ══════════════════════════════════════════════════════════ */
+.passport-reopen {
+    text-align: center;
+    padding: 16px 20px;
+    background: var(--passport-cream);
+    border-top: 1px solid #e0d8cc;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MODALS
+   ══════════════════════════════════════════════════════════ */
+.passport-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.passport-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.62);
+}
+
+.passport-modal-content {
+    position: relative;
+    background: #fff;
+    border-radius: 10px;
+    padding: 32px 28px 28px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.passport-modal-content h2 {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.5rem;
+    color: var(--passport-teal-dark);
+    margin: 0 0 12px;
+}
+
+/* #5a4f43 on #fff: 6.79:1 ✓ AA */
+.passport-modal-content p {
+    font-size: 1rem;
+    color: var(--passport-ink-muted);
+    line-height: 1.55;
+    margin: 0 0 20px;
+}
+
+/* WCAG 2.5.5 recommended: 44×44 px touch target */
+.passport-modal-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    color: var(--passport-ink-muted);
+    cursor: pointer;
+    line-height: 1;
+    /* 44×44 px minimum touch target (WCAG 2.5.5 recommended / 2.5.8 minimum) */
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--passport-radius);
+}
+
+.passport-modal-close:hover {
+    color: var(--passport-ink);
+    background: rgba(0, 0, 0, 0.06);
+}
+
+/* ══════════════════════════════════════════════════════════
+   BUTTONS
+   min-height 44 px — WCAG 2.5.5 recommended touch target
+   #fff on #2b6b8a: 7.8:1 ✓ AA
+   ══════════════════════════════════════════════════════════ */
+.passport-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 28px;
+    border-radius: var(--passport-radius);
+    font-family: "Cabin", sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    text-align: center;
+}
+
+.passport-btn-primary {
+    background: var(--passport-teal);
+    color: #fff;
+}
+
+.passport-btn-primary:hover {
+    background: var(--passport-teal-dark);
+}
+
+/* #2b6b8a on #fff: 5.69:1 ✓ AA (border provides non-colour indicator) */
+.passport-btn-secondary {
+    background: transparent;
+    color: var(--passport-teal);
+    border: 2px solid var(--passport-teal);
+}
+
+.passport-btn-secondary:hover {
+    background: var(--passport-teal);
+    color: #fff;
+}
+
+.passport-contest-rules-strip {
+    background: var(--passport-paper);
+    padding: .5rem;
+    display: flex;
+    justify-content: center;
+ }
+
+/* ══════════════════════════════════════════════════════════
+   UTILITY
+   ══════════════════════════════════════════════════════════ */
+.hidden {
+    display: none !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — plaid always visible on the sides
+   ══════════════════════════════════════════════════════════ */
+
+/* On screens narrower than booklet + 2×margin:
+   use explicit 12 px side margins so the plaid peeks through. */
+@media (max-width: 608px) {
+    .passport-main {
+        max-width: calc(100% - 24px); /* 12 px plaid each side */
+        margin: 16px 12px 0;
+    }
+
+    /* When a full-bleed wood-panel image is present, remove the top margin so
+       the header image reaches the very top of the viewport. */
+    .passport-main:has(.passport-header.has-wood-bg) {
+        margin-top: 0;
+    }
+
+    /* Give the scan strip more breathing room below the header text on narrow screens.
+       Reduce the overlap so the strip starts lower and doesn't crowd the title. */
+    :root {
+        --passport-scan-overlap: 4px;
+    }
+}
+
+
+/* On very small screens shrink the thumbnail */
+@media (max-width: 400px) {
+    .stamp-image {
+        width: 76px;
+        height: 76px;
+    }
+
+    .stamp-slot-btn {
+        padding: 14px 16px;
+        gap: 12px;
+    }
+
+    .passport-header {
+        padding: 24px 20px 20px;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════
+   REDUCED MOTION — WCAG 2.3.3 (AAA) / respects user preference
+   ══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
