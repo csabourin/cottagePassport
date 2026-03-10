@@ -32,7 +32,7 @@
   "faviconUrl": null,
   "ogImageUrl": null,
 
-  "qrCenterImageUrl": null,
+  "qrCenterImageUrl": "https://ncc-website-2.s3.amazonaws.com/images/widgets/passport/2026_Summer-Campaign_QR-Code_Centre.png",
   "qrForegroundColor": null,
   "qrBackgroundColor": null,
 
@@ -60,9 +60,9 @@
   "uiText": {
     "default": {
       "orgName":          "National Capital Commission",
-      "challengeName":    "Stamp Passport",
-      "challengeTitle":   "Outdoor Challenge",
-      "scanInstructions": "Scan the QR code at each location to collect your stamp.",
+      "challengeName":    "Summer at the Capital Cottage",
+      "challengeTitle":   "Bucket List Challenge",
+      "scanInstructions": "Scan all QR codes to unlock items from your bucket list. Find all participating locations on our interactive map.",
       "disclaimerTitle":  "Before You Begin",
       "disclaimerBody":   "Your progress is saved on this device and synced online. Location access is used only to verify you are at the right spot.",
       "disclaimerButton": "Got it, let\u2019s go!",
