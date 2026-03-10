@@ -1,0 +1,8 @@
+{
+    "cid": "00000000-0000-4000-8000-000000000000",
+    "revision": 1,
+    "payload_json": "{\"schemaVersion\":1,\"contestVersion\":\"2026.02\",\"progress\":{\"stepsCompleted\":[\"54aa9410\",\"964a8c0e\"],\"answers\":{},\"score\":2,\"badges\":[],\"custom\":{\"stampTimestamps\":{\"54aa9410\":\"2026-03-10T10:00:00.000Z\",\"964a8c0e\":\"2026-03-10T11:30:00.000Z\"},\"formStates\":{\"drawSubmitted\":false,\"drawDismissed\":false,\"stickerSubmitted\":false,\"stickerDismissed\":false}}},\"updatedAt\":\"2026-03-10T11:30:00.000Z\"}",
+    "payload_hash": "placeholder-update-on-first-real-write",
+    "updated_at": "2026-03-10T11:30:00.000Z",
+    "created_at": "2026-03-10T10:00:00.000Z"
+}

@@ -1,3 +1,2 @@
-# Ignore contest progress files (contain user data) but keep the directory structure.
-contest/*.json
+# Only ignore lock files (transient, created during writes).
 contest/*.lock
