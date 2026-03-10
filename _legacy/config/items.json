@@ -47,7 +47,7 @@
     "shortCode": "4b1e02b4",
     "lat": 45.4275002,
     "lng": -75.6920105,
-    "imageUrl": "/images/Bucket_03_River House.jpg",
+    "imageUrl": "/images/Bucket_03_River_House.jpg",
     "enabled": true,
     "sortOrder": 3,
     "content": {
@@ -69,7 +69,7 @@
     "shortCode": "1d941f8a",
     "lat": 45.4262277,
     "lng": -75.6918501,
-    "imageUrl": "/images/Bucket_04_Dows Lake.jpg",
+    "imageUrl": "/images/Bucket_04_Dows_Lake.jpg",
     "enabled": true,
     "sortOrder": 4,
     "content": {
@@ -135,7 +135,7 @@
     "shortCode": "38b107ed",
     "lat": 45.425728,
     "lng": -75.6980739,
-    "imageUrl": null,
+    "imageUrl": "/images/Bucket_07_On_water.jpg",
     "enabled": true,
     "sortOrder": 7,
     "content": {
@@ -157,7 +157,7 @@
     "shortCode": "71e90667",
     "lat": 45.4278621,
     "lng": -75.6990595,
-    "imageUrl": null,
+    "imageUrl": "/images/Bucket_08_Kiweki.jpg",
     "enabled": true,
     "sortOrder": 8,
     "content": {
@@ -179,7 +179,7 @@
     "shortCode": "b00b69f7",
     "lat": 45.4301515,
     "lng": -75.6976745,
-    "imageUrl": null,
+    "imageUrl": "/images/Bucket_09_Westboro.jpg",
     "enabled": true,
     "sortOrder": 9,
     "content": {
@@ -201,7 +201,7 @@
     "shortCode": "aa9d9289",
     "lat": 45.431357,
     "lng": -75.6941819,
-    "imageUrl": null,
+    "imageUrl": "/images/Bucket_10_Beach.jpg",
     "enabled": true,
     "sortOrder": 10,
     "content": {
@@ -223,7 +223,7 @@
     "shortCode": "d71a8249",
     "lat": 45.4279026,
     "lng": -75.69344,
-    "imageUrl": null,
+    "imageUrl": "/images/Bucket_11_Patio_season.jpg",
     "enabled": true,
     "sortOrder": 11,
     "content": {
