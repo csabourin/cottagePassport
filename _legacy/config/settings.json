@@ -4,7 +4,7 @@
   "pluginName": "Stamp Passport",
   "routePrefix": "passport",
 
-  "enableGeofence": true,
+  "enableGeofence": false,
   "geofenceRadius": 550,
 
   "drawThreshold": 5,
