@@ -53,6 +53,8 @@ body {
     /* Extend background under the iOS status bar when viewport-fit=cover */
     padding-top: env(safe-area-inset-top, 0px);
     background-color: #747B4C;
+    background-size:800px;
+    background-repeat:repeat-y;
 background: linear-gradient(
   to bottom,
   rgb(93,124,161) 0%,
@@ -82,6 +84,8 @@ background: linear-gradient(
     font-family: "Cabin", "Segoe UI", Arial, sans-serif;
     color: var(--passport-ink);
     background-color: var(--passport-cloth-side-color);
+    background-size:800px;
+    background-repeat:repeat-y;
 }
 
 /* ══════════════════════════════════════════════════════════
