@@ -717,8 +717,12 @@ header('Cache-Control: no-cache');
                         var req = indexedDB.open(DB_NAME, DB_VERSION);
                         req.onupgradeneeded = function() {
                             var d=req.result;
+                            if (!d.objectStoreNames.contains('stamps'))
+                                d.createObjectStore('stamps',{keyPath:'shortCode'});
                             if (!d.objectStoreNames.contains(META_STORE))
                                 d.createObjectStore(META_STORE,{keyPath:'key'});
+                            if (!d.objectStoreNames.contains('state'))
+                                d.createObjectStore('state',{keyPath:'key'});
                         };
                         req.onsuccess = function() {
                             try {
@@ -741,8 +745,12 @@ header('Cache-Control: no-cache');
                         var req = indexedDB.open(DB_NAME, DB_VERSION);
                         req.onupgradeneeded = function() {
                             var d=req.result;
+                            if (!d.objectStoreNames.contains('stamps'))
+                                d.createObjectStore('stamps',{keyPath:'shortCode'});
                             if (!d.objectStoreNames.contains(META_STORE))
                                 d.createObjectStore(META_STORE,{keyPath:'key'});
+                            if (!d.objectStoreNames.contains('state'))
+                                d.createObjectStore('state',{keyPath:'key'});
                         };
                         req.onsuccess = function() {
                             try {
@@ -775,8 +783,10 @@ header('Cache-Control: no-cache');
                 var normalized = normalizeLang(lang);
                 var site = findSiteByLang(normalized);
                 if (!site || site.current || normalized===currentLang) return false;
-                // Append ?lang= so the server picks the right language
+                // Append ?lang= so the server picks the right language; preserve ?q= for QR check-in
                 var url = site.url.replace(/\?.*$/, '') + '?lang=' + encodeURIComponent(normalized);
+                var q = params.get('q');
+                if (q) url += '&q=' + encodeURIComponent(q);
                 persistLangChoice(normalized).then(function(){ window.location.replace(url); }, function(){ window.location.replace(url); });
                 return true;
             }
