@@ -947,7 +947,7 @@ header('Cache-Control: no-cache');
                                 ? $item['imageUrl']
                                 : 'https://picsum.photos/seed/ncc' . ($item['sortOrder'] ?? 0) . '/200/200';
                         ?>
-                        <img src="<?= h($displayImageUrl) ?>" alt="" loading="lazy">
+                        <img src="<?= h($displayImageUrl) ?>" alt="">
                         <div class="stamp-check hidden<?= $checkedMarkerUrl ? ' has-image' : '' ?>" aria-hidden="true">
                             <?php if ($checkedMarkerUrl): ?>
                                 <img src="<?= h($checkedMarkerUrl) ?>" alt="">

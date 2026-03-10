@@ -278,7 +278,7 @@
        ═══════════════════════════════════════════ */
 
     async function fetchRemoteProgress(cid) {
-        var res = await fetch(CFG.contestProgressUrl + '?cid=' + encodeURIComponent(cid), {
+        var res = await fetch(CFG.contestProgressUrl + '&cid=' + encodeURIComponent(cid), {
             headers: { Accept: 'application/json' }
         });
         var data = await res.json();
@@ -632,9 +632,17 @@
        ═══════════════════════════════════════════ */
 
     function languageSwitchUrl(targetBaseUrl) {
-        if (!contestCid) return targetBaseUrl;
+        var currentQ = new URL(window.location.href).searchParams.get('q');
         var sep = targetBaseUrl.indexOf('?') === -1 ? '?' : '&';
-        return targetBaseUrl + sep + 'cid=' + encodeURIComponent(contestCid);
+        var url = targetBaseUrl;
+        if (currentQ) {
+            url = url + sep + 'q=' + encodeURIComponent(currentQ);
+            sep = '&';
+        }
+        if (contestCid) {
+            url = url + sep + 'cid=' + encodeURIComponent(contestCid);
+        }
+        return url;
     }
 
     function bindLanguageSwitchLinks() {
