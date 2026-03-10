@@ -47,6 +47,13 @@
       "name":   "English",
       "url":    "/",
       "current": true
+    },
+    {
+      "handle": "fr",
+      "lang":   "fr",
+      "name":   "Français",
+      "url":    "/",
+      "current": false
     }
   ],
 
