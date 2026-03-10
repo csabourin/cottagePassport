@@ -33,7 +33,7 @@
        ═══════════════════════════════════════════ */
 
     var DB_NAME    = 'stamp-passport';
-    var DB_VERSION = 2;
+    var DB_VERSION = 3;
     var LS_PREFIX  = 'passportData:';
     var LANG_LS_KEY = 'passport:langChoice';
     var LANG_META_KEY = 'langChoice';
@@ -87,7 +87,7 @@
 
     async function putStamp(data) {
         lsWrite('stamps', data.shortCode, data);
-        if (db) await idbReq(store('stamps', 'readwrite').put(data));
+        if (db) { try { await idbReq(store('stamps', 'readwrite').put(data)); } catch (e) { db = null; } }
     }
 
     async function getMeta(key) {
@@ -97,7 +97,7 @@
 
     async function putMeta(data) {
         lsWrite('meta', data.key, data);
-        if (db) await idbReq(store('meta', 'readwrite').put(data));
+        if (db) { try { await idbReq(store('meta', 'readwrite').put(data)); } catch (e) { db = null; } }
     }
 
     function normalizeLang(lang) {

@@ -695,7 +695,7 @@ header('Cache-Control: no-cache');
             var params = new URL(window.location.href).searchParams;
             var LS_KEY = 'passport:langChoice';
             var DB_NAME = 'stamp-passport';
-            var DB_VERSION = 2;
+            var DB_VERSION = 3;
             var META_STORE = 'meta';
             var META_KEY = 'langChoice';
 
