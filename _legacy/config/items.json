@@ -3,7 +3,7 @@
     "shortCode": "54aa9410",
     "lat": 45.4281237,
     "lng": -75.6942809,
-    "imageUrl": null,
+    "imageUrl": "/images/Bucket_01_WBD.jpg",
     "enabled": true,
     "sortOrder": 1,
     "content": {
@@ -25,7 +25,7 @@
     "shortCode": "964a8c0e",
     "lat": 45.4281873,
     "lng": -75.6931265,
-    "imageUrl": null,
+    "imageUrl": "/images/Bucket_02_MKE.jpg",
     "enabled": true,
     "sortOrder": 2,
     "content": {
@@ -47,7 +47,7 @@
     "shortCode": "4b1e02b4",
     "lat": 45.4275002,
     "lng": -75.6920105,
-    "imageUrl": null,
+    "imageUrl": "/images/Bucket_03_River House.jpg",
     "enabled": true,
     "sortOrder": 3,
     "content": {
@@ -69,7 +69,7 @@
     "shortCode": "1d941f8a",
     "lat": 45.4262277,
     "lng": -75.6918501,
-    "imageUrl": null,
+    "imageUrl": "/images/Bucket_04_Dows Lake.jpg",
     "enabled": true,
     "sortOrder": 4,
     "content": {
