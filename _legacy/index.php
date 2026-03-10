@@ -247,7 +247,7 @@ function handle_locations(array $settings, array $allItems, string $lang): void 
             'description' => $c['description'] ?? '',
             'linkUrl'     => $c['linkUrl'] ?? '',
             'linkText'    => $c['linkText'] ?? 'Learn more',
-            'imageUrl'    => $item['imageUrl'] ?? null,
+            'imageUrl'    => $item['imageUrl'] ?? ('https://picsum.photos/seed/ncc' . ($item['sortOrder'] ?? 0) . '/200/200'),
             'lat'         => $item['lat'] ?? null,
             'lng'         => $item['lng'] ?? null,
         ];
@@ -942,9 +942,12 @@ header('Cache-Control: no-cache');
                         data-item-link-url="<?= $linkUrl ?>"
                         data-item-link-text="<?= $linkText ?>">
                     <div class="stamp-image">
-                        <?php if (!empty($item['imageUrl'])): ?>
-                            <img src="<?= h($item['imageUrl']) ?>" alt="" loading="lazy">
-                        <?php endif; ?>
+                        <?php
+                            $displayImageUrl = !empty($item['imageUrl'])
+                                ? $item['imageUrl']
+                                : 'https://picsum.photos/seed/ncc' . ($item['sortOrder'] ?? 0) . '/200/200';
+                        ?>
+                        <img src="<?= h($displayImageUrl) ?>" alt="" loading="lazy">
                         <div class="stamp-check hidden<?= $checkedMarkerUrl ? ' has-image' : '' ?>" aria-hidden="true">
                             <?php if ($checkedMarkerUrl): ?>
                                 <img src="<?= h($checkedMarkerUrl) ?>" alt="">
