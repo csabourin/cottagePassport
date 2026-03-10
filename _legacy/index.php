@@ -838,7 +838,7 @@ header('Cache-Control: no-cache');
         <?php elseif ($bodyBgMode === 'custom'): ?>
         background-image: url('<?= h($bodyBgUrl) ?>');
         background-size: <?= h($bodyBgSize) ?>;
-        background-repeat: no-repeat;
+        background-repeat: repeat-y;
         background-position: center top;
         <?php if ($bodyBgColor): ?>background-color: <?= h($bodyBgColor) ?>;<?php endif; ?>
         <?php else: ?>

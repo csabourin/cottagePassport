@@ -192,8 +192,8 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 
 /* ── Header logo (1/3 width; language-specific asset) ── */
 .passport-header-logo {
-    width: 33.333%;
-    max-width: 220px;
+    width: 50%;
+    max-width: 520px;
     min-width: 120px;
     margin-bottom: 12px;
     margin-left: auto;
