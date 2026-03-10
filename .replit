@@ -33,3 +33,4 @@ externalPort = 80
 [deployment]
 deploymentTarget = "autoscale"
 run = ["php", "-S", "0.0.0.0:5000", "-t", "_legacy", "_legacy/router.php"]
+build = ["echo", "skip"]
