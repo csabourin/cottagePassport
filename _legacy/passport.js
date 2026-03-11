@@ -679,6 +679,13 @@
        Stamp Grid Rendering
        ═══════════════════════════════════════════ */
 
+    function scrollToSlot(shortCode) {
+        var slot = qs('.stamp-slot[data-code="' + shortCode + '"]');
+        if (slot) {
+            slot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
     async function renderGrid(newlyCollectedCode) {
         var grid = el('stampGrid');
         if (!grid) return;
@@ -1178,7 +1185,9 @@
 
             if (currentItem) {
                 showDisclaimerOnce(function () {
-                    collectStamp(currentItem);
+                    collectStamp(currentItem).then(function () {
+                        scrollToSlot(currentItem.shortCode);
+                    });
                 });
             } else {
                 showStatus(TXT.qrNotRecognized || 'This QR code is not recognized.');
