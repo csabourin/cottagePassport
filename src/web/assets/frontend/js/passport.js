@@ -87,7 +87,7 @@
 
     async function putStamp(data) {
         lsWrite('stamps', data.shortCode, data);
-        if (db) await idbReq(store('stamps', 'readwrite').put(data));
+        if (db) { try { await idbReq(store('stamps', 'readwrite').put(data)); } catch (e) { db = null; } }
     }
 
     async function getMeta(key) {
@@ -97,7 +97,7 @@
 
     async function putMeta(data) {
         lsWrite('meta', data.key, data);
-        if (db) await idbReq(store('meta', 'readwrite').put(data));
+        if (db) { try { await idbReq(store('meta', 'readwrite').put(data)); } catch (e) { db = null; } }
     }
 
     function normalizeLang(lang) {
@@ -632,9 +632,17 @@
        ═══════════════════════════════════════════ */
 
     function languageSwitchUrl(targetBaseUrl) {
-        if (!contestCid) return targetBaseUrl;
+        var currentQ = new URL(window.location.href).searchParams.get('q');
         var sep = targetBaseUrl.indexOf('?') === -1 ? '?' : '&';
-        return targetBaseUrl + sep + 'cid=' + encodeURIComponent(contestCid);
+        var url = targetBaseUrl;
+        if (currentQ) {
+            url = url + sep + 'q=' + encodeURIComponent(currentQ);
+            sep = '&';
+        }
+        if (contestCid) {
+            url = url + sep + 'cid=' + encodeURIComponent(contestCid);
+        }
+        return url;
     }
 
     function bindLanguageSwitchLinks() {
