@@ -8,10 +8,15 @@
 {% set items    = craft.stampPassport.items %}
 {% set t        = craft.stampPassport %}
 
-{% set logoUrl     = settings.logoAssetId     ? craft.stampPassport.imageUrl(settings.logoAssetId)     : null %}
+{% set logoUrl      = settings.logoAssetId      ? craft.stampPassport.imageUrl(settings.logoAssetId)      : null %}
+{% set logoAltUrl   = settings.logoAltAssetId   ? craft.stampPassport.imageUrl(settings.logoAltAssetId)   : null %}
 {% set woodPanelUrl = settings.woodPanelAssetId ? craft.stampPassport.imageUrl(settings.woodPanelAssetId) : null %}
 {% set checkedMarkerUrl = settings.checkedMarkerAssetId ? craft.stampPassport.imageUrl(settings.checkedMarkerAssetId) : null %}
 {% set bodyBackgroundUrl = settings.bodyBackgroundAssetId ? craft.stampPassport.imageUrl(settings.bodyBackgroundAssetId) : null %}
+
+{# Resolve which logo to show: use alt logo for non-primary language sites when available #}
+{% set currentLang = currentSite.language[:2]|lower %}
+{% set activeLogoUrl = (logoAltUrl and currentLang != 'en') ? logoAltUrl : logoUrl %}
 
 {% block title %}{{ settings.pluginName }}{% endblock %}
 
@@ -32,6 +37,12 @@
             background-size: auto;
             background-repeat: repeat;
             background-position: left top;
+            {% elseif settings.bodyBackgroundMode == 'repeat-y' %}
+            background-image: url('{{ bodyBackgroundUrl|e }}');
+            background-size: {{ settings.bodyBackgroundSize ?? '800px' }};
+            background-repeat: repeat-y;
+            background-position: center top;
+            {% if settings.bodyBackgroundColor %}background-color: {{ settings.bodyBackgroundColor }};{% endif %}
             {% elseif settings.bodyBackgroundMode == 'custom' %}
             background-image: url('{{ bodyBackgroundUrl|e }}');
             background-size: {{ settings.bodyBackgroundSize ?? '800px' }};
@@ -80,16 +91,18 @@
         {% endif %}
 
         <div class="passport-header-logo">
-            {% if logoUrl %}
-                <img src="{{ logoUrl }}" alt="{{ settings.pluginName }}" class="passport-logo">
+            {% if activeLogoUrl %}
+                <img src="{{ activeLogoUrl }}" alt="{{ settings.pluginName }}" class="passport-logo">
             {% else %}
                 <div class="passport-logo-placeholder">🍁</div>
             {% endif %}
         </div>
 
+        {% if settings.showOrgName %}
         <p class="passport-org">
             {{ t.text('orgName')|nl2br }}
         </p>
+        {% endif %}
 
         <h1 class="passport-title">
             <span class="passport-title-light">{{ t.text('challengeName') }}</span>

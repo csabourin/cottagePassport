@@ -299,6 +299,9 @@ class CpController extends Controller
         $logoIds = $request->getBodyParam('logoAssetId');
         $settings->logoAssetId = is_array($logoIds) ? ((int)($logoIds[0] ?? 0) ?: null) : ((int)($logoIds ?: 0) ?: null);
 
+        $logoAltIds = $request->getBodyParam('logoAltAssetId');
+        $settings->logoAltAssetId = is_array($logoAltIds) ? ((int)($logoAltIds[0] ?? 0) ?: null) : ((int)($logoAltIds ?: 0) ?: null);
+
         $woodIds = $request->getBodyParam('woodPanelAssetId');
         $settings->woodPanelAssetId = is_array($woodIds) ? ((int)($woodIds[0] ?? 0) ?: null) : ((int)($woodIds ?: 0) ?: null);
 
@@ -313,7 +316,7 @@ class CpController extends Controller
             : ((int)($bodyBackgroundIds ?: 0) ?: null);
 
         $bodyBackgroundMode = (string)$request->getBodyParam('bodyBackgroundMode', $settings->bodyBackgroundMode);
-        $settings->bodyBackgroundMode = in_array($bodyBackgroundMode, ['cover', 'tiled', 'custom'], true) ? $bodyBackgroundMode : 'cover';
+        $settings->bodyBackgroundMode = in_array($bodyBackgroundMode, ['cover', 'tiled', 'custom', 'repeat-y'], true) ? $bodyBackgroundMode : 'cover';
 
         $bodyBackgroundSize = trim((string)$request->getBodyParam('bodyBackgroundSize', $settings->bodyBackgroundSize));
         $settings->bodyBackgroundSize = $bodyBackgroundSize !== '' ? $bodyBackgroundSize : '800px';
@@ -360,6 +363,7 @@ class CpController extends Controller
         // Craft lightswitches POST '1' when on and '' when off.
         $settings->showLanguageSwitcher = (bool)$request->getBodyParam('showLanguageSwitcher', true);
         $settings->requireDisclaimerAck = (bool)$request->getBodyParam('requireDisclaimerAck', true);
+        $settings->showOrgName = (bool)$request->getBodyParam('showOrgName', true);
 
         // ── QR Code Colors ────────────────────────────────────────────────────
         foreach (['qrForegroundColor', 'qrBackgroundColor'] as $colorField) {

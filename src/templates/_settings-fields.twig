@@ -19,8 +19,8 @@
 
 {% set logoElements = settings.logoAssetId ? craft.assets.id(settings.logoAssetId).all() : [] %}
 {{ forms.elementSelectField({
-    label: "Header Logo"|t('stamp-passport'),
-    instructions: "Circular image displayed at the top of the page header. Recommended: square PNG with transparent background."|t('stamp-passport'),
+    label: "Header Logo (Primary / English)"|t('stamp-passport'),
+    instructions: "Image displayed at the top of the page header. Recommended: PNG with transparent background, 50% of header width. Used for all languages unless an alternate-language logo is set."|t('stamp-passport'),
     id: 'logoAssetId',
     name: 'logoAssetId',
     elementType: 'craft\\elements\\Asset',
@@ -28,6 +28,19 @@
     limit: 1,
     elements: logoElements,
     modalStorageKey: 'stamp-passport.logoAsset',
+}) }}
+
+{% set logoAltElements = settings.logoAltAssetId ? craft.assets.id(settings.logoAltAssetId).all() : [] %}
+{{ forms.elementSelectField({
+    label: "Header Logo (Alternate Language / French)"|t('stamp-passport'),
+    instructions: "Logo shown when the site language is not the primary language (e.g. French version). Falls back to the primary logo when not set."|t('stamp-passport'),
+    id: 'logoAltAssetId',
+    name: 'logoAltAssetId',
+    elementType: 'craft\\elements\\Asset',
+    criteria: { kind: 'image' },
+    limit: 1,
+    elements: logoAltElements,
+    modalStorageKey: 'stamp-passport.logoAltAsset',
 }) }}
 
 {% set faviconElements = settings.faviconAssetId ? craft.assets.id(settings.faviconAssetId).all() : [] %}
@@ -90,12 +103,13 @@
     value: settings.bodyBackgroundMode ?? 'cover',
     options: [
         { label: "Cover"|t('stamp-passport'), value: 'cover' },
-        { label: "Tiled"|t('stamp-passport'), value: 'tiled' },
-        { label: "Custom size"|t('stamp-passport'), value: 'custom' },
+        { label: "Tiled (repeat)"|t('stamp-passport'), value: 'tiled' },
+        { label: "Repeat vertically (repeat-y)"|t('stamp-passport'), value: 'repeat-y' },
+        { label: "Custom size (no repeat)"|t('stamp-passport'), value: 'custom' },
     ],
 }) }}
 
-<div id="bodyBackgroundSizeField" style="{{ (settings.bodyBackgroundMode ?? 'cover') != 'custom' ? 'display:none' : '' }}">
+<div id="bodyBackgroundSizeField" style="{{ (settings.bodyBackgroundMode ?? 'cover') not in ['custom', 'repeat-y'] ? 'display:none' : '' }}">
 {{ forms.textField({
     label: "Custom Background Size"|t('stamp-passport'),
     instructions: "CSS background-size value (e.g. 800px, 50%, contain)."|t('stamp-passport'),
@@ -123,8 +137,8 @@
     var colorField = document.getElementById('bodyBackgroundColorField');
     function updateFields() {
         var v = modeSelect.value;
-        sizeField.style.display  = v === 'custom' ? '' : 'none';
-        colorField.style.display = v === 'tiled'  ? 'none' : '';
+        sizeField.style.display  = (v === 'custom' || v === 'repeat-y') ? '' : 'none';
+        colorField.style.display = v === 'tiled' ? 'none' : '';
     }
     modeSelect.addEventListener('change', updateFields);
 }());
@@ -240,6 +254,13 @@
     instructions: "Display the language-switcher nav in the header. Disable for single-language sites."|t('stamp-passport'),
     name: 'showLanguageSwitcher',
     on: settings.showLanguageSwitcher,
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Show Organisation Name"|t('stamp-passport'),
+    instructions: "Display the organisation name (orgName) below the header logo."|t('stamp-passport'),
+    name: 'showOrgName',
+    on: settings.showOrgName,
 }) }}
 
 {{ forms.lightswitchField({

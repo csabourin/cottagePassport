@@ -34,8 +34,11 @@ class Settings extends Model
     /** @var string|null Freeform form handle for the sticker / Memory Makers request */
     public ?string $freeformStickerFormHandle = null;
 
-    /** @var int|null Asset ID for the circular logo displayed in the page header */
+    /** @var int|null Asset ID for the primary logo displayed in the page header */
     public ?int $logoAssetId = null;
+
+    /** @var int|null Asset ID for the alternate-language logo (e.g. French). Falls back to logoAssetId when not set */
+    public ?int $logoAltAssetId = null;
 
     /** @var int|null Asset ID for the wood panel header background image */
     public ?int $woodPanelAssetId = null;
@@ -96,6 +99,9 @@ class Settings extends Model
 
     /** @var bool Whether the disclaimer modal is shown on first visit. Default true */
     public bool $requireDisclaimerAck = true;
+
+    /** @var bool Whether the organisation name is displayed in the page header. Default true */
+    public bool $showOrgName = true;
 
     // ── QR Code Appearance ────────────────────────────────────────────────────
     /** @var string|null Foreground (dot) color for generated QR codes. Null → #000000 */
@@ -239,8 +245,8 @@ class Settings extends Model
             [['freeformDrawFormHandle', 'freeformStickerFormHandle'], 'string', 'max' => 100],
             [['qrCenterImageUrl'], 'string', 'max' => 2048],
             [['qrCenterImageUrl'], 'url', 'skipOnEmpty' => true],
-            [['logoAssetId', 'woodPanelAssetId', 'checkedMarkerAssetId', 'bodyBackgroundAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
-            [['bodyBackgroundMode'], 'in', 'range' => ['cover', 'tiled', 'custom']],
+            [['logoAssetId', 'logoAltAssetId', 'woodPanelAssetId', 'checkedMarkerAssetId', 'bodyBackgroundAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
+            [['bodyBackgroundMode'], 'in', 'range' => ['cover', 'tiled', 'custom', 'repeat-y']],
             [['bodyBackgroundSize'], 'string', 'max' => 50],
             [['bodyBackgroundColor'], 'string', 'max' => 50],
             [['contestVersion'], 'string', 'max' => 20],
