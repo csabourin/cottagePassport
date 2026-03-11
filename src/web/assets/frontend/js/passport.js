@@ -680,7 +680,8 @@
        ═══════════════════════════════════════════ */
 
     function scrollToSlot(shortCode) {
-        var slot = qs('.stamp-slot[data-code="' + shortCode + '"]');
+        var item = findItemByCode(shortCode);
+        var slot = item ? qs('.stamp-slot[data-id="' + item.id + '"]') : null;
         if (slot) {
             slot.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
@@ -694,8 +695,10 @@
 
         for (var i = 0; i < slots.length; i++) {
             var slot   = slots[i];
-            var code   = slot.dataset.code;
-            var stamp  = await getStamp(code);
+            var itemId = parseInt(slot.dataset.id, 10);
+            var meta   = itemsData.find(function (x) { return x.id === itemId; });
+            var code   = meta ? meta.shortCode : null;
+            var stamp  = code ? await getStamp(code) : null;
             var isNew  = newlyCollectedCode === code;
             var check  = qs('.stamp-check', slot);
 

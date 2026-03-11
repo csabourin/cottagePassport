@@ -122,7 +122,7 @@
     <section class="passport-grid" id="stampGrid">
         {% for item in items %}
             {% set content = item.contents[0] ?? null %}
-            <article class="stamp-slot" data-code="{{ item.shortCode }}" data-id="{{ item.id }}">
+            <article class="stamp-slot" data-id="{{ item.id }}">
                 <button class="stamp-slot-btn"
                         type="button"
                         aria-label="{{ 'Details'|t('stamp-passport') }}: {{ content.title ?? '' }}"
