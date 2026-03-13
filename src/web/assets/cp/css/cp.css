@@ -1,6 +1,38 @@
 /* Stamp Passport — CP styles */
 
-/* Settings page — remove Craft's default .pane padding/margin that misaligns tab panels */
+/* Settings — custom tab nav (mimics Craft's native #tabs style) */
+.sp-tabs {
+    margin: -24px -24px 24px;
+    padding: 0 24px;
+    background: var(--gray-050, #f3f7fb);
+    border-bottom: 1px solid var(--hairline-color, rgba(51,64,77,.1));
+}
+.sp-tabs ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+}
+.sp-tabs a.tab {
+    display: block;
+    padding: 10px 14px;
+    color: var(--medium-text-color, #596673);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+}
+.sp-tabs a.tab:hover {
+    color: var(--text-color, #3f4d5a);
+}
+.sp-tabs a.tab.sel {
+    color: var(--text-color, #3f4d5a);
+    border-bottom-color: var(--link-color, #0d78f2);
+    font-weight: 600;
+}
+
+/* Settings — tab panels: strip .pane chrome injected inside panels */
 #settings-form .pane {
     margin: 0;
     padding: 0;

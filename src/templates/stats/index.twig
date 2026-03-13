@@ -16,6 +16,8 @@
 {% set jsLast30Values  = visitsByDayLast30|values|json_encode %}
 {% set jsLocationData  = locationDataByTitle|json_encode %}
 
+{% do view.registerAssetBundle('csabourin\\stamppassport\\web\\assets\\cp\\CpAsset') %}
+
 {% block content %}
 <div id="sp-stats-dashboard">
 

@@ -7,26 +7,31 @@
     { label: settings.pluginName, url: url('stamp-passport') },
 ] %}
 
-{# Standard Craft CP tabs — Craft.Tabs (Garnish) manages show/hide of #tab-* panels #}
-{% set tabs = {
-    general:      { label: 'General'|t('stamp-passport'),      url: '#tab-general' },
-    appearance:   { label: 'Appearance'|t('stamp-passport'),   url: '#tab-appearance' },
-    integrations: { label: 'Integrations'|t('stamp-passport'), url: '#tab-integrations' },
-    advanced:     { label: 'Advanced'|t('stamp-passport'),     url: '#tab-advanced' },
-} %}
+{% do view.registerAssetBundle('csabourin\\stamppassport\\web\\assets\\cp\\CpAsset') %}
 
 {% block actionButton %}
     <button type="submit" form="settings-form" class="btn submit">{{ "Save"|t('app') }}</button>
 {% endblock %}
 
 {% block content %}
-    <form method="post" accept-charset="UTF-8" id="settings-form">
-        {{ csrfInput() }}
-        {{ actionInput('stamp-passport/cp/save-settings') }}
-        {{ redirectInput('stamp-passport/settings') }}
 
-        {% include 'stamp-passport/_settings-fields' %}
-    </form>
+<nav id="sp-settings-tabs" class="sp-tabs">
+    <ul>
+        <li><a href="#tab-general"      class="tab sel">{{ "General"|t('stamp-passport') }}</a></li>
+        <li><a href="#tab-appearance"   class="tab">{{ "Appearance"|t('stamp-passport') }}</a></li>
+        <li><a href="#tab-integrations" class="tab">{{ "Integrations"|t('stamp-passport') }}</a></li>
+        <li><a href="#tab-advanced"     class="tab">{{ "Advanced"|t('stamp-passport') }}</a></li>
+    </ul>
+</nav>
+
+<form method="post" accept-charset="UTF-8" id="settings-form">
+    {{ csrfInput() }}
+    {{ actionInput('stamp-passport/cp/save-settings') }}
+    {{ redirectInput('stamp-passport/settings') }}
+
+    {% include 'stamp-passport/_settings-fields' %}
+</form>
+
 {% endblock %}
 
 {% js %}
@@ -38,25 +43,19 @@
             var el = document.getElementById(id);
             if (el) el.style.display = (id === activeId) ? '' : 'none';
         });
-        document.querySelectorAll('#tabs a').forEach(function (a) {
-            var href = a.getAttribute('href');
-            a.classList.toggle('sel', href === '#' + activeId);
+        document.querySelectorAll('#sp-settings-tabs a').forEach(function (a) {
+            a.classList.toggle('sel', a.getAttribute('href') === '#' + activeId);
         });
     }
 
-    // Use capture phase + stopImmediatePropagation so our handler wins over Craft.Tabs
-    var tabsContainer = document.getElementById('tabs');
-    if (tabsContainer) {
-        tabsContainer.addEventListener('click', function (e) {
-            var a = e.target.closest('a[href^="#tab-"]');
-            if (!a) return;
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            var id = a.getAttribute('href').slice(1);
-            showPanel(id);
-            history.replaceState(null, '', '#' + id);
-        }, true); // capture phase
-    }
+    document.getElementById('sp-settings-tabs').addEventListener('click', function (e) {
+        var a = e.target.closest('a[href^="#tab-"]');
+        if (!a) return;
+        e.preventDefault();
+        var id = a.getAttribute('href').slice(1);
+        showPanel(id);
+        history.replaceState(null, '', '#' + id);
+    });
 
     // Restore from URL hash on load, default to first tab
     var initial = (window.location.hash && tabIds.indexOf(window.location.hash.slice(1)) !== -1)
