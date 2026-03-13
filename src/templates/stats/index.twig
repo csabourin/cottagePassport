@@ -7,23 +7,14 @@
     { label: settings.pluginName, url: url('stamp-passport') },
 ] %}
 
-{% set weekdayLabels = weekdayCounts|keys %}
-{% set weekdayValues = weekdayCounts|values %}
-{% set quickChartConfig = {
-    type: 'bar',
-    data: {
-        labels: weekdayLabels,
-        datasets: [{
-            label: 'Scans',
-            data: weekdayValues,
-            backgroundColor: '#1f7a8c'
-        }]
-    },
-    options: {
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
-    }
-}|json_encode %}
+{# Serialise chart data for JS #}
+{% set jsWeekdayLabels = weekdayCounts|keys|json_encode %}
+{% set jsWeekdayValues = weekdayCounts|values|json_encode %}
+{% set jsLast7Labels   = visitsByDayLast7|keys|json_encode %}
+{% set jsLast7Values   = visitsByDayLast7|values|json_encode %}
+{% set jsLast30Labels  = visitsByDayLast30|keys|json_encode %}
+{% set jsLast30Values  = visitsByDayLast30|values|json_encode %}
+{% set jsLocationData  = locationDataByTitle|json_encode %}
 
 {% block contextMenu %}
     {% if craft.app.isMultiSite %}
@@ -46,31 +37,244 @@
 {% endblock %}
 
 {% block content %}
-    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-        <div class="pane" style="padding: 1.25rem 1.5rem;">
-            <p class="light" style="margin: 0 0 .25rem;">{{ 'Individual Visits'|t('stamp-passport') }}</p>
-            <p style="font-size: 2em; font-weight: 600; margin: 0;">{{ totalIndividuals }}</p>
+
+{# ── Date range filter ───────────────────────────────────────────── #}
+<form method="get" action="" style="margin-bottom:2rem;">
+    {% if craft.app.isMultiSite %}
+        <input type="hidden" name="site" value="{{ currentSite.handle }}">
+    {% endif %}
+    <div style="display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;">
+        <div>
+            <label class="heading">{{ 'From'|t('stamp-passport') }}</label>
+            <input type="date" name="dateFrom" value="{{ dateFrom }}" class="text">
         </div>
-        <div class="pane" style="padding: 1.25rem 1.5rem;">
-            <p class="light" style="margin: 0 0 .25rem;">{{ 'Avg Locations Scanned'|t('stamp-passport') }}</p>
-            <p style="font-size: 2em; font-weight: 600; margin: 0;">{{ avgLocations }}</p>
+        <div>
+            <label class="heading">{{ 'To'|t('stamp-passport') }}</label>
+            <input type="date" name="dateTo" value="{{ dateTo }}" class="text">
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+            <button type="submit" class="btn submit">{{ 'Apply'|t }}</button>
+            {% if dateFrom or dateTo %}
+                <a href="{{ url('stamp-passport/stats', craft.app.isMultiSite ? { site: currentSite.handle } : {}) }}"
+                   class="btn">{{ 'Clear'|t }}</a>
+            {% endif %}
         </div>
     </div>
+</form>
 
-    <h2>{{ 'Top Scanned Locations'|t('stamp-passport') }}</h2>
-    <table class="data fullwidth">
-        <thead><tr><th>{{ 'Location'|t('stamp-passport') }}</th><th>{{ 'Scans'|t('stamp-passport') }}</th></tr></thead>
-        <tbody>
-            {% for title, count in locationCounts %}
-                <tr><td>{{ title }}</td><td>{{ count }}</td></tr>
-            {% else %}
-                <tr><td colspan="2" class="light">{{ 'No location data yet.'|t('stamp-passport') }}</td></tr>
+{# ── Contest qualifier cards (2-up) ─────────────────────────────── #}
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem;margin-bottom:2rem;">
+    <div class="pane" style="padding:1.25rem 1.5rem;border-top:4px solid #e5a823;">
+        <p class="light" style="margin:0 0 .25rem;">{{ 'Draw Qualifiers'|t('stamp-passport') }}</p>
+        <p style="font-size:2.5em;font-weight:700;margin:0;color:#e5a823;">{{ qualifyDraw }}</p>
+        <p class="light" style="margin:.4rem 0 0;font-size:.85em;">
+            {{ '{n}+ stamps required for draw entry'|t('stamp-passport', { n: settings.drawThreshold }) }}
+        </p>
+    </div>
+    <div class="pane" style="padding:1.25rem 1.5rem;border-top:4px solid #2b6b8a;">
+        <p class="light" style="margin:0 0 .25rem;">{{ 'Sticker Qualifiers'|t('stamp-passport') }}</p>
+        <p style="font-size:2.5em;font-weight:700;margin:0;color:#2b6b8a;">{{ qualifyStickers }}</p>
+        <p class="light" style="margin:.4rem 0 0;font-size:.85em;">
+            {{ 'All {n} stamps collected'|t('stamp-passport', { n: totalItemsCount }) }}
+        </p>
+    </div>
+</div>
+
+{# ── KPI cards (3-up) ────────────────────────────────────────────── #}
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:1.5rem;">
+    <div class="pane" style="padding:1.25rem 1.5rem;">
+        <p class="light" style="margin:0 0 .25rem;">{{ 'Total Scans'|t('stamp-passport') }}</p>
+        <p style="font-size:2em;font-weight:600;margin:0;">{{ totalScans }}</p>
+    </div>
+    <div class="pane" style="padding:1.25rem 1.5rem;">
+        <p class="light" style="margin:0 0 .25rem;">{{ 'Total Visitors'|t('stamp-passport') }}</p>
+        <p style="font-size:2em;font-weight:600;margin:0;">{{ totalVisitors }}</p>
+    </div>
+    <div class="pane" style="padding:1.25rem 1.5rem;">
+        <p class="light" style="margin:0 0 .25rem;">{{ 'Avg Scans / Visitor'|t('stamp-passport') }}</p>
+        <p style="font-size:2em;font-weight:600;margin:0;">{{ avgScansPerVisitor }}</p>
+    </div>
+</div>
+
+{# ── Secondary stats (2-up) ──────────────────────────────────────── #}
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem;margin-bottom:2rem;">
+    <div class="pane" style="padding:1.25rem 1.5rem;">
+        <p class="light" style="margin:0 0 .25rem;">{{ 'Avg Visits / Site'|t('stamp-passport') }}</p>
+        <p style="font-size:2em;font-weight:600;margin:0;">{{ avgVisitsPerSite }}</p>
+    </div>
+    <div class="pane" style="padding:1.25rem 1.5rem;">
+        <p class="light" style="margin:0 0 .25rem;">{{ 'Most Visited Site'|t('stamp-passport') }}</p>
+        {% if mostVisitedSite %}
+            <p style="font-size:1.4em;font-weight:600;margin:0;overflow-wrap:break-word;">{{ mostVisitedSite }}</p>
+            <p class="light" style="margin:.3rem 0 0;font-size:.85em;">{{ mostVisitedCount }} {{ 'scans'|t('stamp-passport') }}</p>
+        {% else %}
+            <p class="light" style="margin:0;">{{ 'No data yet.'|t }}</p>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Location filter dropdown (for charts) ───────────────────────── #}
+<div style="display:flex;justify-content:flex-end;align-items:center;gap:.75rem;margin-bottom:1rem;">
+    <label class="heading" for="sp-location-filter" style="margin:0;">{{ 'Location:'|t('stamp-passport') }}</label>
+    <div class="select">
+        <select id="sp-location-filter">
+            <option value="">{{ 'All Locations'|t('stamp-passport') }}</option>
+            {% for title in locationCounts|keys %}
+                <option value="{{ title|e('html_attr') }}">{{ title }}</option>
             {% endfor %}
-        </tbody>
-    </table>
+        </select>
+    </div>
+</div>
 
-    <h2 style="margin-top:2rem;">{{ 'Activity by Day of Week'|t('stamp-passport') }}</h2>
-    <img alt="Activity by day of week" style="max-width:100%;height:auto;" src="https://quickchart.io/chart?c={{ quickChartConfig|url_encode }}">
+{# ── Charts (3-up) ───────────────────────────────────────────────── #}
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:2rem;">
+    <div class="pane" style="padding:1.25rem;">
+        <p style="font-weight:600;margin:0 0 .75rem;font-size:.9em;text-transform:uppercase;letter-spacing:.04em;color:#596673;">
+            {{ 'By Day of Week'|t('stamp-passport') }}
+        </p>
+        <canvas id="chartWeekday"></canvas>
+    </div>
+    <div class="pane" style="padding:1.25rem;">
+        <p style="font-weight:600;margin:0 0 .75rem;font-size:.9em;text-transform:uppercase;letter-spacing:.04em;color:#596673;">
+            {{ 'Visits — Last 7 Days'|t('stamp-passport') }}
+        </p>
+        <canvas id="chartLast7"></canvas>
+    </div>
+    <div class="pane" style="padding:1.25rem;">
+        <p style="font-weight:600;margin:0 0 .75rem;font-size:.9em;text-transform:uppercase;letter-spacing:.04em;color:#596673;">
+            {{ 'Visits — Past 30 Days'|t('stamp-passport') }}
+        </p>
+        <canvas id="chartLast30"></canvas>
+    </div>
+</div>
+
+{# ── Top locations table ─────────────────────────────────────────── #}
+<h2>{{ 'Top Scanned Locations'|t('stamp-passport') }}</h2>
+<table class="data fullwidth">
+    <thead>
+        <tr>
+            <th>{{ 'Location'|t('stamp-passport') }}</th>
+            <th>{{ 'Scans'|t('stamp-passport') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for title, count in locationCounts %}
+            <tr><td>{{ title }}</td><td>{{ count }}</td></tr>
+        {% else %}
+            <tr><td colspan="2" class="light">{{ 'No location data yet.'|t('stamp-passport') }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{# ── Chart.js ────────────────────────────────────────────────────── #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    /* ── Data injected by Twig ── */
+    var WD_LABELS  = {{ jsWeekdayLabels|raw }};
+    var WD_VALUES  = {{ jsWeekdayValues|raw }};
+    var L7_LABELS  = {{ jsLast7Labels|raw }};
+    var L7_VALUES  = {{ jsLast7Values|raw }};
+    var L30_LABELS = {{ jsLast30Labels|raw }};
+    var L30_VALUES = {{ jsLast30Values|raw }};
+    var LOC_DATA   = {{ jsLocationData|raw }};
+
+    /* ── Helpers ── */
+    function fmtDate(iso) {
+        // "2026-03-06" → "Mar 6"
+        var parts = iso.split('-');
+        var d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+        return d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+    }
+    function fmtWD(label) {
+        // "Monday" → "Mon"
+        return label.slice(0, 3);
+    }
+
+    /* ── Bar chart (weekday) ── */
+    var ctxWD = document.getElementById('chartWeekday').getContext('2d');
+    var chartWD = new Chart(ctxWD, {
+        type: 'bar',
+        data: {
+            labels: WD_LABELS.map(fmtWD),
+            datasets: [{
+                data: WD_VALUES,
+                backgroundColor: 'rgba(31,122,140,.75)',
+                borderColor: '#1f7a8c',
+                borderWidth: 1,
+                borderRadius: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+
+    /* ── Line+fill factory ── */
+    function makeLineChart(canvasId, labels, values, color, bgColor) {
+        var ctx = document.getElementById(canvasId).getContext('2d');
+        return new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    fill: 'start',
+                    backgroundColor: bgColor,
+                    borderColor: color,
+                    borderWidth: 2,
+                    tension: 0.35,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { maxTicksLimit: 7, maxRotation: 0 } },
+                    y: { beginAtZero: true, ticks: { precision: 0 } }
+                }
+            }
+        });
+    }
+
+    var chartL7  = makeLineChart('chartLast7',  L7_LABELS.map(fmtDate),  L7_VALUES,  '#2b6b8a', 'rgba(43,107,138,.15)');
+    var chartL30 = makeLineChart('chartLast30', L30_LABELS.map(fmtDate), L30_VALUES, '#2d5a27', 'rgba(45,90,39,.12)');
+
+    /* ── Location dropdown ── */
+    var select = document.getElementById('sp-location-filter');
+    if (select) {
+        select.addEventListener('change', function () {
+            var loc = this.value;
+            var wd, l7, l30;
+
+            if (loc === '' || !LOC_DATA[loc]) {
+                wd  = WD_VALUES;
+                l7  = L7_VALUES;
+                l30 = L30_VALUES;
+            } else {
+                var d = LOC_DATA[loc];
+                wd  = WD_LABELS.map(function (k) { return d.weekdays[k] || 0; });
+                l7  = L7_LABELS.map(function  (k) { return d.last7[k]    || 0; });
+                l30 = L30_LABELS.map(function (k) { return d.last30[k]   || 0; });
+            }
+
+            chartWD.data.datasets[0].data = wd;
+            chartWD.update();
+
+            chartL7.data.datasets[0].data  = l7;
+            chartL7.update();
+
+            chartL30.data.datasets[0].data = l30;
+            chartL30.update();
+        });
+    }
+})();
+</script>
+
 {% endblock %}
 
 {% include 'stamp-passport/_cp-site-switcher-js' %}
