@@ -27,28 +27,28 @@ class m260313_000000_add_entry_relations extends Migration
     public function safeDown(): bool
     {
         if ($this->db->columnExists('{{%stamppassport_items_content}}', 'linkEntryId')) {
-            $this->dropForeignKeyIfExists('{{%stamppassport_items_content}}', 'linkEntryId');
-            $this->dropIndexIfExists('{{%stamppassport_items_content}}', 'linkEntryId');
+            $this->dropFkByColumn('{{%stamppassport_items_content}}', 'linkEntryId');
+            $this->dropIdxByColumn('{{%stamppassport_items_content}}', 'linkEntryId');
             $this->dropColumn('{{%stamppassport_items_content}}', 'linkEntryId');
         }
 
         return true;
     }
 
-    private function dropForeignKeyIfExists(string $table, string $column): void
+    private function dropFkByColumn(string $table, string $column): void
     {
         $schema = $this->db->getSchema()->getTableSchema($table, true);
         if (!$schema) {
             return;
         }
         foreach ($schema->foreignKeys as $name => $fk) {
-            if (($fk[0] ?? null) === $column) {
+            if (array_key_exists($column, $fk)) {
                 $this->dropForeignKey($name, $table);
             }
         }
     }
 
-    private function dropIndexIfExists(string $table, string $column): void
+    private function dropIdxByColumn(string $table, string $column): void
     {
         $schema = $this->db->getSchema()->getTableSchema($table, true);
         if (!$schema) {
