@@ -28,3 +28,42 @@
         {% include 'stamp-passport/_settings-fields' %}
     </form>
 {% endblock %}
+
+{% js %}
+(function () {
+    var panels = document.querySelectorAll('[id^="tab-"]');
+
+    function showPanel(hash) {
+        panels.forEach(function (p) {
+            p.classList.toggle('hidden', '#' + p.id !== hash);
+        });
+    }
+
+    // Wire up clicks on Craft's rendered tab anchors (Craft 4 & 5 both use #tabs ul li a)
+    document.querySelectorAll('#tabs a').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+            var href = a.getAttribute('href');
+            if (href && href.charAt(0) === '#') {
+                e.preventDefault();
+                showPanel(href);
+                // Keep Craft's own selected-state styling in sync
+                document.querySelectorAll('#tabs a').forEach(function (t) {
+                    t.classList.toggle('sel', t === a);
+                });
+                history.replaceState(null, '', href);
+            }
+        });
+    });
+
+    // Restore tab from URL hash on page load
+    var initial = window.location.hash && document.getElementById(window.location.hash.slice(1))
+        ? window.location.hash
+        : '#tab-general';
+    showPanel(initial);
+
+    // Sync the selected class on the matching tab link
+    document.querySelectorAll('#tabs a').forEach(function (a) {
+        a.classList.toggle('sel', a.getAttribute('href') === initial);
+    });
+}());
+{% endjs %}
