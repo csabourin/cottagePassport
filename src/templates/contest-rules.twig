@@ -48,13 +48,14 @@
                 placeholder: 'Read the full rules'|t('stamp-passport'),
             }) }}
 
-            {{ forms.textField({
-                label: "Full Rules URL"|t('stamp-passport'),
-                instructions: "URL for the full rules link. Leave empty to hide the link."|t('stamp-passport'),
-                name: 'contestRules[' ~ site.handle ~ '][fullRulesUrl]',
-                value: contestRules[site.handle].fullRulesUrl ?? '',
-                type: 'url',
-                placeholder: 'https://',
+            {% set fullRuleEntryElements = contestRules[site.handle].fullRulesEntryId is defined and contestRules[site.handle].fullRulesEntryId ? craft.entries.id(contestRules[site.handle].fullRulesEntryId).all() : [] %}
+            {{ forms.elementSelectField({
+                label: "Full Rules Entry"|t('stamp-passport'),
+                instructions: "Entry used for the full rules link. Leave empty to hide the link."|t('stamp-passport'),
+                name: 'contestRules[' ~ site.handle ~ '][fullRulesEntryId]',
+                elementType: 'craft\\elements\\Entry',
+                limit: 1,
+                elements: fullRuleEntryElements,
             }) }}
 
             {% if not loop.last %}

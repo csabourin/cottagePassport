@@ -67,7 +67,7 @@ class Items extends Component
      * Save an item and its per-site content.
      *
      * @param array $attributes  Item-level attributes (latitude, longitude, imageId, enabled, sortOrder)
-     * @param array $content     Per-site content keyed by siteId: [siteId => [title, description, linkUrl, linkText]]
+     * @param array $content     Per-site content keyed by siteId: [siteId => [title, description, linkUrl, linkEntryId, linkText]]
      * @param int|null $id       Existing item ID for updates, null for new items
      * @return ItemRecord|false  The saved record or false on failure
      */
@@ -114,6 +114,11 @@ class Items extends Component
             $contentRecord->title = $fields['title'] ?? null;
             $contentRecord->description = $fields['description'] ?? null;
             $contentRecord->linkUrl = $fields['linkUrl'] ?? null;
+            $rawLinkEntryId = $fields['linkEntryId'] ?? null;
+            if (is_array($rawLinkEntryId)) {
+                $rawLinkEntryId = $rawLinkEntryId[0] ?? null;
+            }
+            $contentRecord->linkEntryId = ((int)$rawLinkEntryId ?: null);
             $contentRecord->linkText = $fields['linkText'] ?? null;
 
             if (!$contentRecord->save()) {

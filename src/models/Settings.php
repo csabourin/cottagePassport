@@ -49,8 +49,8 @@ class Settings extends Model
     /** @var int|null Asset ID for the page body background image */
     public ?int $bodyBackgroundAssetId = null;
 
-    /** @var string|null Optional URL used as a center image in generated QR codes */
-    public ?string $qrCenterImageUrl = null;
+    /** @var int|null Optional asset used as a center image in generated QR codes */
+    public ?int $qrCenterImageAssetId = null;
 
     /** @var string Body background display mode when an image is set: "cover", "tiled", or "custom" */
     public string $bodyBackgroundMode = 'cover';
@@ -69,7 +69,7 @@ class Settings extends Model
 
     /** @var array Per-site contest rules content, keyed by site handle */
     public array $contestRules = [];
-    // Per-site keys: linkText, modalContent (HTML), fullRulesText, fullRulesUrl
+    // Per-site keys: linkText, modalContent (HTML), fullRulesText, fullRulesEntryId
 
     // ── Brand Colors ──────────────────────────────────────────────────────────
     /** @var string|null Primary brand color (overrides --passport-teal CSS var). Full hex: #rrggbb */
@@ -243,8 +243,7 @@ class Settings extends Model
             [['maxStickers'], 'integer', 'min' => 0],
             [['ga4MeasurementId'], 'match', 'pattern' => '/^G-[A-Z0-9]+$/', 'skipOnEmpty' => true],
             [['freeformDrawFormHandle', 'freeformStickerFormHandle'], 'string', 'max' => 100],
-            [['qrCenterImageUrl'], 'string', 'max' => 2048],
-            [['qrCenterImageUrl'], 'url', 'skipOnEmpty' => true],
+            [['qrCenterImageAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
             [['logoAssetId', 'logoAltAssetId', 'woodPanelAssetId', 'checkedMarkerAssetId', 'bodyBackgroundAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
             [['bodyBackgroundMode'], 'in', 'range' => ['cover', 'tiled', 'custom', 'repeat-y']],
             [['bodyBackgroundSize'], 'string', 'max' => 50],

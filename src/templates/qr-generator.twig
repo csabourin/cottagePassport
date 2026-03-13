@@ -8,6 +8,8 @@
 ] %}
 
 {% block content %}
+    {% set qrCenterAsset = settings.qrCenterImageAssetId ? craft.assets.id(settings.qrCenterImageAssetId).one() : null %}
+
     <div class="field">
         <div class="heading">
             <label for="qr-base-url">
@@ -35,7 +37,7 @@
             {{ "Print All QR Codes"|t('stamp-passport') }}
         </button>
     </div>
-    <input type="hidden" id="qr-center-image-url" value="{{ (settings.qrCenterImageUrl ?? '')|e('html_attr') }}">
+    <input type="hidden" id="qr-center-image-url" value="{{ (qrCenterAsset ? qrCenterAsset.url : '')|e('html_attr') }}">
     <input type="hidden" id="qr-fg-color" value="{{ (settings.qrForegroundColor ?? '')|e('html_attr') }}">
     <input type="hidden" id="qr-bg-color" value="{{ (settings.qrBackgroundColor ?? '')|e('html_attr') }}">
 

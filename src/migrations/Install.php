@@ -68,6 +68,7 @@ class Install extends Migration
             'title' => $this->string(255)->null(),
             'description' => $this->text()->null(),
             'linkUrl' => $this->string(500)->null(),
+            'linkEntryId' => $this->integer()->null(),
             'linkText' => $this->string(255)->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -75,6 +76,7 @@ class Install extends Migration
         ]);
 
         $this->createIndex(null, '{{%stamppassport_items_content}}', ['itemId', 'siteId'], true);
+        $this->createIndex(null, '{{%stamppassport_items_content}}', 'linkEntryId');
 
         $this->addForeignKey(
             null,
@@ -92,6 +94,15 @@ class Install extends Migration
             '{{%sites}}',
             'id',
             'CASCADE'
+        );
+
+        $this->addForeignKey(
+            null,
+            '{{%stamppassport_items_content}}',
+            'linkEntryId',
+            '{{%entries}}',
+            'id',
+            'SET NULL'
         );
     }
 

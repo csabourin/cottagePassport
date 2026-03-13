@@ -44,12 +44,20 @@ class ApiController extends Controller
                 }
             }
 
+            $linkUrl = $content->linkUrl ?? null;
+            if ($content && $content->linkEntryId) {
+                $entry = Craft::$app->getEntries()->getEntryById((int)$content->linkEntryId, $siteId);
+                if ($entry) {
+                    $linkUrl = $entry->getUrl();
+                }
+            }
+
             $data[] = [
                 'id' => $item->id,
                 'shortCode' => $item->shortCode,
                 'title' => $content->title ?? '',
                 'description' => $content->description ?? '',
-                'linkUrl' => $content->linkUrl ?? null,
+                'linkUrl' => $linkUrl,
                 'linkText' => $content->linkText ?? null,
                 'image' => $image,
                 'latitude' => $item->latitude ? (float)$item->latitude : null,

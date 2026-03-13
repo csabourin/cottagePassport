@@ -194,12 +194,17 @@
 
 <h2>{{ "QR Code Appearance"|t('stamp-passport') }}</h2>
 
-{{ forms.textField({
-    label: "QR Center Image URL"|t('stamp-passport'),
-    instructions: "Optional URL for the image centered in generated QR codes. A square image or circle with transparency is preferable."|t('stamp-passport'),
-    name: 'qrCenterImageUrl',
-    value: settings.qrCenterImageUrl,
-    placeholder: 'https://example.com/qr-center.png',
+{% set qrCenterElements = settings.qrCenterImageAssetId ? craft.assets.id(settings.qrCenterImageAssetId).all() : [] %}
+{{ forms.elementSelectField({
+    label: "QR Center Image"|t('stamp-passport'),
+    instructions: "Optional image centered in generated QR codes. Square images with transparency are recommended."|t('stamp-passport'),
+    id: 'qrCenterImageAssetId',
+    name: 'qrCenterImageAssetId',
+    elementType: 'craft\\elements\\Asset',
+    criteria: { kind: 'image' },
+    limit: 1,
+    elements: qrCenterElements,
+    modalStorageKey: 'stamp-passport.qrCenterImageAsset',
 }) }}
 
 {{ forms.colorField({
