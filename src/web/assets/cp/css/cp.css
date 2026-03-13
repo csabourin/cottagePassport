@@ -12,7 +12,7 @@
 
 /* Stats dashboard — remove .pane default margins so CSS grid gap is the sole spacing */
 #sp-stats-dashboard .pane {
-    margin: 0;
+    margin: 0 !important;
 }
 
 /* Item listing table tweaks */

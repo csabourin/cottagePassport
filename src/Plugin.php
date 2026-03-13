@@ -56,7 +56,7 @@ class Plugin extends BasePlugin
         $item['label'] = $this->getSettings()->pluginName;
         $item['iconMask'] = __DIR__ . '/icon.svg';
         $item['subnav'] = [
-            'stats' => ['label' => Craft::t('stamp-passport', 'Stats'), 'url' => 'stamp-passport/stats'],
+            'stats' => ['label' => Craft::t('stamp-passport', 'Dashboard'), 'url' => 'stamp-passport/stats'],
             'items' => ['label' => Craft::t('stamp-passport', 'Items'), 'url' => 'stamp-passport/items'],
             'qr-generator' => ['label' => Craft::t('stamp-passport', 'QR Codes'), 'url' => 'stamp-passport/qr-generator'],
             'display-text' => ['label' => Craft::t('stamp-passport', 'Display Text'), 'url' => 'stamp-passport/display-text'],
