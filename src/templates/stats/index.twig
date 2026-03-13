@@ -1,0 +1,59 @@
+{% extends "_layouts/cp" %}
+
+{% set title = "Stats Dashboard"|t('stamp-passport') %}
+{% set selectedSubnavItem = 'stats' %}
+
+{% set crumbs = [
+    { label: settings.pluginName, url: url('stamp-passport') },
+] %}
+
+{% set weekdayLabels = weekdayCounts|keys %}
+{% set weekdayValues = weekdayCounts|values %}
+{% set quickChartConfig = {
+    type: 'bar',
+    data: {
+        labels: weekdayLabels,
+        datasets: [{
+            label: 'Scans',
+            data: weekdayValues,
+            backgroundColor: '#1f7a8c'
+        }]
+    },
+    options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+    }
+}|json_encode %}
+
+{% block content %}
+    <h2>{{ 'Users'|t('stamp-passport') }}</h2>
+    <table class="data fullwidth">
+        <thead><tr><th>Contest ID</th><th>Locations Scanned</th><th>Last Activity</th></tr></thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td><code>{{ user.contestId }}</code></td>
+                    <td>{{ user.locationsScanned }}</td>
+                    <td>{{ user.updatedAt }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="3" class="light">{{ 'No data yet.'|t('stamp-passport') }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2 style="margin-top:2rem;">{{ 'Top Scanned Locations'|t('stamp-passport') }}</h2>
+    <table class="data fullwidth">
+        <thead><tr><th>Location</th><th>Scans</th></tr></thead>
+        <tbody>
+            {% for location, count in locationCounts %}
+                <tr><td><code>{{ location }}</code></td><td>{{ count }}</td></tr>
+            {% else %}
+                <tr><td colspan="2" class="light">{{ 'No location data yet.'|t('stamp-passport') }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2 style="margin-top:2rem;">{{ 'Activity by Day of Week'|t('stamp-passport') }}</h2>
+    <img alt="Activity by day of week" style="max-width:100%;height:auto;" src="https://quickchart.io/chart?c={{ quickChartConfig|url_encode }}">
+{% endblock %}

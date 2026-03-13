@@ -4,6 +4,7 @@ namespace csabourin\stamppassport\controllers;
 
 use Craft;
 use craft\helpers\UrlHelper;
+use craft\db\Query;
 use craft\web\Controller;
 use csabourin\stamppassport\models\Settings;
 use csabourin\stamppassport\Plugin;
@@ -24,9 +25,6 @@ class CpController extends Controller
             'items'        => $items,
             'settings'     => Plugin::$plugin->getSettings(),
             'allSites'     => Craft::$app->getSites()->getAllSites(),
-            'textDefaults' => Settings::TEXT_DEFAULTS,
-            'textLabels'   => Settings::TEXT_LABELS,
-            'textKeys'     => Settings::TEXT_KEYS,
         ]);
     }
 
@@ -64,6 +62,7 @@ class CpController extends Controller
                 'title' => '',
                 'description' => '',
                 'linkUrl' => '',
+                'linkEntryId' => null,
                 'linkText' => '',
             ];
         }
@@ -74,6 +73,7 @@ class CpController extends Controller
                     'title' => $c->title ?? '',
                     'description' => $c->description ?? '',
                     'linkUrl' => $c->linkUrl ?? '',
+                    'linkEntryId' => $c->linkEntryId ?? null,
                     'linkText' => $c->linkText ?? '',
                 ];
             }
@@ -210,6 +210,79 @@ class CpController extends Controller
         return $this->redirectToPostedUrl();
     }
 
+
+    /**
+     * Display text page.
+     */
+    public function actionDisplayText(): Response
+    {
+        return $this->renderTemplate('stamp-passport/text/index', [
+            'settings'     => Plugin::$plugin->getSettings(),
+            'allSites'     => Craft::$app->getSites()->getAllSites(),
+            'textDefaults' => Settings::TEXT_DEFAULTS,
+            'textLabels'   => Settings::TEXT_LABELS,
+            'textKeys'     => Settings::TEXT_KEYS,
+        ]);
+    }
+
+    /**
+     * Stats dashboard page.
+     */
+    public function actionStats(): Response
+    {
+        $rows = (new Query())
+            ->from('{{%stamppassport_contest_progress}}')
+            ->all();
+
+        $users = [];
+        $locationCounts = [];
+        $weekdayCounts = [
+            'Monday' => 0,
+            'Tuesday' => 0,
+            'Wednesday' => 0,
+            'Thursday' => 0,
+            'Friday' => 0,
+            'Saturday' => 0,
+            'Sunday' => 0,
+        ];
+
+        foreach ($rows as $row) {
+            $payload = json_decode((string)$row['payload_json'], true);
+            $steps = $payload['progress']['stepsCompleted'] ?? [];
+            if (!is_array($steps)) {
+                $steps = [];
+            }
+
+            $users[] = [
+                'contestId' => (string)$row['contest_id'],
+                'locationsScanned' => count($steps),
+                'updatedAt' => (string)$row['updated_at'],
+            ];
+
+            foreach ($steps as $step) {
+                $key = (string)$step;
+                if ($key === '') {
+                    continue;
+                }
+                $locationCounts[$key] = ($locationCounts[$key] ?? 0) + 1;
+            }
+
+            $weekday = date('l', strtotime((string)$row['updated_at']));
+            if (isset($weekdayCounts[$weekday])) {
+                $weekdayCounts[$weekday]++;
+            }
+        }
+
+        arsort($locationCounts);
+
+        return $this->renderTemplate('stamp-passport/stats/index', [
+            'settings' => Plugin::$plugin->getSettings(),
+            'users' => $users,
+            'locationCounts' => $locationCounts,
+            'weekdayCounts' => $weekdayCounts,
+        ]);
+    }
+
     /**
      * Contest rules page.
      */
@@ -243,7 +316,7 @@ class CpController extends Controller
                 $linkText      = trim((string)($fields['linkText'] ?? ''));
                 $modalContent  = trim((string)($fields['modalContent'] ?? ''));
                 $fullRulesText = trim((string)($fields['fullRulesText'] ?? ''));
-                $fullRulesUrl  = trim((string)($fields['fullRulesUrl'] ?? ''));
+                $fullRulesEntryId = (int)($fields['fullRulesEntryId'][0] ?? 0);
 
                 // Only store entries that have at least a link label
                 if ($linkText !== '') {
@@ -251,7 +324,7 @@ class CpController extends Controller
                         'linkText'      => $linkText,
                         'modalContent'  => $modalContent,
                         'fullRulesText' => $fullRulesText,
-                        'fullRulesUrl'  => $fullRulesUrl,
+                        'fullRulesEntryId' => $fullRulesEntryId ?: null,
                     ];
                 }
             }
@@ -329,7 +402,10 @@ class CpController extends Controller
         }
         $settings->bodyBackgroundColor = $bodyBackgroundColor !== '' ? $bodyBackgroundColor : null;
 
-        $settings->qrCenterImageUrl = trim((string)$request->getBodyParam('qrCenterImageUrl', '')) ?: null;
+        $qrCenterIds = $request->getBodyParam('qrCenterImageAssetId');
+        $settings->qrCenterImageAssetId = is_array($qrCenterIds)
+            ? ((int)($qrCenterIds[0] ?? 0) ?: null)
+            : ((int)($qrCenterIds ?: 0) ?: null);
 
         // ── Brand Colors ──────────────────────────────────────────────────────
         foreach (['primaryColor', 'primaryColorDark', 'accentColor'] as $colorField) {

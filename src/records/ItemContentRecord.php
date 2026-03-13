@@ -12,6 +12,7 @@ use yii\db\ActiveQueryInterface;
  * @property string|null $title
  * @property string|null $description
  * @property string|null $linkUrl
+ * @property int|null $linkEntryId
  * @property string|null $linkText
  * @property ItemRecord $item
  */
@@ -34,6 +35,7 @@ class ItemContentRecord extends ActiveRecord
             [['itemId', 'siteId'], 'integer'],
             [['title', 'linkText'], 'string', 'max' => 255],
             [['linkUrl'], 'string', 'max' => 500],
+            [['linkEntryId'], 'integer'],
             [['description'], 'string'],
             [['itemId', 'siteId'], 'unique', 'targetAttribute' => ['itemId', 'siteId']],
         ];

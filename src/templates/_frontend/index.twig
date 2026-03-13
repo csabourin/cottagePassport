@@ -187,6 +187,7 @@
 
         {# ── Contest Rules strip (optional — shown only when linkText is configured for this site) ── #}
     {% set contestRules = settings.contestRules[currentSite.handle] ?? {} %}
+{% set fullRulesEntry = contestRules.fullRulesEntryId is defined and contestRules.fullRulesEntryId ? craft.entries.id(contestRules.fullRulesEntryId).one() : null %}
     {% if contestRules.linkText is defined and contestRules.linkText is not empty %}
     <div class="passport-contest-rules-strip">
         <button type="button"
@@ -249,6 +250,7 @@
     {% endif %}
 
     {# ── Contest Rules modal (optional — mirrors strip condition above) ── #}
+{% set fullRulesEntry = contestRules.fullRulesEntryId is defined and contestRules.fullRulesEntryId ? craft.entries.id(contestRules.fullRulesEntryId).one() : null %}
     {% if contestRules.linkText is defined and contestRules.linkText is not empty %}
     <div id="contestRulesModal"
          class="passport-modal hidden"
@@ -260,9 +262,9 @@
             <button class="passport-modal-close" aria-label="{{ 'Close'|t('stamp-passport') }}">&times;</button>
             <h2 id="contestRulesModalTitle">{{ contestRules.linkText|e }}</h2>
             <div class="contest-rules-body">{{ contestRules.modalContent|default('')|raw }}</div>
-            {% if contestRules.fullRulesUrl is defined and contestRules.fullRulesUrl is not empty %}
+            {% if fullRulesEntry %}
             <div class="contest-rules-footer">
-                <a href="{{ contestRules.fullRulesUrl|e }}"
+                <a href="{{ fullRulesEntry.url|e }}"
                    target="_blank"
                    rel="noopener noreferrer"
                    class="passport-btn passport-btn-secondary">

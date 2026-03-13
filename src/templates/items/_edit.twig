@@ -142,11 +142,14 @@
                 rows: 8,
             }) }}
 
-            {{ forms.textField({
-                label: "Link URL"|t('stamp-passport'),
-                name: 'content[' ~ currentSite.id ~ '][linkUrl]',
-                value: sc.linkUrl ?? '',
-                placeholder: 'https://',
+            {% set linkEntryElements = (sc.linkEntryId ?? null) ? craft.entries.id(sc.linkEntryId).all() : [] %}
+            {{ forms.elementSelectField({
+                label: "Linked Entry"|t('stamp-passport'),
+                instructions: "Optional Craft entry used as the call-to-action destination."|t('stamp-passport'),
+                name: 'content[' ~ currentSite.id ~ '][linkEntryId]',
+                elementType: 'craft\\elements\\Entry',
+                limit: 1,
+                elements: linkEntryElements,
             }) }}
 
             {{ forms.textField({

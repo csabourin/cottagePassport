@@ -58,7 +58,9 @@ class Plugin extends BasePlugin
         $item['subnav'] = [
             'items' => ['label' => Craft::t('stamp-passport', 'Items'), 'url' => 'stamp-passport/items'],
             'qr-generator' => ['label' => Craft::t('stamp-passport', 'QR Codes'), 'url' => 'stamp-passport/qr-generator'],
+            'display-text' => ['label' => Craft::t('stamp-passport', 'Display Text'), 'url' => 'stamp-passport/display-text'],
             'contest-rules' => ['label' => Craft::t('stamp-passport', 'Contest Rules'), 'url' => 'stamp-passport/contest-rules'],
+            'stats' => ['label' => Craft::t('stamp-passport', 'Stats'), 'url' => 'stamp-passport/stats'],
             'settings' => ['label' => Craft::t('stamp-passport', 'Settings'), 'url' => 'stamp-passport/settings'],
         ];
         return $item;
@@ -122,7 +124,9 @@ class Plugin extends BasePlugin
                 $event->rules['stamp-passport/items/new'] = 'stamp-passport/cp/edit';
                 $event->rules['stamp-passport/items/<itemId:\d+>'] = 'stamp-passport/cp/edit';
                 $event->rules['stamp-passport/qr-generator'] = 'stamp-passport/cp/qr-generator';
+                $event->rules['stamp-passport/display-text'] = 'stamp-passport/cp/display-text';
                 $event->rules['stamp-passport/contest-rules'] = 'stamp-passport/cp/contest-rules';
+                $event->rules['stamp-passport/stats'] = 'stamp-passport/cp/stats';
                 $event->rules['stamp-passport/settings'] = 'stamp-passport/cp/settings';
             }
         );

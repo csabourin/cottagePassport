@@ -8,15 +8,83 @@
 ] %}
 
 {% block content %}
-    <form method="post" accept-charset="UTF-8">
+    <form method="post" accept-charset="UTF-8" id="settings-form">
         {{ csrfInput() }}
         {{ actionInput('stamp-passport/cp/save-settings') }}
         {{ redirectInput('stamp-passport/settings') }}
 
-        {% include 'stamp-passport/_settings-fields' %}
+        <div class="tabs" id="settings-tabs" role="tablist">
+            <a class="tab sel" data-target="general">{{ 'General'|t('stamp-passport') }}</a>
+            <a class="tab" data-target="appearance">{{ 'Appearance'|t('stamp-passport') }}</a>
+            <a class="tab" data-target="integrations">{{ 'Integrations'|t('stamp-passport') }}</a>
+            <a class="tab" data-target="advanced">{{ 'Advanced'|t('stamp-passport') }}</a>
+        </div>
+
+        <div id="settings-sections">
+            {% include 'stamp-passport/_settings-fields' %}
+        </div>
 
         <div class="buttons">
             <button type="submit" class="btn submit">{{ "Save"|t('app') }}</button>
         </div>
     </form>
 {% endblock %}
+
+{% js %}
+(function () {
+    var sectionsRoot = document.getElementById('settings-sections');
+    if (!sectionsRoot) return;
+
+    var headings = Array.prototype.slice.call(sectionsRoot.querySelectorAll('h2'));
+    if (!headings.length) return;
+
+    var map = {
+        'General': 'general',
+        'Appearance': 'appearance',
+        'Social Sharing': 'appearance',
+        'QR Code Appearance': 'appearance',
+        'Analytics': 'integrations',
+        'Freeform Integration': 'integrations',
+        'Geofence': 'advanced',
+        'Prizes': 'advanced',
+        'Custom CSS': 'advanced',
+        'UI Behavior': 'advanced'
+    };
+
+    headings.forEach(function (heading) {
+        var label = heading.textContent.trim();
+        var tab = map[label] || 'general';
+        var wrapper = document.createElement('div');
+        wrapper.setAttribute('data-settings-tab-panel', tab);
+        heading.parentNode.insertBefore(wrapper, heading);
+
+        var node = heading;
+        while (node) {
+            var next = node.nextSibling;
+            if (next && next.nodeType === 1 && next.tagName === 'H2') {
+                wrapper.appendChild(node);
+                break;
+            }
+            wrapper.appendChild(node);
+            node = next;
+            if (!node) break;
+        }
+    });
+
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('#settings-tabs .tab'));
+    var panels = Array.prototype.slice.call(sectionsRoot.querySelectorAll('[data-settings-tab-panel]'));
+
+    function activate(target) {
+        tabs.forEach(function (tab) { tab.classList.toggle('sel', tab.getAttribute('data-target') === target); });
+        panels.forEach(function (panel) {
+            panel.style.display = panel.getAttribute('data-settings-tab-panel') === target ? '' : 'none';
+        });
+    }
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () { activate(tab.getAttribute('data-target')); });
+    });
+
+    activate('general');
+})();
+{% endjs %}
