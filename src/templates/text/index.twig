@@ -63,6 +63,6 @@
     {{ forms.textField({ label: textLabels['loadError'], name: 'uiText[' ~ currentSite.handle ~ '][loadError]', value: settings.uiText[currentSite.handle]['loadError'] ?? '', placeholder: defaults['loadError'] }) }}
 
 </form>
-{% endblock %}
 
 {% include 'stamp-passport/_cp-site-switcher-js' %}
+{% endblock %}

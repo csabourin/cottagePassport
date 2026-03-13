@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 
-{% set title = "Stats Dashboard"|t('stamp-passport') %}
+{% set title = "Dashboard"|t('stamp-passport') %}
 {% set selectedSubnavItem = 'stats' %}
 
 {% set crumbs = [
@@ -15,26 +15,6 @@
 {% set jsLast30Labels  = visitsByDayLast30|keys|json_encode %}
 {% set jsLast30Values  = visitsByDayLast30|values|json_encode %}
 {% set jsLocationData  = locationDataByTitle|json_encode %}
-
-{% block contextMenu %}
-    {% if craft.app.isMultiSite %}
-        <div>
-            <button id="sp-site-btn" type="button" class="btn menubtn" data-icon="world">{{ currentSite.name }}</button>
-            <div class="menu">
-                <ul class="padded">
-                    {% for site in allSites %}
-                        <li>
-                            <a href="{{ url('stamp-passport/stats', { site: site.handle }) }}"
-                               class="sp-site-link{% if site.id == currentSite.id %} sel{% endif %}">
-                                {{ site.name }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    {% endif %}
-{% endblock %}
 
 {% block content %}
 
@@ -70,14 +50,14 @@
 
     {# Row 1 – qualifier cards #}
     <div class="pane" style="grid-column:span 3;padding:1.25rem 1.5rem;border-top:4px solid #e5a823;">
-        <p class="light" style="margin:0 0 .25rem;">{{ 'Draw Qualifiers'|t('stamp-passport') }}</p>
+        <h3 style="font-weight:700;margin:0 0 .25rem;">{{ 'Draw Qualifiers'|t('stamp-passport') }}</h3>
         <p style="font-size:2.5em;font-weight:700;margin:0;color:#e5a823;">{{ qualifyDraw }}</p>
         <p class="light" style="margin:.4rem 0 0;font-size:.85em;">
             {{ '{n}+ stamps required for draw entry'|t('stamp-passport', { n: settings.drawThreshold }) }}
         </p>
     </div>
     <div class="pane" style="grid-column:span 3;padding:1.25rem 1.5rem;border-top:4px solid #2b6b8a;">
-        <p class="light" style="margin:0 0 .25rem;">{{ 'Sticker Qualifiers'|t('stamp-passport') }}</p>
+        <h3 style="font-weight:700;margin:0 0 .25rem;">{{ 'Sticker Qualifiers'|t('stamp-passport') }}</h3>
         <p style="font-size:2.5em;font-weight:700;margin:0;color:#2b6b8a;">{{ qualifyStickers }}</p>
         <p class="light" style="margin:.4rem 0 0;font-size:.85em;">
             {{ 'All {n} stamps collected'|t('stamp-passport', { n: totalItemsCount }) }}
@@ -86,25 +66,25 @@
 
     {# Row 2 – KPI cards #}
     <div class="pane" style="grid-column:span 2;padding:1.25rem 1.5rem;">
-        <p class="light" style="margin:0 0 .25rem;">{{ 'Total Scans'|t('stamp-passport') }}</p>
+        <h3 style="font-weight:700;margin:0 0 .25rem;">{{ 'Total Scans'|t('stamp-passport') }}</h3>
         <p style="font-size:2em;font-weight:600;margin:0;">{{ totalScans }}</p>
     </div>
     <div class="pane" style="grid-column:span 2;padding:1.25rem 1.5rem;">
-        <p class="light" style="margin:0 0 .25rem;">{{ 'Total Visitors'|t('stamp-passport') }}</p>
+        <h3 style="font-weight:700;margin:0 0 .25rem;">{{ 'Total Visitors'|t('stamp-passport') }}</h3>
         <p style="font-size:2em;font-weight:600;margin:0;">{{ totalVisitors }}</p>
     </div>
     <div class="pane" style="grid-column:span 2;padding:1.25rem 1.5rem;">
-        <p class="light" style="margin:0 0 .25rem;">{{ 'Avg Scans / Visitor'|t('stamp-passport') }}</p>
+        <h3 style="font-weight:700;margin:0 0 .25rem;">{{ 'Avg Scans / Visitor'|t('stamp-passport') }}</h3>
         <p style="font-size:2em;font-weight:600;margin:0;">{{ avgScansPerVisitor }}</p>
     </div>
 
     {# Row 3 – secondary stats #}
     <div class="pane" style="grid-column:span 3;padding:1.25rem 1.5rem;">
-        <p class="light" style="margin:0 0 .25rem;">{{ 'Avg Visits / Site'|t('stamp-passport') }}</p>
+        <h3 style="font-weight:700;margin:0 0 .25rem;">{{ 'Avg Visits / Site'|t('stamp-passport') }}</h3>
         <p style="font-size:2em;font-weight:600;margin:0;">{{ avgVisitsPerSite }}</p>
     </div>
     <div class="pane" style="grid-column:span 3;padding:1.25rem 1.5rem;">
-        <p class="light" style="margin:0 0 .25rem;">{{ 'Most Visited Site'|t('stamp-passport') }}</p>
+        <h3 style="font-weight:700;margin:0 0 .25rem;">{{ 'Most Visited Site'|t('stamp-passport') }}</h3>
         {% if mostVisitedSite %}
             <p style="font-size:1.4em;font-weight:600;margin:0;overflow-wrap:break-word;">{{ mostVisitedSite }}</p>
             <p class="light" style="margin:.3rem 0 0;font-size:.85em;">{{ mostVisitedCount }} {{ 'scans'|t('stamp-passport') }}</p>
@@ -276,7 +256,5 @@
     }
 })();
 </script>
-
-{% include 'stamp-passport/_cp-site-switcher-js' %}
 
 {% endblock %}
