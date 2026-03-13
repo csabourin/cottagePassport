@@ -12,13 +12,14 @@
 {% block contextMenu %}
     {% if craft.app.isMultiSite %}
         <div>
-            <button id="sp-site-btn" type="button" class="btn menubtn" data-icon="world">{{ currentSite.name }}</button>
+            <button id="sp-site-btn" type="button" class="btn menubtn" data-icon="world">
+                {{ currentSite.name }}
+            </button>
             <div class="menu">
                 <ul class="padded">
                     {% for site in allSites %}
                         <li>
-                            <a href="{{ url('stamp-passport/contest-rules', { site: site.handle }) }}"
-                               class="sp-site-link{% if site.id == currentSite.id %} sel{% endif %}">
+                            <a href="{{ url('stamp-passport/contest-rules', { site: site.handle }) }}" class="sp-site-link{% if site.id == currentSite.id %} sel{% endif %}">
                                 {{ site.name }}
                             </a>
                         </li>
@@ -30,7 +31,9 @@
 {% endblock %}
 
 {% block actionButton %}
-    <button type="submit" form="contest-rules-form" class="btn submit">{{ "Save"|t('app') }}</button>
+    <button type="submit" form="contest-rules-form" class="btn submit">
+        {{ "Save"|t('app') }}
+    </button>
 {% endblock %}
 
 {% block content %}
@@ -78,6 +81,5 @@
         }) }}
 
     </form>
+    {% include 'stamp-passport/_cp-site-switcher-js' %}
 {% endblock %}
-
-{% include 'stamp-passport/_cp-site-switcher-js' %}
