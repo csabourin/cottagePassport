@@ -1,5 +1,8 @@
 {% import "_includes/forms" as forms %}
 
+{# ── General ─────────────────────────────────────────────────────────────── #}
+<div id="tab-general">
+
 <h2>{{ "General"|t('stamp-passport') }}</h2>
 
 <input type="hidden" name="pluginName" value="{{ settings.pluginName }}">
@@ -23,7 +26,10 @@
     }) }}
 {% endfor %}
 
-<hr>
+</div>{# /tab-general #}
+
+{# ── Appearance ───────────────────────────────────────────────────────────── #}
+<div id="tab-appearance">
 
 <h2>{{ "Appearance"|t('stamp-passport') }}</h2>
 
@@ -119,7 +125,7 @@
     ],
 }) }}
 
-<div id="bodyBackgroundSizeField" style="{{ (settings.bodyBackgroundMode ?? 'cover') not in ['custom', 'repeat-y'] ? 'display:none' : '' }}">
+<div id="bodyBackgroundSizeField" {% if (settings.bodyBackgroundMode ?? 'cover') not in ['custom', 'repeat-y'] %}class="hidden"{% endif %}>
 {{ forms.textField({
     label: "Custom Background Size"|t('stamp-passport'),
     instructions: "CSS background-size value (e.g. 800px, 50%, contain)."|t('stamp-passport'),
@@ -130,7 +136,7 @@
 }) }}
 </div>
 
-<div id="bodyBackgroundColorField" style="{{ (settings.bodyBackgroundMode ?? 'cover') == 'tiled' ? 'display:none' : '' }}">
+<div id="bodyBackgroundColorField" {% if (settings.bodyBackgroundMode ?? 'cover') == 'tiled' %}class="hidden"{% endif %}>
 {{ forms.colorField({
     label: "Background Color"|t('stamp-passport'),
     instructions: "Fill color shown behind the background image (not applicable for tiled mode)."|t('stamp-passport'),
@@ -140,19 +146,20 @@
 }) }}
 </div>
 
-<script>
+{% js %}
 (function () {
     var modeSelect = document.getElementById('bodyBackgroundMode');
     var sizeField  = document.getElementById('bodyBackgroundSizeField');
     var colorField = document.getElementById('bodyBackgroundColorField');
+    if (!modeSelect) return;
     function updateFields() {
         var v = modeSelect.value;
-        sizeField.style.display  = (v === 'custom' || v === 'repeat-y') ? '' : 'none';
-        colorField.style.display = v === 'tiled' ? 'none' : '';
+        sizeField.classList.toggle('hidden',  v !== 'custom' && v !== 'repeat-y');
+        colorField.classList.toggle('hidden', v === 'tiled');
     }
     modeSelect.addEventListener('change', updateFields);
 }());
-</script>
+{% endjs %}
 
 <h3>{{ "Brand Colors"|t('stamp-passport') }}</h3>
 <p class="instructions">{{ "Override the default palette. Leave blank to use CSS defaults. Full hex values only (#rrggbb)."|t('stamp-passport') }}</p>
@@ -233,22 +240,10 @@
     value: settings.qrBackgroundColor ?? '#ffffff',
 }) }}
 
-<hr>
+</div>{# /tab-appearance #}
 
-<h2>{{ "Custom CSS"|t('stamp-passport') }}</h2>
-
-{{ forms.textareaField({
-    label: "Custom CSS"|t('stamp-passport'),
-    instructions: "Raw CSS injected at the end of the frontend &lt;head&gt;. Use as an escape hatch for advanced customization. Maximum 10 000 characters."|t('stamp-passport'),
-    id: 'customCss',
-    name: 'customCss',
-    value: settings.customCss ?? '',
-    rows: 10,
-    class: 'code',
-    maxlength: 10000,
-}) }}
-
-<hr>
+{# ── Integrations ─────────────────────────────────────────────────────────── #}
+<div id="tab-integrations">
 
 <h2>{{ "Analytics"|t('stamp-passport') }}</h2>
 
@@ -261,6 +256,53 @@
 }) }}
 
 <hr>
+
+<h2>{{ "Freeform Integration"|t('stamp-passport') }}</h2>
+
+{% if freeformForms is not null %}
+
+    {{ forms.selectField({
+        label: "Draw Form"|t('stamp-passport'),
+        instructions: "Freeform form shown when the visitor qualifies for the draw."|t('stamp-passport'),
+        id: 'freeformDrawFormHandle',
+        name: 'freeformDrawFormHandle',
+        value: settings.freeformDrawFormHandle ?? '',
+        options: [{ label: '— None —'|t('stamp-passport'), value: '' }]|merge(freeformForms),
+    }) }}
+
+    {{ forms.selectField({
+        label: "Sticker Form"|t('stamp-passport'),
+        instructions: "Freeform form shown when the visitor completes every location."|t('stamp-passport'),
+        id: 'freeformStickerFormHandle',
+        name: 'freeformStickerFormHandle',
+        value: settings.freeformStickerFormHandle ?? '',
+        options: [{ label: '— None —'|t('stamp-passport'), value: '' }]|merge(freeformForms),
+    }) }}
+
+{% else %}
+
+    {{ forms.textField({
+        label: "Draw Form Handle"|t('stamp-passport'),
+        instructions: "Freeform form handle for the end-of-season draw entry."|t('stamp-passport'),
+        name: 'freeformDrawFormHandle',
+        value: settings.freeformDrawFormHandle,
+        placeholder: 'passportDraw',
+    }) }}
+
+    {{ forms.textField({
+        label: "Sticker Form Handle"|t('stamp-passport'),
+        instructions: "Freeform form handle for the Memory Makers sticker request."|t('stamp-passport'),
+        name: 'freeformStickerFormHandle',
+        value: settings.freeformStickerFormHandle,
+        placeholder: 'passportSticker',
+    }) }}
+
+{% endif %}
+
+</div>{# /tab-integrations #}
+
+{# ── Advanced ─────────────────────────────────────────────────────────────── #}
+<div id="tab-advanced">
 
 <h2>{{ "UI Behavior"|t('stamp-passport') }}</h2>
 
@@ -332,44 +374,17 @@
 
 <hr>
 
-<h2>{{ "Freeform Integration"|t('stamp-passport') }}</h2>
+<h2>{{ "Custom CSS"|t('stamp-passport') }}</h2>
 
-{% if freeformForms is not null %}
+{{ forms.textareaField({
+    label: "Custom CSS"|t('stamp-passport'),
+    instructions: "Raw CSS injected at the end of the frontend &lt;head&gt;. Use as an escape hatch for advanced customization. Maximum 10 000 characters."|t('stamp-passport'),
+    id: 'customCss',
+    name: 'customCss',
+    value: settings.customCss ?? '',
+    rows: 10,
+    class: 'code',
+    maxlength: 10000,
+}) }}
 
-    {{ forms.selectField({
-        label: "Draw Form"|t('stamp-passport'),
-        instructions: "Freeform form shown when the visitor qualifies for the draw."|t('stamp-passport'),
-        id: 'freeformDrawFormHandle',
-        name: 'freeformDrawFormHandle',
-        value: settings.freeformDrawFormHandle ?? '',
-        options: [{ label: '— None —'|t('stamp-passport'), value: '' }]|merge(freeformForms),
-    }) }}
-
-    {{ forms.selectField({
-        label: "Sticker Form"|t('stamp-passport'),
-        instructions: "Freeform form shown when the visitor completes every location."|t('stamp-passport'),
-        id: 'freeformStickerFormHandle',
-        name: 'freeformStickerFormHandle',
-        value: settings.freeformStickerFormHandle ?? '',
-        options: [{ label: '— None —'|t('stamp-passport'), value: '' }]|merge(freeformForms),
-    }) }}
-
-{% else %}
-
-    {{ forms.textField({
-        label: "Draw Form Handle"|t('stamp-passport'),
-        instructions: "Freeform form handle for the end-of-season draw entry."|t('stamp-passport'),
-        name: 'freeformDrawFormHandle',
-        value: settings.freeformDrawFormHandle,
-        placeholder: 'passportDraw',
-    }) }}
-
-    {{ forms.textField({
-        label: "Sticker Form Handle"|t('stamp-passport'),
-        instructions: "Freeform form handle for the Memory Makers sticker request."|t('stamp-passport'),
-        name: 'freeformStickerFormHandle',
-        value: settings.freeformStickerFormHandle,
-        placeholder: 'passportSticker',
-    }) }}
-
-{% endif %}
+</div>{# /tab-advanced #}

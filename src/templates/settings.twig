@@ -7,6 +7,7 @@
     { label: settings.pluginName, url: url('stamp-passport') },
 ] %}
 
+{# Standard Craft CP tabs — Craft.Tabs (Garnish) manages show/hide of #tab-* panels #}
 {% set tabs = {
     general:      { label: 'General'|t('stamp-passport'),      url: '#tab-general' },
     appearance:   { label: 'Appearance'|t('stamp-passport'),   url: '#tab-appearance' },
@@ -14,70 +15,16 @@
     advanced:     { label: 'Advanced'|t('stamp-passport'),     url: '#tab-advanced' },
 } %}
 
+{% block actionButton %}
+    <button type="submit" form="settings-form" class="btn submit">{{ "Save"|t('app') }}</button>
+{% endblock %}
+
 {% block content %}
     <form method="post" accept-charset="UTF-8" id="settings-form">
         {{ csrfInput() }}
         {{ actionInput('stamp-passport/cp/save-settings') }}
         {{ redirectInput('stamp-passport/settings') }}
 
-        <div id="settings-sections">
-            {% include 'stamp-passport/_settings-fields' %}
-        </div>
-
-        <div class="buttons">
-            <button type="submit" class="btn submit">{{ "Save"|t('app') }}</button>
-        </div>
+        {% include 'stamp-passport/_settings-fields' %}
     </form>
 {% endblock %}
-
-{% js %}
-(function () {
-    var sectionsRoot = document.getElementById('settings-sections');
-    if (!sectionsRoot) return;
-
-    var headings = Array.prototype.slice.call(sectionsRoot.querySelectorAll('h2'));
-    if (!headings.length) return;
-
-    var map = {
-        'General': 'general',
-        'Appearance': 'appearance',
-        'Social Sharing': 'appearance',
-        'QR Code Appearance': 'appearance',
-        'Analytics': 'integrations',
-        'Freeform Integration': 'integrations',
-        'Geofence': 'advanced',
-        'Prizes': 'advanced',
-        'Custom CSS': 'advanced',
-        'UI Behavior': 'advanced'
-    };
-
-    var tabOrder = ['general', 'appearance', 'integrations', 'advanced'];
-    var panels = {};
-
-    tabOrder.forEach(function (tab) {
-        var div = document.createElement('div');
-        div.id = 'tab-' + tab;
-        sectionsRoot.appendChild(div);
-        panels[tab] = div;
-    });
-
-    headings.forEach(function (heading) {
-        var label = heading.textContent.trim();
-        var tab = map[label] || 'general';
-        var panel = panels[tab];
-
-        var nodesToMove = [heading];
-        var sibling = heading.nextSibling;
-        while (sibling && !(sibling.nodeType === 1 && sibling.tagName === 'H2')) {
-            nodesToMove.push(sibling);
-            sibling = sibling.nextSibling;
-        }
-        nodesToMove.forEach(function (n) { panel.appendChild(n); });
-    });
-
-    // Hide all panels except the first; Craft's native tab JS handles switching
-    tabOrder.slice(1).forEach(function (tab) {
-        panels[tab].classList.add('hidden');
-    });
-})();
-{% endjs %}

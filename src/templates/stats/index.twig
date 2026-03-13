@@ -28,13 +28,13 @@
 {% block contextMenu %}
     {% if craft.app.isMultiSite %}
         <div>
-            <button type="button" class="btn menubtn" data-icon="world">{{ currentSite.name }}</button>
+            <button id="sp-site-btn" type="button" class="btn menubtn" data-icon="world">{{ currentSite.name }}</button>
             <div class="menu">
                 <ul class="padded">
                     {% for site in allSites %}
                         <li>
                             <a href="{{ url('stamp-passport/stats', { site: site.handle }) }}"
-                               {% if site.id == currentSite.id %}class="sel"{% endif %}>
+                               class="sp-site-link{% if site.id == currentSite.id %} sel{% endif %}">
                                 {{ site.name }}
                             </a>
                         </li>
@@ -72,3 +72,5 @@
     <h2 style="margin-top:2rem;">{{ 'Activity by Day of Week'|t('stamp-passport') }}</h2>
     <img alt="Activity by day of week" style="max-width:100%;height:auto;" src="https://quickchart.io/chart?c={{ quickChartConfig|url_encode }}">
 {% endblock %}
+
+{% include 'stamp-passport/_cp-site-switcher-js' %}

@@ -11,13 +11,13 @@
 {% block contextMenu %}
     {% if craft.app.isMultiSite %}
         <div>
-            <button type="button" class="btn menubtn" data-icon="world">{{ currentSite.name }}</button>
+            <button id="sp-site-btn" type="button" class="btn menubtn" data-icon="world">{{ currentSite.name }}</button>
             <div class="menu">
                 <ul class="padded">
                     {% for site in allSites %}
                         <li>
                             <a href="{{ url('stamp-passport/display-text', { site: site.handle }) }}"
-                               {% if site.id == currentSite.id %}class="sel"{% endif %}>
+                               class="sp-site-link{% if site.id == currentSite.id %} sel{% endif %}">
                                 {{ site.name }}
                             </a>
                         </li>
@@ -28,8 +28,12 @@
     {% endif %}
 {% endblock %}
 
+{% block actionButton %}
+    <button type="submit" form="display-text-form" class="btn submit">{{ "Save Display Text"|t('stamp-passport') }}</button>
+{% endblock %}
+
 {% block content %}
-<form method="post" accept-charset="UTF-8">
+<form id="display-text-form" method="post" accept-charset="UTF-8">
     {{ csrfInput() }}
     {{ actionInput('stamp-passport/cp/save-display-text') }}
     {{ redirectInput('stamp-passport/display-text?site=' ~ currentSite.handle) }}
@@ -58,6 +62,7 @@
     {{ forms.textField({ label: textLabels['qrNotRecognized'], name: 'uiText[' ~ currentSite.handle ~ '][qrNotRecognized]', value: settings.uiText[currentSite.handle]['qrNotRecognized'] ?? '', placeholder: defaults['qrNotRecognized'] }) }}
     {{ forms.textField({ label: textLabels['loadError'], name: 'uiText[' ~ currentSite.handle ~ '][loadError]', value: settings.uiText[currentSite.handle]['loadError'] ?? '', placeholder: defaults['loadError'] }) }}
 
-    <div class="buttons"><button type="submit" class="btn submit">{{ 'Save Display Text'|t('stamp-passport') }}</button></div>
 </form>
 {% endblock %}
+
+{% include 'stamp-passport/_cp-site-switcher-js' %}
