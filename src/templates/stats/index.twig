@@ -25,29 +25,44 @@
     }
 }|json_encode %}
 
-{% block content %}
-    <h2>{{ 'Users'|t('stamp-passport') }}</h2>
-    <table class="data fullwidth">
-        <thead><tr><th>Contest ID</th><th>Locations Scanned</th><th>Last Activity</th></tr></thead>
-        <tbody>
-            {% for user in users %}
-                <tr>
-                    <td><code>{{ user.contestId }}</code></td>
-                    <td>{{ user.locationsScanned }}</td>
-                    <td>{{ user.updatedAt }}</td>
-                </tr>
-            {% else %}
-                <tr><td colspan="3" class="light">{{ 'No data yet.'|t('stamp-passport') }}</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+{% block contextMenu %}
+    {% if craft.app.isMultiSite %}
+        <div>
+            <button type="button" class="btn menubtn" data-icon="world">{{ currentSite.name }}</button>
+            <div class="menu">
+                <ul class="padded">
+                    {% for site in allSites %}
+                        <li>
+                            <a href="{{ url('stamp-passport/stats', { site: site.handle }) }}"
+                               {% if site.id == currentSite.id %}class="sel"{% endif %}>
+                                {{ site.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
 
-    <h2 style="margin-top:2rem;">{{ 'Top Scanned Locations'|t('stamp-passport') }}</h2>
+{% block content %}
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="pane" style="padding: 1.25rem 1.5rem;">
+            <p class="light" style="margin: 0 0 .25rem;">{{ 'Individual Visits'|t('stamp-passport') }}</p>
+            <p style="font-size: 2em; font-weight: 600; margin: 0;">{{ totalIndividuals }}</p>
+        </div>
+        <div class="pane" style="padding: 1.25rem 1.5rem;">
+            <p class="light" style="margin: 0 0 .25rem;">{{ 'Avg Locations Scanned'|t('stamp-passport') }}</p>
+            <p style="font-size: 2em; font-weight: 600; margin: 0;">{{ avgLocations }}</p>
+        </div>
+    </div>
+
+    <h2>{{ 'Top Scanned Locations'|t('stamp-passport') }}</h2>
     <table class="data fullwidth">
-        <thead><tr><th>Location</th><th>Scans</th></tr></thead>
+        <thead><tr><th>{{ 'Location'|t('stamp-passport') }}</th><th>{{ 'Scans'|t('stamp-passport') }}</th></tr></thead>
         <tbody>
-            {% for location, count in locationCounts %}
-                <tr><td><code>{{ location }}</code></td><td>{{ count }}</td></tr>
+            {% for title, count in locationCounts %}
+                <tr><td>{{ title }}</td><td>{{ count }}</td></tr>
             {% else %}
                 <tr><td colspan="2" class="light">{{ 'No location data yet.'|t('stamp-passport') }}</td></tr>
             {% endfor %}

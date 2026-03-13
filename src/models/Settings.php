@@ -10,8 +10,11 @@ class Settings extends Model
     /** @var string Display name shown in the CP navigation */
     public string $pluginName = 'Stamp Passport';
 
-    /** @var string URL prefix for the frontend route (e.g. "passport" -> /passport) */
+    /** @var string Default URL prefix for the frontend route (e.g. "passport" -> /passport) */
     public string $routePrefix = 'passport';
+
+    /** @var array Per-site route prefixes, keyed by site handle. Falls back to routePrefix when not set. */
+    public array $siteRoutePrefixes = [];
 
     /** @var bool Whether geofence validation is enabled for QR check-ins */
     public bool $enableGeofence = true;

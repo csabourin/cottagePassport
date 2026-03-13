@@ -56,11 +56,11 @@ class Plugin extends BasePlugin
         $item['label'] = $this->getSettings()->pluginName;
         $item['iconMask'] = __DIR__ . '/icon.svg';
         $item['subnav'] = [
+            'stats' => ['label' => Craft::t('stamp-passport', 'Stats'), 'url' => 'stamp-passport/stats'],
             'items' => ['label' => Craft::t('stamp-passport', 'Items'), 'url' => 'stamp-passport/items'],
             'qr-generator' => ['label' => Craft::t('stamp-passport', 'QR Codes'), 'url' => 'stamp-passport/qr-generator'],
             'display-text' => ['label' => Craft::t('stamp-passport', 'Display Text'), 'url' => 'stamp-passport/display-text'],
             'contest-rules' => ['label' => Craft::t('stamp-passport', 'Contest Rules'), 'url' => 'stamp-passport/contest-rules'],
-            'stats' => ['label' => Craft::t('stamp-passport', 'Stats'), 'url' => 'stamp-passport/stats'],
             'settings' => ['label' => Craft::t('stamp-passport', 'Settings'), 'url' => 'stamp-passport/settings'],
         ];
         return $item;
@@ -119,7 +119,7 @@ class Plugin extends BasePlugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
-                $event->rules['stamp-passport'] = 'stamp-passport/cp/index';
+                $event->rules['stamp-passport'] = 'stamp-passport/cp/stats';
                 $event->rules['stamp-passport/items'] = 'stamp-passport/cp/index';
                 $event->rules['stamp-passport/items/new'] = 'stamp-passport/cp/edit';
                 $event->rules['stamp-passport/items/<itemId:\d+>'] = 'stamp-passport/cp/edit';
@@ -138,10 +138,27 @@ class Plugin extends BasePlugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
-                $routePrefix = $this->getSettings()->routePrefix ?? 'passport';
-                $routePrefix = trim($routePrefix, '/');
-                $event->rules[$routePrefix] = ['template' => '_stamp-passport/index'];
-                $event->rules[$routePrefix . '/'] = ['template' => '_stamp-passport/index'];
+                $settings = $this->getSettings();
+                $defaultPrefix = trim($settings->routePrefix ?? 'passport', '/');
+                $registered = [];
+
+                // Register per-site prefixes
+                foreach ($settings->siteRoutePrefixes as $prefix) {
+                    $prefix = trim((string)$prefix, '/');
+                    if ($prefix === '' || in_array($prefix, $registered, true)) {
+                        continue;
+                    }
+                    $registered[] = $prefix;
+                    $event->rules[$prefix] = ['template' => '_stamp-passport/index'];
+                    $event->rules[$prefix . '/'] = ['template' => '_stamp-passport/index'];
+                }
+
+                // Register the default prefix if not already registered
+                if ($defaultPrefix !== '' && !in_array($defaultPrefix, $registered, true)) {
+                    $event->rules[$defaultPrefix] = ['template' => '_stamp-passport/index'];
+                    $event->rules[$defaultPrefix . '/'] = ['template' => '_stamp-passport/index'];
+                }
+
                 $event->rules['api/contest-progress'] = 'stamp-passport/contest-progress/index';
             }
         );

@@ -216,9 +216,15 @@ class CpController extends Controller
      */
     public function actionDisplayText(): Response
     {
+        $siteHandle = Craft::$app->getRequest()->getQueryParam('site');
+        $currentSite = $siteHandle
+            ? (Craft::$app->getSites()->getSiteByHandle($siteHandle) ?? Craft::$app->getSites()->getPrimarySite())
+            : Craft::$app->getSites()->getPrimarySite();
+
         return $this->renderTemplate('stamp-passport/text/index', [
             'settings'     => Plugin::$plugin->getSettings(),
             'allSites'     => Craft::$app->getSites()->getAllSites(),
+            'currentSite'  => $currentSite,
             'textDefaults' => Settings::TEXT_DEFAULTS,
             'textLabels'   => Settings::TEXT_LABELS,
             'textKeys'     => Settings::TEXT_KEYS,
@@ -230,11 +236,27 @@ class CpController extends Controller
      */
     public function actionStats(): Response
     {
+        $siteHandle = Craft::$app->getRequest()->getQueryParam('site');
+        $currentSite = $siteHandle
+            ? (Craft::$app->getSites()->getSiteByHandle($siteHandle) ?? Craft::$app->getSites()->getPrimarySite())
+            : Craft::$app->getSites()->getPrimarySite();
+
+        // Build shortcode → title map for the selected site
+        $itemRows = (new Query())
+            ->select(['i.shortCode', 'ic.title'])
+            ->from(['i' => '{{%stamppassport_items}}'])
+            ->leftJoin(['ic' => '{{%stamppassport_items_content}}'], '[[ic.itemId]] = [[i.id]] AND [[ic.siteId]] = ' . $currentSite->id)
+            ->all();
+
+        $shortCodeToTitle = [];
+        foreach ($itemRows as $itemRow) {
+            $shortCodeToTitle[(string)$itemRow['shortCode']] = (string)($itemRow['title'] ?? $itemRow['shortCode']);
+        }
+
         $rows = (new Query())
             ->from('{{%stamppassport_contest_progress}}')
             ->all();
 
-        $users = [];
         $locationCounts = [];
         $weekdayCounts = [
             'Monday' => 0,
@@ -245,6 +267,7 @@ class CpController extends Controller
             'Saturday' => 0,
             'Sunday' => 0,
         ];
+        $totalScans = 0;
 
         foreach ($rows as $row) {
             $payload = json_decode((string)$row['payload_json'], true);
@@ -253,18 +276,14 @@ class CpController extends Controller
                 $steps = [];
             }
 
-            $users[] = [
-                'contestId' => (string)$row['contest_id'],
-                'locationsScanned' => count($steps),
-                'updatedAt' => (string)$row['updated_at'],
-            ];
+            $totalScans += count($steps);
 
             foreach ($steps as $step) {
-                $key = (string)$step;
-                if ($key === '') {
+                $code = (string)$step;
+                if ($code === '') {
                     continue;
                 }
-                $locationCounts[$key] = ($locationCounts[$key] ?? 0) + 1;
+                $locationCounts[$code] = ($locationCounts[$code] ?? 0) + 1;
             }
 
             $weekday = date('l', strtotime((string)$row['updated_at']));
@@ -275,11 +294,24 @@ class CpController extends Controller
 
         arsort($locationCounts);
 
+        // Convert shortcodes to titles
+        $locationCountsByTitle = [];
+        foreach ($locationCounts as $code => $count) {
+            $title = $shortCodeToTitle[$code] ?? $code;
+            $locationCountsByTitle[$title] = $count;
+        }
+
+        $totalIndividuals = count($rows);
+        $avgLocations = $totalIndividuals > 0 ? round($totalScans / $totalIndividuals, 1) : 0;
+
         return $this->renderTemplate('stamp-passport/stats/index', [
-            'settings' => Plugin::$plugin->getSettings(),
-            'users' => $users,
-            'locationCounts' => $locationCounts,
-            'weekdayCounts' => $weekdayCounts,
+            'settings'         => Plugin::$plugin->getSettings(),
+            'allSites'         => Craft::$app->getSites()->getAllSites(),
+            'currentSite'      => $currentSite,
+            'locationCounts'   => $locationCountsByTitle,
+            'weekdayCounts'    => $weekdayCounts,
+            'totalIndividuals' => $totalIndividuals,
+            'avgLocations'     => $avgLocations,
         ]);
     }
 
@@ -288,10 +320,16 @@ class CpController extends Controller
      */
     public function actionContestRules(): Response
     {
+        $siteHandle = Craft::$app->getRequest()->getQueryParam('site');
+        $currentSite = $siteHandle
+            ? (Craft::$app->getSites()->getSiteByHandle($siteHandle) ?? Craft::$app->getSites()->getPrimarySite())
+            : Craft::$app->getSites()->getPrimarySite();
+
         return $this->renderTemplate('stamp-passport/contest-rules', [
             'settings'     => Plugin::$plugin->getSettings(),
             'contestRules' => Plugin::$plugin->getSettings()->contestRules,
             'allSites'     => Craft::$app->getSites()->getAllSites(),
+            'currentSite'  => $currentSite,
         ]);
     }
 
@@ -361,6 +399,18 @@ class CpController extends Controller
 
         $settings->pluginName = $request->getBodyParam('pluginName', $settings->pluginName);
         $settings->routePrefix = $request->getBodyParam('routePrefix', $settings->routePrefix);
+
+        $rawPrefixes = $request->getBodyParam('siteRoutePrefixes', []);
+        if (is_array($rawPrefixes)) {
+            $cleanedPrefixes = [];
+            foreach ($rawPrefixes as $handle => $prefix) {
+                $prefix = trim((string)$prefix, '/');
+                if ($prefix !== '') {
+                    $cleanedPrefixes[(string)$handle] = $prefix;
+                }
+            }
+            $settings->siteRoutePrefixes = $cleanedPrefixes;
+        }
         $settings->enableGeofence = (bool)$request->getBodyParam('enableGeofence');
         $settings->geofenceRadius = (int)$request->getBodyParam('geofenceRadius', 550);
         $settings->ga4MeasurementId = $request->getBodyParam('ga4MeasurementId') ?: null;

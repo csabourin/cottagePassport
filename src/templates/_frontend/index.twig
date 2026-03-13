@@ -76,10 +76,11 @@
             {% for site in allSites %}
                 {% if site.id != currentSite.id %}
                     {% set siteBaseUrl = (site.getBaseUrl() ?? '')|trim('/') ~ '/' %}
-                    <a href="{{ siteBaseUrl ~ settings.routePrefix }}"
+                    {% set _otherPrefix = settings.siteRoutePrefixes[site.handle] ?? settings.routePrefix %}
+                    <a href="{{ siteBaseUrl ~ _otherPrefix }}"
                        class="passport-lang-link"
                        data-passport-lang="{{ site.language[:2] }}"
-                       data-passport-href="{{ siteBaseUrl ~ settings.routePrefix }}"
+                       data-passport-href="{{ siteBaseUrl ~ _otherPrefix }}"
                        lang="{{ site.language[:2] }}"
                        hreflang="{{ site.language[:2] }}"
                        aria-label="{{ site.name }}">

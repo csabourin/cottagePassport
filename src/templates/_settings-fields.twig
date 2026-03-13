@@ -6,12 +6,22 @@
 
 {{ forms.textField({
     first: true,
-    label: "Route Prefix"|t('stamp-passport'),
-    instructions: "URL prefix for the frontend page (e.g. \"passport\" -> /passport)."|t('stamp-passport'),
+    label: "Default Route Prefix"|t('stamp-passport'),
+    instructions: "Fallback URL prefix for sites that don't have their own prefix (e.g. \"passport\" → /passport)."|t('stamp-passport'),
     name: 'routePrefix',
     value: settings.routePrefix,
     required: true,
 }) }}
+
+{% for site in craft.app.sites.allSites %}
+    {{ forms.textField({
+        label: site.name ~ ' ' ~ "Route Prefix"|t('stamp-passport'),
+        instructions: "Leave blank to use the default prefix above."|t('stamp-passport'),
+        name: 'siteRoutePrefixes[' ~ site.handle ~ ']',
+        value: settings.siteRoutePrefixes[site.handle] ?? '',
+        placeholder: settings.routePrefix,
+    }) }}
+{% endfor %}
 
 <hr>
 

@@ -24,7 +24,7 @@
         <div class="input">
             <select id="qr-site-picker" class="text" style="margin-bottom:8px">
                 {% for site in sites %}
-                    <option value="{{ siteUrl(settings.routePrefix, {}, null, site.id) }}">
+                    <option value="{{ siteUrl(settings.siteRoutePrefixes[site.handle] ?? settings.routePrefix, {}, null, site.id) }}">
                         {{ site.name }}
                     </option>
                 {% endfor %}

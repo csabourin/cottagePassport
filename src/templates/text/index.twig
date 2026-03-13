@@ -8,40 +8,55 @@
     { label: settings.pluginName, url: url('stamp-passport') },
 ] %}
 
+{% block contextMenu %}
+    {% if craft.app.isMultiSite %}
+        <div>
+            <button type="button" class="btn menubtn" data-icon="world">{{ currentSite.name }}</button>
+            <div class="menu">
+                <ul class="padded">
+                    {% for site in allSites %}
+                        <li>
+                            <a href="{{ url('stamp-passport/display-text', { site: site.handle }) }}"
+                               {% if site.id == currentSite.id %}class="sel"{% endif %}>
+                                {{ site.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
 <form method="post" accept-charset="UTF-8">
     {{ csrfInput() }}
     {{ actionInput('stamp-passport/cp/save-display-text') }}
-    {{ redirectInput('stamp-passport/display-text') }}
+    {{ redirectInput('stamp-passport/display-text?site=' ~ currentSite.handle) }}
 
     <p class="light">{{ "Customize all display text per site. Leave fields blank to use built-in defaults for that site's language."|t('stamp-passport') }}</p>
 
-    {% for site in allSites %}
-        {% set lang = site.language[:2]|lower %}
-        {% set defaults = textDefaults[lang] ?? textDefaults['default'] %}
-        <h2>{{ site.name }}</h2>
+    {% set lang = currentSite.language[:2]|lower %}
+    {% set defaults = textDefaults[lang] ?? textDefaults['default'] %}
 
-        {{ forms.textField({ label: textLabels['orgName'], name: 'uiText[' ~ site.handle ~ '][orgName]', value: settings.uiText[site.handle]['orgName'] ?? '', placeholder: defaults['orgName'] }) }}
-        {{ forms.textField({ label: textLabels['challengeName'], name: 'uiText[' ~ site.handle ~ '][challengeName]', value: settings.uiText[site.handle]['challengeName'] ?? '', placeholder: defaults['challengeName'] }) }}
-        {{ forms.textField({ label: textLabels['challengeTitle'], name: 'uiText[' ~ site.handle ~ '][challengeTitle]', value: settings.uiText[site.handle]['challengeTitle'] ?? '', placeholder: defaults['challengeTitle'] }) }}
-        {{ forms.textareaField({ label: textLabels['scanInstructions'], name: 'uiText[' ~ site.handle ~ '][scanInstructions]', value: settings.uiText[site.handle]['scanInstructions'] ?? '', placeholder: defaults['scanInstructions'], rows: 2 }) }}
-        {{ forms.textField({ label: textLabels['drawModalTitle'], name: 'uiText[' ~ site.handle ~ '][drawModalTitle]', value: settings.uiText[site.handle]['drawModalTitle'] ?? '', placeholder: defaults['drawModalTitle'] }) }}
-        {{ forms.textareaField({ label: textLabels['drawModalBody'], name: 'uiText[' ~ site.handle ~ '][drawModalBody]', value: settings.uiText[site.handle]['drawModalBody'] ?? '', placeholder: defaults['drawModalBody'], rows: 2 }) }}
-        {{ forms.textField({ label: textLabels['stickerModalTitle'], name: 'uiText[' ~ site.handle ~ '][stickerModalTitle]', value: settings.uiText[site.handle]['stickerModalTitle'] ?? '', placeholder: defaults['stickerModalTitle'] }) }}
-        {{ forms.textareaField({ label: textLabels['stickerModalBody'], name: 'uiText[' ~ site.handle ~ '][stickerModalBody]', value: settings.uiText[site.handle]['stickerModalBody'] ?? '', placeholder: defaults['stickerModalBody'], rows: 2 }) }}
-        {{ forms.textField({ label: textLabels['disclaimerTitle'], name: 'uiText[' ~ site.handle ~ '][disclaimerTitle]', value: settings.uiText[site.handle]['disclaimerTitle'] ?? '', placeholder: defaults['disclaimerTitle'] }) }}
-        {{ forms.textareaField({ label: textLabels['disclaimerBody'], name: 'uiText[' ~ site.handle ~ '][disclaimerBody]', value: settings.uiText[site.handle]['disclaimerBody'] ?? '', placeholder: defaults['disclaimerBody'], rows: 2 }) }}
-        {{ forms.textField({ label: textLabels['disclaimerButton'], name: 'uiText[' ~ site.handle ~ '][disclaimerButton]', value: settings.uiText[site.handle]['disclaimerButton'] ?? '', placeholder: defaults['disclaimerButton'] }) }}
-        {{ forms.textField({ label: textLabels['alreadyCheckedIn'], name: 'uiText[' ~ site.handle ~ '][alreadyCheckedIn]', value: settings.uiText[site.handle]['alreadyCheckedIn'] ?? '', placeholder: defaults['alreadyCheckedIn'] }) }}
-        {{ forms.textField({ label: textLabels['checkingLocation'], name: 'uiText[' ~ site.handle ~ '][checkingLocation]', value: settings.uiText[site.handle]['checkingLocation'] ?? '', placeholder: defaults['checkingLocation'] }) }}
-        {{ forms.textField({ label: textLabels['locationError'], name: 'uiText[' ~ site.handle ~ '][locationError]', value: settings.uiText[site.handle]['locationError'] ?? '', placeholder: defaults['locationError'] }) }}
-        {{ forms.textField({ label: textLabels['checkinFailed'], name: 'uiText[' ~ site.handle ~ '][checkinFailed]', value: settings.uiText[site.handle]['checkinFailed'] ?? '', placeholder: defaults['checkinFailed'] }) }}
-        {{ forms.textField({ label: textLabels['checkedIn'], name: 'uiText[' ~ site.handle ~ '][checkedIn]', value: settings.uiText[site.handle]['checkedIn'] ?? '', placeholder: defaults['checkedIn'] }) }}
-        {{ forms.textField({ label: textLabels['qrNotRecognized'], name: 'uiText[' ~ site.handle ~ '][qrNotRecognized]', value: settings.uiText[site.handle]['qrNotRecognized'] ?? '', placeholder: defaults['qrNotRecognized'] }) }}
-        {{ forms.textField({ label: textLabels['loadError'], name: 'uiText[' ~ site.handle ~ '][loadError]', value: settings.uiText[site.handle]['loadError'] ?? '', placeholder: defaults['loadError'] }) }}
-
-        <hr>
-    {% endfor %}
+    {{ forms.textField({ label: textLabels['orgName'], name: 'uiText[' ~ currentSite.handle ~ '][orgName]', value: settings.uiText[currentSite.handle]['orgName'] ?? '', placeholder: defaults['orgName'] }) }}
+    {{ forms.textField({ label: textLabels['challengeName'], name: 'uiText[' ~ currentSite.handle ~ '][challengeName]', value: settings.uiText[currentSite.handle]['challengeName'] ?? '', placeholder: defaults['challengeName'] }) }}
+    {{ forms.textField({ label: textLabels['challengeTitle'], name: 'uiText[' ~ currentSite.handle ~ '][challengeTitle]', value: settings.uiText[currentSite.handle]['challengeTitle'] ?? '', placeholder: defaults['challengeTitle'] }) }}
+    {{ forms.textareaField({ label: textLabels['scanInstructions'], name: 'uiText[' ~ currentSite.handle ~ '][scanInstructions]', value: settings.uiText[currentSite.handle]['scanInstructions'] ?? '', placeholder: defaults['scanInstructions'], rows: 2 }) }}
+    {{ forms.textField({ label: textLabels['drawModalTitle'], name: 'uiText[' ~ currentSite.handle ~ '][drawModalTitle]', value: settings.uiText[currentSite.handle]['drawModalTitle'] ?? '', placeholder: defaults['drawModalTitle'] }) }}
+    {{ forms.textareaField({ label: textLabels['drawModalBody'], name: 'uiText[' ~ currentSite.handle ~ '][drawModalBody]', value: settings.uiText[currentSite.handle]['drawModalBody'] ?? '', placeholder: defaults['drawModalBody'], rows: 2 }) }}
+    {{ forms.textField({ label: textLabels['stickerModalTitle'], name: 'uiText[' ~ currentSite.handle ~ '][stickerModalTitle]', value: settings.uiText[currentSite.handle]['stickerModalTitle'] ?? '', placeholder: defaults['stickerModalTitle'] }) }}
+    {{ forms.textareaField({ label: textLabels['stickerModalBody'], name: 'uiText[' ~ currentSite.handle ~ '][stickerModalBody]', value: settings.uiText[currentSite.handle]['stickerModalBody'] ?? '', placeholder: defaults['stickerModalBody'], rows: 2 }) }}
+    {{ forms.textField({ label: textLabels['disclaimerTitle'], name: 'uiText[' ~ currentSite.handle ~ '][disclaimerTitle]', value: settings.uiText[currentSite.handle]['disclaimerTitle'] ?? '', placeholder: defaults['disclaimerTitle'] }) }}
+    {{ forms.textareaField({ label: textLabels['disclaimerBody'], name: 'uiText[' ~ currentSite.handle ~ '][disclaimerBody]', value: settings.uiText[currentSite.handle]['disclaimerBody'] ?? '', placeholder: defaults['disclaimerBody'], rows: 2 }) }}
+    {{ forms.textField({ label: textLabels['disclaimerButton'], name: 'uiText[' ~ currentSite.handle ~ '][disclaimerButton]', value: settings.uiText[currentSite.handle]['disclaimerButton'] ?? '', placeholder: defaults['disclaimerButton'] }) }}
+    {{ forms.textField({ label: textLabels['alreadyCheckedIn'], name: 'uiText[' ~ currentSite.handle ~ '][alreadyCheckedIn]', value: settings.uiText[currentSite.handle]['alreadyCheckedIn'] ?? '', placeholder: defaults['alreadyCheckedIn'] }) }}
+    {{ forms.textField({ label: textLabels['checkingLocation'], name: 'uiText[' ~ currentSite.handle ~ '][checkingLocation]', value: settings.uiText[currentSite.handle]['checkingLocation'] ?? '', placeholder: defaults['checkingLocation'] }) }}
+    {{ forms.textField({ label: textLabels['locationError'], name: 'uiText[' ~ currentSite.handle ~ '][locationError]', value: settings.uiText[currentSite.handle]['locationError'] ?? '', placeholder: defaults['locationError'] }) }}
+    {{ forms.textField({ label: textLabels['checkinFailed'], name: 'uiText[' ~ currentSite.handle ~ '][checkinFailed]', value: settings.uiText[currentSite.handle]['checkinFailed'] ?? '', placeholder: defaults['checkinFailed'] }) }}
+    {{ forms.textField({ label: textLabels['checkedIn'], name: 'uiText[' ~ currentSite.handle ~ '][checkedIn]', value: settings.uiText[currentSite.handle]['checkedIn'] ?? '', placeholder: defaults['checkedIn'] }) }}
+    {{ forms.textField({ label: textLabels['qrNotRecognized'], name: 'uiText[' ~ currentSite.handle ~ '][qrNotRecognized]', value: settings.uiText[currentSite.handle]['qrNotRecognized'] ?? '', placeholder: defaults['qrNotRecognized'] }) }}
+    {{ forms.textField({ label: textLabels['loadError'], name: 'uiText[' ~ currentSite.handle ~ '][loadError]', value: settings.uiText[currentSite.handle]['loadError'] ?? '', placeholder: defaults['loadError'] }) }}
 
     <div class="buttons"><button type="submit" class="btn submit">{{ 'Save Display Text'|t('stamp-passport') }}</button></div>
 </form>

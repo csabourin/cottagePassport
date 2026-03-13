@@ -4,17 +4,18 @@
 #}
 
 {# Build sites list for language switch and auto-redirect #}
-{% set routePrefix = craft.stampPassport.settings.routePrefix %}
+{% set _spSettings = craft.stampPassport.settings %}
 {% set allSites = craft.app.sites.allSites %}
 {% set sitesJson = [] %}
 {% for site in allSites %}
     {% set siteBaseUrl = (site.getBaseUrl() ?? '')|trim('/') ~ '/' %}
+    {% set _sitePrefix = _spSettings.siteRoutePrefixes[site.handle] ?? _spSettings.routePrefix %}
     {% set sitesJson = sitesJson|merge([{
         id: site.id,
         handle: site.handle,
         lang: site.language[:2],
         name: site.name,
-        url: siteBaseUrl ~ routePrefix,
+        url: siteBaseUrl ~ _sitePrefix,
         current: (site.id == currentSite.id),
     }]) %}
 {% endfor %}

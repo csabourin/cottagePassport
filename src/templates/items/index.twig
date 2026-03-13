@@ -16,7 +16,8 @@
         {% if allSites|length > 1 %}
             <strong>{{ "Preview:"|t('stamp-passport') }}</strong>
             {% for site in allSites %}
-                <a href="{{ siteUrl(settings.routePrefix, null, null, site.id) }}" target="_blank" rel="noopener" class="btn small">{{ site.name }}</a>
+                {% set _prefix = settings.siteRoutePrefixes[site.handle] ?? settings.routePrefix %}
+                <a href="{{ siteUrl(_prefix, null, null, site.id) }}" target="_blank" rel="noopener" class="btn small">{{ site.name }}</a>
             {% endfor %}
         {% else %}
             <a href="{{ siteUrl(settings.routePrefix) }}" target="_blank" rel="noopener" class="btn">{{ "Preview Passport"|t('stamp-passport') }}</a>
