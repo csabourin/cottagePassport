@@ -31,39 +31,37 @@
 
 {% js %}
 (function () {
-    var panels = document.querySelectorAll('[id^="tab-"]');
+    var tabIds = ['tab-general', 'tab-appearance', 'tab-integrations', 'tab-advanced'];
 
-    function showPanel(hash) {
-        panels.forEach(function (p) {
-            p.classList.toggle('hidden', '#' + p.id !== hash);
+    function showPanel(activeId) {
+        tabIds.forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = (id === activeId) ? '' : 'none';
+        });
+        document.querySelectorAll('#tabs a').forEach(function (a) {
+            var href = a.getAttribute('href');
+            a.classList.toggle('sel', href === '#' + activeId);
         });
     }
 
-    // Wire up clicks on Craft's rendered tab anchors (Craft 4 & 5 both use #tabs ul li a)
-    document.querySelectorAll('#tabs a').forEach(function (a) {
-        a.addEventListener('click', function (e) {
-            var href = a.getAttribute('href');
-            if (href && href.charAt(0) === '#') {
-                e.preventDefault();
-                showPanel(href);
-                // Keep Craft's own selected-state styling in sync
-                document.querySelectorAll('#tabs a').forEach(function (t) {
-                    t.classList.toggle('sel', t === a);
-                });
-                history.replaceState(null, '', href);
-            }
-        });
-    });
+    // Use capture phase + stopImmediatePropagation so our handler wins over Craft.Tabs
+    var tabsContainer = document.getElementById('tabs');
+    if (tabsContainer) {
+        tabsContainer.addEventListener('click', function (e) {
+            var a = e.target.closest('a[href^="#tab-"]');
+            if (!a) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            var id = a.getAttribute('href').slice(1);
+            showPanel(id);
+            history.replaceState(null, '', '#' + id);
+        }, true); // capture phase
+    }
 
-    // Restore tab from URL hash on page load
-    var initial = window.location.hash && document.getElementById(window.location.hash.slice(1))
-        ? window.location.hash
-        : '#tab-general';
+    // Restore from URL hash on load, default to first tab
+    var initial = (window.location.hash && tabIds.indexOf(window.location.hash.slice(1)) !== -1)
+        ? window.location.hash.slice(1)
+        : 'tab-general';
     showPanel(initial);
-
-    // Sync the selected class on the matching tab link
-    document.querySelectorAll('#tabs a').forEach(function (a) {
-        a.classList.toggle('sel', a.getAttribute('href') === initial);
-    });
 }());
 {% endjs %}

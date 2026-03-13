@@ -1,5 +1,20 @@
 /* Stamp Passport — CP styles */
 
+/* Settings page — remove Craft's default .pane padding/margin that misaligns tab panels */
+#settings-form .pane {
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+}
+
+/* Stats dashboard — remove .pane default margins so CSS grid gap is the sole spacing */
+#sp-stats-dashboard .pane {
+    margin: 0;
+}
+
 /* Item listing table tweaks */
 #passport-items code {
     font-size: 0.85em;

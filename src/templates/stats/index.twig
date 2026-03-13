@@ -17,6 +17,7 @@
 {% set jsLocationData  = locationDataByTitle|json_encode %}
 
 {% block content %}
+<div id="sp-stats-dashboard">
 
 {# ── Date range filter ───────────────────────────────────────────── #}
 <form method="get" action="" style="margin-bottom:2rem;">
@@ -256,5 +257,7 @@
     }
 })();
 </script>
+
+</div>{# /sp-stats-dashboard #}
 
 {% endblock %}
