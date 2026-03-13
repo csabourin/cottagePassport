@@ -62,47 +62,48 @@
     </div>
 </form>
 
-{# ── Contest qualifier cards (2-up) ─────────────────────────────── #}
-<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem;margin-bottom:2rem;">
-    <div class="pane" style="padding:1.25rem 1.5rem;border-top:4px solid #e5a823;">
+{# ── Stat cards — single 6-col grid so all edges align ───────────── #}
+{# Row 1: qualifier cards  (span 3 each  → 3+3 = 6)              #}
+{# Row 2: KPI cards        (span 2 each  → 2+2+2 = 6)            #}
+{# Row 3: secondary stats  (span 3 each  → 3+3 = 6)              #}
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:1.5rem;margin-bottom:2rem;">
+
+    {# Row 1 – qualifier cards #}
+    <div class="pane" style="grid-column:span 3;padding:1.25rem 1.5rem;border-top:4px solid #e5a823;">
         <p class="light" style="margin:0 0 .25rem;">{{ 'Draw Qualifiers'|t('stamp-passport') }}</p>
         <p style="font-size:2.5em;font-weight:700;margin:0;color:#e5a823;">{{ qualifyDraw }}</p>
         <p class="light" style="margin:.4rem 0 0;font-size:.85em;">
             {{ '{n}+ stamps required for draw entry'|t('stamp-passport', { n: settings.drawThreshold }) }}
         </p>
     </div>
-    <div class="pane" style="padding:1.25rem 1.5rem;border-top:4px solid #2b6b8a;">
+    <div class="pane" style="grid-column:span 3;padding:1.25rem 1.5rem;border-top:4px solid #2b6b8a;">
         <p class="light" style="margin:0 0 .25rem;">{{ 'Sticker Qualifiers'|t('stamp-passport') }}</p>
         <p style="font-size:2.5em;font-weight:700;margin:0;color:#2b6b8a;">{{ qualifyStickers }}</p>
         <p class="light" style="margin:.4rem 0 0;font-size:.85em;">
             {{ 'All {n} stamps collected'|t('stamp-passport', { n: totalItemsCount }) }}
         </p>
     </div>
-</div>
 
-{# ── KPI cards (3-up) ────────────────────────────────────────────── #}
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:1.5rem;">
-    <div class="pane" style="padding:1.25rem 1.5rem;">
+    {# Row 2 – KPI cards #}
+    <div class="pane" style="grid-column:span 2;padding:1.25rem 1.5rem;">
         <p class="light" style="margin:0 0 .25rem;">{{ 'Total Scans'|t('stamp-passport') }}</p>
         <p style="font-size:2em;font-weight:600;margin:0;">{{ totalScans }}</p>
     </div>
-    <div class="pane" style="padding:1.25rem 1.5rem;">
+    <div class="pane" style="grid-column:span 2;padding:1.25rem 1.5rem;">
         <p class="light" style="margin:0 0 .25rem;">{{ 'Total Visitors'|t('stamp-passport') }}</p>
         <p style="font-size:2em;font-weight:600;margin:0;">{{ totalVisitors }}</p>
     </div>
-    <div class="pane" style="padding:1.25rem 1.5rem;">
+    <div class="pane" style="grid-column:span 2;padding:1.25rem 1.5rem;">
         <p class="light" style="margin:0 0 .25rem;">{{ 'Avg Scans / Visitor'|t('stamp-passport') }}</p>
         <p style="font-size:2em;font-weight:600;margin:0;">{{ avgScansPerVisitor }}</p>
     </div>
-</div>
 
-{# ── Secondary stats (2-up) ──────────────────────────────────────── #}
-<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem;margin-bottom:2rem;">
-    <div class="pane" style="padding:1.25rem 1.5rem;">
+    {# Row 3 – secondary stats #}
+    <div class="pane" style="grid-column:span 3;padding:1.25rem 1.5rem;">
         <p class="light" style="margin:0 0 .25rem;">{{ 'Avg Visits / Site'|t('stamp-passport') }}</p>
         <p style="font-size:2em;font-weight:600;margin:0;">{{ avgVisitsPerSite }}</p>
     </div>
-    <div class="pane" style="padding:1.25rem 1.5rem;">
+    <div class="pane" style="grid-column:span 3;padding:1.25rem 1.5rem;">
         <p class="light" style="margin:0 0 .25rem;">{{ 'Most Visited Site'|t('stamp-passport') }}</p>
         {% if mostVisitedSite %}
             <p style="font-size:1.4em;font-weight:600;margin:0;overflow-wrap:break-word;">{{ mostVisitedSite }}</p>
@@ -111,6 +112,7 @@
             <p class="light" style="margin:0;">{{ 'No data yet.'|t }}</p>
         {% endif %}
     </div>
+
 </div>
 
 {# ── Location filter dropdown (for charts) ───────────────────────── #}
