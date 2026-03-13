@@ -1,5 +1,7 @@
 # Stamp Passport for Content Editors
 
+> French version available: [`CONTENT-EDITOR-GUIDE-FR.md`](CONTENT-EDITOR-GUIDE-FR.md).
+
 This guide explains the plugin’s **editor-facing features** and the **design decisions behind the Control Panel (CP) interface**.
 
 ## Audience
