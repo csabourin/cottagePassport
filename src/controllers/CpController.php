@@ -550,6 +550,11 @@ class CpController extends Controller
             ? ((int)($bodyBackgroundIds[0] ?? 0) ?: null)
             : ((int)($bodyBackgroundIds ?: 0) ?: null);
 
+        $footerBackgroundIds = $request->getBodyParam('footerBackgroundAssetId');
+        $settings->footerBackgroundAssetId = is_array($footerBackgroundIds)
+            ? ((int)($footerBackgroundIds[0] ?? 0) ?: null)
+            : ((int)($footerBackgroundIds ?: 0) ?: null);
+
         $bodyBackgroundMode = (string)$request->getBodyParam('bodyBackgroundMode', $settings->bodyBackgroundMode);
         $settings->bodyBackgroundMode = in_array($bodyBackgroundMode, ['cover', 'tiled', 'custom', 'repeat-y'], true) ? $bodyBackgroundMode : 'cover';
 

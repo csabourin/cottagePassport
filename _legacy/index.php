@@ -640,6 +640,12 @@ $bodyBgUrl         = $settings['bodyBackgroundUrl'] ?? null;
 $bodyBgMode        = $settings['bodyBackgroundMode'] ?? 'custom';
 $bodyBgSize        = $settings['bodyBackgroundSize'] ?? '800px';
 $bodyBgColor       = $settings['bodyBackgroundColor'] ?? null;
+$footerBgUrl    = $settings['footerBackgroundUrl'] ?? null;
+$footerBgWidth  = (int)($settings['footerBackgroundWidth'] ?? 0);
+$footerBgHeight = (int)($settings['footerBackgroundHeight'] ?? 0);
+$hasFooterBg    = ($footerBgUrl && $footerBgWidth > 0 && $footerBgHeight > 0);
+$footerBgPaddingVw = $hasFooterBg ? round(50 * $footerBgHeight / $footerBgWidth, 3) : 0;
+
 $primaryColor      = $settings['primaryColor'] ?? null;
 $primaryColorDark  = $settings['primaryColorDark'] ?? null;
 $accentColor       = $settings['accentColor'] ?? null;
@@ -862,6 +868,17 @@ header('Cache-Control: no-cache');
     </style>
     <?php endif; ?>
 
+    <?php if ($hasFooterBg): ?>
+    <style>
+    body.stamp-passport {
+        --passport-footer-bg-img: url('<?= h($footerBgUrl) ?>');
+        --passport-footer-bg-ar-w: <?= $footerBgWidth ?>;
+        --passport-footer-bg-ar-h: <?= $footerBgHeight ?>;
+    }
+    .passport-main { padding-bottom: <?= $footerBgPaddingVw ?>vw; }
+    </style>
+    <?php endif; ?>
+
     <?php if ($primaryColor || $primaryColorDark || $accentColor): ?>
     <style>
     :root {
@@ -886,7 +903,10 @@ header('Cache-Control: no-cache');
     </script>
     <?php endif; ?>
 </head>
-<body class="stamp-passport">
+<body class="stamp-passport<?= $hasFooterBg ? ' has-footer-bg' : '' ?>">
+    <?php if ($hasFooterBg): ?>
+    <div class="passport-footer-bg" aria-hidden="true" role="presentation"></div>
+    <?php endif; ?>
     <main class="passport-main">
 
         <!-- Header — wood panel with circular logo -->

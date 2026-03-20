@@ -52,6 +52,9 @@ class Settings extends Model
     /** @var int|null Asset ID for the page body background image */
     public ?int $bodyBackgroundAssetId = null;
 
+    /** @var int|null Asset ID for the decorative footer background image, anchored to the bottom of the page */
+    public ?int $footerBackgroundAssetId = null;
+
     /** @var int|null Optional asset used as a center image in generated QR codes */
     public ?int $qrCenterImageAssetId = null;
 
@@ -247,7 +250,7 @@ class Settings extends Model
             [['ga4MeasurementId'], 'match', 'pattern' => '/^G-[A-Z0-9]+$/', 'skipOnEmpty' => true],
             [['freeformDrawFormHandle', 'freeformStickerFormHandle'], 'string', 'max' => 100],
             [['qrCenterImageAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
-            [['logoAssetId', 'logoAltAssetId', 'woodPanelAssetId', 'checkedMarkerAssetId', 'bodyBackgroundAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
+            [['logoAssetId', 'logoAltAssetId', 'woodPanelAssetId', 'checkedMarkerAssetId', 'bodyBackgroundAssetId', 'footerBackgroundAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
             [['bodyBackgroundMode'], 'in', 'range' => ['cover', 'tiled', 'custom', 'repeat-y']],
             [['bodyBackgroundSize'], 'string', 'max' => 50],
             [['bodyBackgroundColor'], 'string', 'max' => 50],

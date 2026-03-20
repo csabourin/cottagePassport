@@ -53,6 +53,7 @@ body {
     /* Extend background under the iOS status bar when viewport-fit=cover */
     padding-top: env(safe-area-inset-top, 0px);
     background-color: #747B4C;
+    position: relative; /* establishes containing block for .passport-footer-bg */
 background: linear-gradient(
   to bottom,
   rgb(93,124,161) 0%,
@@ -82,6 +83,32 @@ background: linear-gradient(
     font-family: "Cabin", "Segoe UI", Arial, sans-serif;
     color: var(--passport-ink);
     background-color: var(--passport-cloth-side-color);
+}
+
+/* ══════════════════════════════════════════════════════════
+   FOOTER BACKGROUND IMAGE — decorative, document-anchored
+   Rendered only when .has-footer-bg is present on body.
+   CSS custom properties injected inline when an image is set:
+     --passport-footer-bg-img   url(...)
+     --passport-footer-bg-ar-w  image intrinsic width  (unitless integer)
+     --passport-footer-bg-ar-h  image intrinsic height (unitless integer)
+   Lives above the CSS page background, below all content.
+   z-index: 0 on this element + document-order (before <main>)
+   ensures it paints behind .passport-main (z-index: auto).
+   ══════════════════════════════════════════════════════════ */
+.passport-footer-bg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    aspect-ratio: var(--passport-footer-bg-ar-w, 1) / var(--passport-footer-bg-ar-h, 1);
+    background-image: var(--passport-footer-bg-img, none);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    pointer-events: none;
+    z-index: 0;
 }
 
 /* ══════════════════════════════════════════════════════════

@@ -214,6 +214,21 @@
 
     {# ── Brand color CSS variable overrides — injected after stylesheet, so vars win ── #}
     {% set _s = craft.stampPassport.settings %}
+
+    {# ── Footer background image — decorative, document-anchored ── #}
+    {% set _footerBgAsset = _s.footerBackgroundAssetId ? craft.assets.id(_s.footerBackgroundAssetId).one() : null %}
+    {% if _footerBgAsset and _footerBgAsset.width and _footerBgAsset.height %}
+    {% set _footerBgPaddingVw = (50 * _footerBgAsset.height / _footerBgAsset.width)|round(3) %}
+    <style>
+    body.stamp-passport {
+        --passport-footer-bg-img: url('{{ _footerBgAsset.url|e }}');
+        --passport-footer-bg-ar-w: {{ _footerBgAsset.width }};
+        --passport-footer-bg-ar-h: {{ _footerBgAsset.height }};
+    }
+    .passport-main { padding-bottom: {{ _footerBgPaddingVw }}vw; }
+    </style>
+    {% endif %}
+
     {% if _s.primaryColor or _s.primaryColorDark or _s.accentColor %}
     <style>
     :root {
@@ -241,8 +256,11 @@
         </script>
     {% endif %}
 </head>
-<body class="stamp-passport">
+<body class="stamp-passport{% if _footerBgAsset and _footerBgAsset.width and _footerBgAsset.height %} has-footer-bg{% endif %}">
     {% block body %}
+        {% if _footerBgAsset and _footerBgAsset.width and _footerBgAsset.height %}
+        <div class="passport-footer-bg" aria-hidden="true" role="presentation"></div>
+        {% endif %}
         <main class="passport-main">
             {% block content %}{% endblock %}
         </main>

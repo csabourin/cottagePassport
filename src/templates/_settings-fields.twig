@@ -161,6 +161,19 @@
 }());
 {% endjs %}
 
+{% set footerBackgroundElements = settings.footerBackgroundAssetId ? craft.assets.id(settings.footerBackgroundAssetId).all() : [] %}
+{{ forms.elementSelectField({
+    label: "Footer Background Image"|t('stamp-passport'),
+    instructions: "Decorative image anchored to the bottom of the page, layered above the page background but behind all content. The layout reserves vertical space equal to 50% of the image height so the lower half of the image is always clear. Wide landscape images work best. Leave blank for no footer image."|t('stamp-passport'),
+    id: 'footerBackgroundAssetId',
+    name: 'footerBackgroundAssetId',
+    elementType: 'craft\\elements\\Asset',
+    criteria: { kind: 'image' },
+    limit: 1,
+    elements: footerBackgroundElements,
+    modalStorageKey: 'stamp-passport.footerBackgroundAsset',
+}) }}
+
 <h3>{{ "Brand Colors"|t('stamp-passport') }}</h3>
 <p class="instructions">{{ "Override the default palette. Leave blank to use CSS defaults. Full hex values only (#rrggbb)."|t('stamp-passport') }}</p>
 
