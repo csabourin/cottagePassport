@@ -8,7 +8,7 @@
 ] %}
 
 {% block content %}
-    {% set qrCenterAsset = settings.qrCenterImageAssetId ? craft.assets.id(settings.qrCenterImageAssetId).one() : null %}
+    {% set globalQrCenterAsset = settings.qrCenterImageAssetId ? craft.assets.id(settings.qrCenterImageAssetId).one() : null %}
 
     <div class="field">
         <div class="heading">
@@ -37,7 +37,7 @@
             {{ "Print All QR Codes"|t('stamp-passport') }}
         </button>
     </div>
-    <input type="hidden" id="qr-center-image-url" value="{{ (qrCenterAsset ? qrCenterAsset.url : '')|e('html_attr') }}">
+    <input type="hidden" id="qr-global-center-image-url" value="{{ (globalQrCenterAsset ? globalQrCenterAsset.url : '')|e('html_attr') }}">
     <input type="hidden" id="qr-fg-color" value="{{ (settings.qrForegroundColor ?? '')|e('html_attr') }}">
     <input type="hidden" id="qr-bg-color" value="{{ (settings.qrBackgroundColor ?? '')|e('html_attr') }}">
 
@@ -45,7 +45,10 @@
         <div id="qr-grid" class="passport-qr-grid">
             {% for item in items %}
                 {% set content = item.contents[0] ?? null %}
-                <div class="qr-card" data-shortcode="{{ item.shortCode }}">
+                {% set itemQrCenterAsset = item.qrCenterImageAssetId ? craft.assets.id(item.qrCenterImageAssetId).one() : null %}
+                <div class="qr-card"
+                     data-shortcode="{{ item.shortCode }}"
+                     data-center-image-url="{{ (itemQrCenterAsset ? itemQrCenterAsset.url : '')|e('html_attr') }}">
                     <div class="qr-image">
                         <a href="#" target="_blank" rel="noopener">
                             <img src="" alt="QR {{ item.shortCode }}" width="200" height="200" loading="lazy"></a>
@@ -100,10 +103,21 @@
 (function() {
     var picker = document.getElementById('qr-site-picker');
     var cards = document.querySelectorAll('.qr-card');
-    var qrCenterImageUrlInput = document.getElementById('qr-center-image-url');
-    var qrCenterImageUrl = qrCenterImageUrlInput ? qrCenterImageUrlInput.value : '';
+    var globalQrCenterImageUrlInput = document.getElementById('qr-global-center-image-url');
+    var globalQrCenterImageUrl = globalQrCenterImageUrlInput ? globalQrCenterImageUrlInput.value : '';
     var qrFgColor = (document.getElementById('qr-fg-color') || {}).value || '';
     var qrBgColor = (document.getElementById('qr-bg-color') || {}).value || '';
+
+    function toAbsoluteUrl(value) {
+        if (!value) {
+            return '';
+        }
+        try {
+            return new URL(value, window.location.origin).href;
+        } catch (e) {
+            return value;
+        }
+    }
 
     function updateQrCodes() {
         var baseUrl = picker.value.replace(/\/$/, '');
@@ -114,6 +128,7 @@
                 size: '450',
                 text: scanUrl
             });
+            var qrCenterImageUrl = toAbsoluteUrl(card.dataset.centerImageUrl || globalQrCenterImageUrl);
 
             if (qrCenterImageUrl) {
                 params.set('centerImageSizeRatio', '0.44');

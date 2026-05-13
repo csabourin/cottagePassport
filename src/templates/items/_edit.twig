@@ -120,6 +120,25 @@
                 modalStorageKey: 'stamp-passport.image',
             }) }}
 
+            {% set qrCenterElements = [] %}
+            {% if item and item.qrCenterImageAssetId %}
+                {% set qrCenterAsset = craft.assets.id(item.qrCenterImageAssetId).one() %}
+                {% if qrCenterAsset %}
+                    {% set qrCenterElements = [qrCenterAsset] %}
+                {% endif %}
+            {% endif %}
+
+            {{ forms.elementSelectField({
+                label: "QR Center Image Override"|t('stamp-passport'),
+                instructions: "Optional image centered in this item's generated QR code. Leave blank to use the global QR center image from settings."|t('stamp-passport'),
+                name: 'qrCenterImageAssetId',
+                elementType: 'craft\\elements\\Asset',
+                criteria: { kind: 'image' },
+                limit: 1,
+                elements: qrCenterElements,
+                modalStorageKey: 'stamp-passport.itemQrCenterImage',
+            }) }}
+
             <hr>
 
             {# ── Per-site translatable fields ── #}
@@ -204,4 +223,3 @@
         {% endjs %}
     {% endif %}
 {% endblock %}
-

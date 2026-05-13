@@ -11,6 +11,7 @@ use yii\db\ActiveQueryInterface;
  * @property float|null $latitude
  * @property float|null $longitude
  * @property int|null $imageId
+ * @property int|null $qrCenterImageAssetId
  * @property int $sortOrder
  * @property bool $enabled
  * @property ItemContentRecord[] $contents
@@ -35,7 +36,7 @@ class ItemRecord extends ActiveRecord
             [['shortCode'], 'unique'],
             [['latitude'], 'number', 'min' => -90, 'max' => 90],
             [['longitude'], 'number', 'min' => -180, 'max' => 180],
-            [['imageId', 'sortOrder'], 'integer'],
+            [['imageId', 'qrCenterImageAssetId', 'sortOrder'], 'integer'],
             [['enabled'], 'boolean'],
         ];
     }

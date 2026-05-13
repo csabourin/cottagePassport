@@ -34,6 +34,7 @@ class Install extends Migration
             'latitude' => $this->decimal(10, 7)->null(),
             'longitude' => $this->decimal(10, 7)->null(),
             'imageId' => $this->integer()->null(),
+            'qrCenterImageAssetId' => $this->integer()->null(),
             'sortOrder' => $this->integer()->notNull()->defaultValue(0),
             'enabled' => $this->boolean()->notNull()->defaultValue(true),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -49,6 +50,15 @@ class Install extends Migration
             null,
             '{{%stamppassport_items}}',
             'imageId',
+            '{{%assets}}',
+            'id',
+            'SET NULL'
+        );
+
+        $this->addForeignKey(
+            null,
+            '{{%stamppassport_items}}',
+            'qrCenterImageAssetId',
             '{{%assets}}',
             'id',
             'SET NULL'

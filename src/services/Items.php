@@ -66,7 +66,7 @@ class Items extends Component
     /**
      * Save an item and its per-site content.
      *
-     * @param array $attributes  Item-level attributes (latitude, longitude, imageId, enabled, sortOrder)
+     * @param array $attributes  Item-level attributes (latitude, longitude, imageId, qrCenterImageAssetId, enabled, sortOrder)
      * @param array $content     Per-site content keyed by siteId: [siteId => [title, description, linkUrl, linkEntryId, linkText]]
      * @param int|null $id       Existing item ID for updates, null for new items
      * @return ItemRecord|false  The saved record or false on failure
@@ -88,6 +88,7 @@ class Items extends Component
         $record->latitude = $attributes['latitude'] ?? null;
         $record->longitude = $attributes['longitude'] ?? null;
         $record->imageId = $attributes['imageId'] ?? null;
+        $record->qrCenterImageAssetId = $attributes['qrCenterImageAssetId'] ?? null;
         $record->enabled = $attributes['enabled'] ?? true;
         // For existing records, only change sortOrder if explicitly provided
         if ($id && array_key_exists('sortOrder', $attributes)) {

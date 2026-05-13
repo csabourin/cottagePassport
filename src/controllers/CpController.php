@@ -100,10 +100,17 @@ class CpController extends Controller
 
         // Don't include sortOrder — service preserves existing value for updates
         // and auto-assigns for new records
+        $imageIds = $request->getBodyParam('imageId');
+        $qrCenterImageAssetIds = $request->getBodyParam('qrCenterImageAssetId');
         $attributes = [
             'latitude' => $request->getBodyParam('latitude') ?: null,
             'longitude' => $request->getBodyParam('longitude') ?: null,
-            'imageId' => $request->getBodyParam('imageId')[0] ?? null,
+            'imageId' => is_array($imageIds)
+                ? ((int)($imageIds[0] ?? 0) ?: null)
+                : ((int)($imageIds ?: 0) ?: null),
+            'qrCenterImageAssetId' => is_array($qrCenterImageAssetIds)
+                ? ((int)($qrCenterImageAssetIds[0] ?? 0) ?: null)
+                : ((int)($qrCenterImageAssetIds ?: 0) ?: null),
             'enabled' => (bool)$request->getBodyParam('enabled', true),
         ];
 
