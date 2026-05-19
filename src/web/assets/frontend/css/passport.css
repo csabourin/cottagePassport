@@ -111,6 +111,14 @@ background: linear-gradient(
     z-index: 0;
 }
 
+/* Content-width mode: image follows the 560 px content column rather than the full viewport */
+body.has-footer-bg--content .passport-footer-bg {
+    left: 50%;
+    right: auto;
+    width: min(560px, 100%);
+    transform: translateX(-50%);
+}
+
 /* ══════════════════════════════════════════════════════════
    MAIN CONTAINER — narrow booklet centred on plaid
    16 px of plaid shows above; on screens ≤ 608 px the 12 px

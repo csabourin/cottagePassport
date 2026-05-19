@@ -273,7 +273,7 @@
         </script>
     {% endif %}
 </head>
-<body class="stamp-passport{% if _footerBgAsset and _footerBgAsset.width and _footerBgAsset.height %} has-footer-bg{% endif %}">
+<body class="stamp-passport{% if _footerBgAsset and _footerBgAsset.width and _footerBgAsset.height %} has-footer-bg has-footer-bg--{{ _s.footerImageDisplay ?? 'full' }}{% endif %}">
     {% block body %}
         {% if _footerBgAsset and _footerBgAsset.width and _footerBgAsset.height %}
         <div class="passport-footer-bg" aria-hidden="true" role="presentation"></div>
