@@ -186,6 +186,42 @@
     ],
 }) }}
 
+{{ forms.selectField({
+    label: "Footer Image Size"|t('stamp-passport'),
+    instructions: "How the image fills its container."|t('stamp-passport'),
+    id: 'footerImageSize',
+    name: 'footerImageSize',
+    value: settings.footerImageSize ?? 'stretch',
+    options: [
+        { label: "Stretch to fill (100% × 100%)"|t('stamp-passport'), value: 'stretch' },
+        { label: "Contain (fit inside, no crop)"|t('stamp-passport'), value: 'contain' },
+        { label: "Custom (CSS background-size value)"|t('stamp-passport'), value: 'custom' },
+    ],
+}) }}
+
+<div id="footerImageSizeValueField" {% if (settings.footerImageSize ?? 'stretch') != 'custom' %}class="hidden"{% endif %}>
+{{ forms.textField({
+    label: "Custom Footer Image Size"|t('stamp-passport'),
+    instructions: "Any valid CSS background-size value, e.g. contain, cover, 400px, 80% auto."|t('stamp-passport'),
+    id: 'footerImageSizeValue',
+    name: 'footerImageSizeValue',
+    value: settings.footerImageSizeValue ?? 'contain',
+    placeholder: 'contain',
+}) }}
+</div>
+
+{% js %}
+(function () {
+    var sizeSelect = document.getElementById('footerImageSize');
+    var sizeValueField = document.getElementById('footerImageSizeValueField');
+    if (!sizeSelect) return;
+    function updateFooterSizeFields() {
+        sizeValueField.classList.toggle('hidden', sizeSelect.value !== 'custom');
+    }
+    sizeSelect.addEventListener('change', updateFooterSizeFields);
+}());
+{% endjs %}
+
 <h3>{{ "Brand Colors"|t('stamp-passport') }}</h3>
 <p class="instructions">{{ "Override the default palette. Leave blank to use CSS defaults. Full hex values only (#rrggbb)."|t('stamp-passport') }}</p>
 

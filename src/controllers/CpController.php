@@ -604,6 +604,12 @@ class CpController extends Controller
         $footerImageDisplay = (string)$request->getBodyParam('footerImageDisplay', $settings->footerImageDisplay);
         $settings->footerImageDisplay = in_array($footerImageDisplay, ['full', 'content'], true) ? $footerImageDisplay : 'full';
 
+        $footerImageSize = (string)$request->getBodyParam('footerImageSize', $settings->footerImageSize);
+        $settings->footerImageSize = in_array($footerImageSize, ['stretch', 'contain', 'custom'], true) ? $footerImageSize : 'stretch';
+
+        $footerImageSizeValue = trim((string)$request->getBodyParam('footerImageSizeValue', $settings->footerImageSizeValue));
+        $settings->footerImageSizeValue = $footerImageSizeValue !== '' ? $footerImageSizeValue : 'contain';
+
         $bodyBackgroundMode = (string)$request->getBodyParam('bodyBackgroundMode', $settings->bodyBackgroundMode);
         $settings->bodyBackgroundMode = in_array($bodyBackgroundMode, ['cover', 'tiled', 'custom', 'repeat-y'], true) ? $bodyBackgroundMode : 'cover';
 

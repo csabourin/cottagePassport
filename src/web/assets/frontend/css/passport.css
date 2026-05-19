@@ -104,7 +104,7 @@ background: linear-gradient(
     width: 100%;
     aspect-ratio: var(--passport-footer-bg-ar-w, 1) / var(--passport-footer-bg-ar-h, 1);
     background-image: var(--passport-footer-bg-img, none);
-    background-size: 100% 100%;
+    background-size: var(--passport-footer-bg-size, 100% 100%);
     background-repeat: no-repeat;
     background-position: center bottom;
     pointer-events: none;

@@ -236,9 +236,17 @@
         {# e.g. /cpresources/hash/https://cdn.example/path #}
         {% set _footerBgUrl = (_footerBgUrlParts[0]|split('/')|last) ~ '://' ~ _footerBgUrlParts[1] %}
     {% endif %}
+    {% if _s.footerImageSize == 'custom' %}
+        {% set _footerBgSize = _s.footerImageSizeValue ?: 'contain' %}
+    {% elseif _s.footerImageSize == 'contain' %}
+        {% set _footerBgSize = 'contain' %}
+    {% else %}
+        {% set _footerBgSize = '100% 100%' %}
+    {% endif %}
     <style>
     body.stamp-passport {
         --passport-footer-bg-img: url("{{ _footerBgUrl|replace({'"': '%22'}) }}");
+        --passport-footer-bg-size: {{ _footerBgSize }};
         --passport-footer-bg-ar-w: {{ _footerBgAsset.width }};
         --passport-footer-bg-ar-h: {{ _footerBgAsset.height }};
     }
