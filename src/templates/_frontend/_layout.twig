@@ -221,17 +221,24 @@
     {% set _footerBgAsset = _s.footerBackgroundAssetId ? craft.assets.id(_s.footerBackgroundAssetId).one() : null %}
     {% if _footerBgAsset and _footerBgAsset.width and _footerBgAsset.height %}
     {% set _footerBgPaddingVw = (50 * _footerBgAsset.height / _footerBgAsset.width)|round(3) %}
-    {# Guard against misconfigured volumes that prefix an absolute CDN URL with the site URL,
-       producing e.g. https://site.example/https://cdn.example/... Split on :// and reconstruct
-       from the last scheme boundary when more than one :// is present. #}
+    {# Guard against volumes that embed an absolute CDN URL inside a local path, producing
+       strings like /cpresources/hash/https://cdn.example/... or https://site/https://cdn/...
+       Split on :// and reconstruct from the last scheme token when :// appears in non-scheme
+       position (parts[0] is not http/https) or more than one :// is present.
+       Do NOT use |e('html_attr') inside <style> — it encodes : and / via &#x3A; etc., which
+       the CSS parser treats as literals, breaking the URL entirely. #}
     {% set _footerBgUrl = _footerBgAsset.url %}
     {% set _footerBgUrlParts = _footerBgUrl|split('://') %}
     {% if _footerBgUrlParts|length > 2 %}
+        {# e.g. https://site.example/cpresources/hash/https://cdn.example/path #}
         {% set _footerBgUrl = (_footerBgUrlParts[1]|split('/')|last) ~ '://' ~ _footerBgUrlParts[2] %}
+    {% elseif _footerBgUrlParts|length == 2 and _footerBgUrlParts[0] not in ['http', 'https'] %}
+        {# e.g. /cpresources/hash/https://cdn.example/path #}
+        {% set _footerBgUrl = (_footerBgUrlParts[0]|split('/')|last) ~ '://' ~ _footerBgUrlParts[1] %}
     {% endif %}
     <style>
     body.stamp-passport {
-        --passport-footer-bg-img: url("{{ _footerBgUrl|e('html_attr') }}");
+        --passport-footer-bg-img: url("{{ _footerBgUrl|replace({'"': '%22'}) }}");
         --passport-footer-bg-ar-w: {{ _footerBgAsset.width }};
         --passport-footer-bg-ar-h: {{ _footerBgAsset.height }};
     }
