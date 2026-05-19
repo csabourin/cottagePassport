@@ -631,10 +631,14 @@
        Contest Progress — Language Switch Helper
        ═══════════════════════════════════════════ */
 
-    function languageSwitchUrl(targetBaseUrl) {
+    function languageSwitchUrl(targetBaseUrl, targetLang) {
         var currentQ = new URL(window.location.href).searchParams.get('q');
         var sep = targetBaseUrl.indexOf('?') === -1 ? '?' : '&';
         var url = targetBaseUrl;
+        if (targetLang) {
+            url = url + sep + 'lang=' + encodeURIComponent(normalizeLang(targetLang));
+            sep = '&';
+        }
         if (currentQ) {
             url = url + sep + 'q=' + encodeURIComponent(currentQ);
             sep = '&';
@@ -654,7 +658,7 @@
                     var baseHref = link.getAttribute('data-passport-href') || link.getAttribute('href');
                     if (baseHref) {
                         e.preventDefault();
-                        var nextHref = languageSwitchUrl(baseHref);
+                        var nextHref = languageSwitchUrl(baseHref, targetLang);
                         // Record explicit language choice so auto-redirect doesn't fight it.
                         persistLanguageChoice(targetLang).then(function () {
                             window.location.href = nextHref;
@@ -672,7 +676,7 @@
         if (targetLang) {
             persistLanguageChoice(targetLang).catch(function () {});
         }
-        return languageSwitchUrl(targetBaseUrl);
+        return languageSwitchUrl(targetBaseUrl, targetLang);
     };
 
     /* ═══════════════════════════════════════════

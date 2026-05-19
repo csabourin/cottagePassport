@@ -159,10 +159,12 @@
                 var normalized = normalizeLang(lang);
                 var site = findSiteByLang(normalized);
                 if (!site || site.current || normalized === currentLang) return false;
+                var sep = site.url.indexOf('?') === -1 ? '?' : '&';
+                var targetUrl = site.url + sep + 'lang=' + encodeURIComponent(normalized);
                 persistLangChoice(normalized).then(function () {
-                    window.location.replace(site.url);
+                    window.location.replace(targetUrl);
                 }, function () {
-                    window.location.replace(site.url);
+                    window.location.replace(targetUrl);
                 });
                 return true;
             }
