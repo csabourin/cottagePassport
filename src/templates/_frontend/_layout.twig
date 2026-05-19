@@ -221,9 +221,17 @@
     {% set _footerBgAsset = _s.footerBackgroundAssetId ? craft.assets.id(_s.footerBackgroundAssetId).one() : null %}
     {% if _footerBgAsset and _footerBgAsset.width and _footerBgAsset.height %}
     {% set _footerBgPaddingVw = (50 * _footerBgAsset.height / _footerBgAsset.width)|round(3) %}
+    {# Guard against misconfigured volumes that prefix an absolute CDN URL with the site URL,
+       producing e.g. https://site.example/https://cdn.example/... Split on :// and reconstruct
+       from the last scheme boundary when more than one :// is present. #}
+    {% set _footerBgUrl = _footerBgAsset.url %}
+    {% set _footerBgUrlParts = _footerBgUrl|split('://') %}
+    {% if _footerBgUrlParts|length > 2 %}
+        {% set _footerBgUrl = (_footerBgUrlParts[1]|split('/')|last) ~ '://' ~ _footerBgUrlParts[2] %}
+    {% endif %}
     <style>
     body.stamp-passport {
-        --passport-footer-bg-img: url("{{ _footerBgAsset.url|e('html_attr') }}");
+        --passport-footer-bg-img: url("{{ _footerBgUrl|e('html_attr') }}");
         --passport-footer-bg-ar-w: {{ _footerBgAsset.width }};
         --passport-footer-bg-ar-h: {{ _footerBgAsset.height }};
     }
