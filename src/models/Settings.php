@@ -55,14 +55,8 @@ class Settings extends Model
     /** @var int|null Asset ID for the decorative footer background image, anchored to the bottom of the page */
     public ?int $footerBackgroundAssetId = null;
 
-    /** @var string Footer image width mode: "full" (viewport) or "content" (560 px content column) */
+    /** @var string Footer image width mode: "full" (viewport), "content" (560 px column), or "custom" (matches bodyBackgroundSize) */
     public string $footerImageDisplay = 'full';
-
-    /** @var string Footer image background-size mode: "stretch", "contain", or "custom" */
-    public string $footerImageSize = 'stretch';
-
-    /** @var string CSS background-size value used when footerImageSize is "custom" */
-    public string $footerImageSizeValue = 'contain';
 
     /** @var int|null Optional asset used as a center image in generated QR codes */
     public ?int $qrCenterImageAssetId = null;
@@ -270,9 +264,7 @@ class Settings extends Model
             [['qrCenterImageAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
             [['logoAssetId', 'logoAltAssetId', 'woodPanelAssetId', 'checkedMarkerAssetId', 'bodyBackgroundAssetId', 'footerBackgroundAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
             [['bodyBackgroundMode'], 'in', 'range' => ['cover', 'tiled', 'custom', 'repeat-y']],
-            [['footerImageDisplay'], 'in', 'range' => ['full', 'content']],
-            [['footerImageSize'], 'in', 'range' => ['stretch', 'contain', 'custom']],
-            [['footerImageSizeValue'], 'string', 'max' => 50],
+            [['footerImageDisplay'], 'in', 'range' => ['full', 'content', 'custom']],
             [['bodyBackgroundSize'], 'string', 'max' => 50],
             [['bodyBackgroundColor'], 'string', 'max' => 50],
             [['contestVersion'], 'string', 'max' => 20],
