@@ -95,36 +95,49 @@ class Items extends Component
             $record->sortOrder = $attributes['sortOrder'];
         }
 
-        if (!$record->save()) {
-            return false;
-        }
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
 
-        // Save per-site content
-        foreach ($content as $siteId => $fields) {
-            $contentRecord = ItemContentRecord::findOne([
-                'itemId' => $record->id,
-                'siteId' => $siteId,
-            ]);
-
-            if (!$contentRecord) {
-                $contentRecord = new ItemContentRecord();
-                $contentRecord->itemId = $record->id;
-                $contentRecord->siteId = (int)$siteId;
-            }
-
-            $contentRecord->title = $fields['title'] ?? null;
-            $contentRecord->description = $fields['description'] ?? null;
-            $contentRecord->linkUrl = $fields['linkUrl'] ?? null;
-            $rawLinkEntryId = $fields['linkEntryId'] ?? null;
-            if (is_array($rawLinkEntryId)) {
-                $rawLinkEntryId = $rawLinkEntryId[0] ?? null;
-            }
-            $contentRecord->linkEntryId = ((int)$rawLinkEntryId ?: null);
-            $contentRecord->linkText = $fields['linkText'] ?? null;
-
-            if (!$contentRecord->save()) {
+        try {
+            if (!$record->save()) {
+                $transaction->rollBack();
                 return false;
             }
+
+            // Save per-site content
+            foreach ($content as $siteId => $fields) {
+                $contentRecord = ItemContentRecord::findOne([
+                    'itemId' => $record->id,
+                    'siteId' => $siteId,
+                ]);
+
+                if (!$contentRecord) {
+                    $contentRecord = new ItemContentRecord();
+                    $contentRecord->itemId = $record->id;
+                    $contentRecord->siteId = (int)$siteId;
+                }
+
+                $contentRecord->title = $fields['title'] ?? null;
+                $contentRecord->description = $fields['description'] ?? null;
+                $contentRecord->linkUrl = $fields['linkUrl'] ?? null;
+                $rawLinkEntryId = $fields['linkEntryId'] ?? null;
+                if (is_array($rawLinkEntryId)) {
+                    $rawLinkEntryId = $rawLinkEntryId[0] ?? null;
+                }
+                $contentRecord->linkEntryId = ((int)$rawLinkEntryId ?: null);
+                $contentRecord->linkText = $fields['linkText'] ?? null;
+
+                if (!$contentRecord->save()) {
+                    $transaction->rollBack();
+                    return false;
+                }
+            }
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            Craft::error('Failed to save item: ' . $e->getMessage(), __METHOD__);
+            return false;
         }
 
         return $record;
@@ -148,10 +161,19 @@ class Items extends Component
      */
     public function reorder(array $ids): bool
     {
-        foreach ($ids as $order => $id) {
-            Craft::$app->getDb()->createCommand()
-                ->update('{{%stamppassport_items}}', ['sortOrder' => $order], ['id' => $id])
-                ->execute();
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
+        try {
+            foreach ($ids as $order => $id) {
+                $db->createCommand()
+                    ->update('{{%stamppassport_items}}', ['sortOrder' => (int)$order], ['id' => (int)$id])
+                    ->execute();
+            }
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            Craft::error('Failed to reorder items: ' . $e->getMessage(), __METHOD__);
+            return false;
         }
         return true;
     }

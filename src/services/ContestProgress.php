@@ -58,6 +58,12 @@ class ContestProgress extends Component
             return 'missing_or_invalid_steps_completed';
         }
 
+        foreach ($progress['stepsCompleted'] as $step) {
+            if (!is_string($step) || $step === '') {
+                return 'invalid_step_in_steps_completed';
+            }
+        }
+
         if (!isset($progress['score']) || !is_int($progress['score'])) {
             return 'missing_or_invalid_score';
         }
@@ -214,6 +220,17 @@ class ContestProgress extends Component
         $record = ContestProgressRecord::findOne(['contest_id' => $cid]);
 
         if (!$record) {
+            // clientRevision must be 0 when creating a new record.
+            if ($clientRevision !== 0) {
+                return [
+                    'ok' => false,
+                    'error' => 'conflict',
+                    'serverRevision' => 0,
+                    'serverPayload' => null,
+                    'serverUpdatedAt' => null,
+                ];
+            }
+
             // Create new record
             $record = new ContestProgressRecord();
             $record->contest_id = $cid;

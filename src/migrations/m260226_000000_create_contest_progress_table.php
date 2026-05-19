@@ -17,7 +17,7 @@ class m260226_000000_create_contest_progress_table extends Migration
                 'contest_id' => $this->char(36)->notNull(),
                 'payload_json' => $this->text()->notNull(),
                 'payload_hash' => $this->char(64)->notNull(),
-                'revision' => $this->integer()->notNull()->defaultValue(0),
+                'revision' => $this->integer()->notNull()->defaultValue(1),
                 'updated_at' => $this->dateTime()->notNull(),
                 'created_at' => $this->dateTime()->notNull(),
             ]);

@@ -385,6 +385,15 @@
     size: 5,
 }) }}
 
+{{ forms.textField({
+    label: "Contest Version"|t('stamp-passport'),
+    instructions: "Bump this string when contest rules change and progress from a previous season should be treated as incompatible. Changing this value does not erase stored progress — it is included in synced payloads so the frontend can detect version mismatches."|t('stamp-passport'),
+    name: 'contestVersion',
+    value: settings.contestVersion,
+    size: 15,
+    maxlength: 20,
+}) }}
+
 <hr>
 
 <h2>{{ "Custom CSS"|t('stamp-passport') }}</h2>

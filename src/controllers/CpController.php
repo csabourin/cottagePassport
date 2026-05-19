@@ -194,12 +194,22 @@ class CpController extends Controller
         // Start from current saved values so other settings are not clobbered
         $cleaned = $settings->uiText;
         $uiText  = $request->getBodyParam('uiText', []);
+        $validSiteHandles = array_map(
+            static fn($s) => $s->handle,
+            Craft::$app->getSites()->getAllSites()
+        );
         if (is_array($uiText)) {
             foreach ($uiText as $handle => $texts) {
+                if (!is_string($handle) || !in_array($handle, $validSiteHandles, true)) {
+                    continue;
+                }
                 if (!is_array($texts)) {
                     continue;
                 }
                 foreach ($texts as $key => $value) {
+                    if (!in_array($key, Settings::TEXT_KEYS, true)) {
+                        continue;
+                    }
                     $value = trim((string)$value);
                     if ($value !== '') {
                         $cleaned[$handle][$key] = $value;
@@ -210,6 +220,11 @@ class CpController extends Controller
             }
         }
         $settings->uiText = $cleaned;
+
+        if (!$settings->validate()) {
+            Craft::$app->getSession()->setError(Craft::t('stamp-passport', 'Could not save display text.'));
+            return null;
+        }
 
         Craft::$app->getPlugins()->savePluginSettings(Plugin::$plugin, $settings->toArray());
         Craft::$app->getSession()->setNotice(Craft::t('stamp-passport', 'Display text saved.'));
@@ -252,11 +267,22 @@ class CpController extends Controller
             ? (Craft::$app->getSites()->getSiteByHandle($siteHandle) ?? Craft::$app->getSites()->getPrimarySite())
             : Craft::$app->getSites()->getPrimarySite();
 
+        // Validate optional date params — silently discard malformed values.
+        if ($dateFrom !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFrom)) {
+            $dateFrom = '';
+        }
+        if ($dateTo !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateTo)) {
+            $dateTo = '';
+        }
+
         // Build shortcode → title map for the selected site
         $itemRows = (new Query())
             ->select(['i.shortCode', 'ic.title'])
             ->from(['i' => '{{%stamppassport_items}}'])
-            ->leftJoin(['ic' => '{{%stamppassport_items_content}}'], '[[ic.itemId]] = [[i.id]] AND [[ic.siteId]] = ' . $currentSite->id)
+            ->leftJoin(
+                ['ic' => '{{%stamppassport_items_content}}'],
+                ['and', '[[ic.itemId]] = [[i.id]]', ['[[ic.siteId]]' => $currentSite->id]]
+            )
             ->all();
 
         $shortCodeToTitle = [];
@@ -489,6 +515,11 @@ class CpController extends Controller
 
         $settings->contestRules = $cleaned;
 
+        if (!$settings->validate()) {
+            Craft::$app->getSession()->setError(Craft::t('stamp-passport', 'Could not save contest rules.'));
+            return null;
+        }
+
         Craft::$app->getPlugins()->savePluginSettings(Plugin::$plugin, $settings->toArray());
         Craft::$app->getSession()->setNotice(Craft::t('stamp-passport', 'Contest rules saved.'));
 
@@ -518,14 +549,22 @@ class CpController extends Controller
 
         $settings->pluginName = $request->getBodyParam('pluginName', $settings->pluginName);
         $settings->routePrefix = $request->getBodyParam('routePrefix', $settings->routePrefix);
+        $settings->contestVersion = trim((string)$request->getBodyParam('contestVersion', $settings->contestVersion)) ?: $settings->contestVersion;
 
         $rawPrefixes = $request->getBodyParam('siteRoutePrefixes', []);
         if (is_array($rawPrefixes)) {
             $cleanedPrefixes = [];
+            $knownHandles = array_map(
+                static fn($s) => $s->handle,
+                Craft::$app->getSites()->getAllSites()
+            );
             foreach ($rawPrefixes as $handle => $prefix) {
+                if (!is_string($handle) || !in_array($handle, $knownHandles, true)) {
+                    continue;
+                }
                 $prefix = trim((string)$prefix, '/');
                 if ($prefix !== '') {
-                    $cleanedPrefixes[(string)$handle] = $prefix;
+                    $cleanedPrefixes[$handle] = $prefix;
                 }
             }
             $settings->siteRoutePrefixes = $cleanedPrefixes;
@@ -604,8 +643,8 @@ class CpController extends Controller
 
         // ── Custom CSS ────────────────────────────────────────────────────────
         $customCss = (string)$request->getBodyParam('customCss', '');
-        // Neutralize </style> injection vectors before storing.
-        $customCss = str_replace('</style', '<\/style', $customCss);
+        // Neutralize </style> tag close — case-insensitive per HTML5 RAWTEXT rules.
+        $customCss = preg_replace('/<\/style/i', '<\\/style', $customCss);
         $customCss = mb_substr($customCss, 0, 10000);
         $settings->customCss = $customCss !== '' ? $customCss : null;
 
@@ -629,11 +668,21 @@ class CpController extends Controller
         $uiText = $request->getBodyParam('uiText', null);
         if (is_array($uiText)) {
             $cleaned = [];
+            $knownHandlesForUi = array_map(
+                static fn($s) => $s->handle,
+                Craft::$app->getSites()->getAllSites()
+            );
             foreach ($uiText as $handle => $texts) {
+                if (!is_string($handle) || !in_array($handle, $knownHandlesForUi, true)) {
+                    continue;
+                }
                 if (!is_array($texts)) {
                     continue;
                 }
                 foreach ($texts as $key => $value) {
+                    if (!in_array($key, Settings::TEXT_KEYS, true)) {
+                        continue;
+                    }
                     $value = trim((string)$value);
                     if ($value !== '') {
                         $cleaned[$handle][$key] = $value;

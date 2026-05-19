@@ -1055,10 +1055,10 @@
                             }
                         } catch (e) { /* discard malformed URLs */ }
                     }
-                    var rel = child.getAttribute('rel');
-                    if (rel) copy.setAttribute('rel', rel);
+                    // Always enforce noopener noreferrer; only allow _blank as target.
+                    copy.setAttribute('rel', 'noopener noreferrer');
                     var target = child.getAttribute('target');
-                    if (target) copy.setAttribute('target', target);
+                    if (target === '_blank') copy.setAttribute('target', '_blank');
                 }
                 cleanDocNode(child, copy);
                 dstNode.appendChild(copy);

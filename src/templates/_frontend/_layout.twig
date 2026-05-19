@@ -223,7 +223,7 @@
     {% set _footerBgPaddingVw = (50 * _footerBgAsset.height / _footerBgAsset.width)|round(3) %}
     <style>
     body.stamp-passport {
-        --passport-footer-bg-img: url('{{ _footerBgAsset.url|e }}');
+        --passport-footer-bg-img: url("{{ _footerBgAsset.url|e('html_attr') }}");
         --passport-footer-bg-ar-w: {{ _footerBgAsset.width }};
         --passport-footer-bg-ar-h: {{ _footerBgAsset.height }};
     }
