@@ -96,6 +96,9 @@ class Settings extends Model
     public ?int $faviconAssetId = null;
 
     // ── Custom CSS ────────────────────────────────────────────────────────────
+    /** @var bool Whether the custom CSS block is injected into the frontend <head> */
+    public bool $customCssEnabled = false;
+
     /** @var string|null Raw CSS injected into a <style> block in the frontend <head>. Max 10 000 chars */
     public ?string $customCss = null;
 
@@ -265,6 +268,7 @@ class Settings extends Model
             [['primaryColor', 'primaryColorDark', 'accentColor', 'qrForegroundColor', 'qrBackgroundColor'], 'match', 'pattern' => '/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/', 'skipOnEmpty' => true],
             [['ogImageAssetId', 'faviconAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
             [['customCss'], 'string', 'max' => 10000],
+            [['customCssEnabled'], 'boolean'],
         ];
     }
 }

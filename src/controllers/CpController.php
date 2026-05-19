@@ -642,6 +642,7 @@ class CpController extends Controller
             : ((int)($faviconIds ?: 0) ?: null);
 
         // ── Custom CSS ────────────────────────────────────────────────────────
+        $settings->customCssEnabled = (bool)$request->getBodyParam('customCssEnabled', false);
         $customCss = (string)$request->getBodyParam('customCss', '');
         // Neutralize </style> tag close — case-insensitive per HTML5 RAWTEXT rules.
         $customCss = preg_replace('/<\/style/i', '<\\/style', $customCss);

@@ -415,13 +415,117 @@
 
 <h2>{{ "Custom CSS"|t('stamp-passport') }}</h2>
 
+{{ forms.lightswitchField({
+    label: "Enable Custom CSS"|t('stamp-passport'),
+    instructions: "When enabled, the CSS below is injected at the end of the frontend &lt;head&gt;, after all plugin styles. Disable to keep the code without removing it."|t('stamp-passport'),
+    name: 'customCssEnabled',
+    on: settings.customCssEnabled,
+    id: 'customCssEnabled',
+}) }}
+
+{% set _cssPlaceholder %}
+/*
+ * ── CSS Variables ───────────────────────────────────────────
+ * Override these on :root to retheme the entire passport.
+ */
+:root {
+    --passport-teal:            #2b6b8a; /* buttons, links, focus rings   */
+    --passport-teal-dark:       #1e5068; /* hover / active states          */
+    --passport-green:           #2d5a27; /* checked-stamp accent           */
+    --passport-cream:           #f5f0e8; /* scan-strip background          */
+    --passport-paper:           #f2e0c8; /* stamp-grid background          */
+    --passport-beige:           #d4b896; /* borders, dividers              */
+    --passport-ink:             #1e1a17; /* body text                      */
+    --passport-ink-muted:       #5a4f43; /* secondary / label text         */
+    --passport-radius:          4px;     /* global border-radius           */
+    --passport-focus:           #2b6b8a; /* focus-visible outline colour   */
+    --passport-cloth-side-color:#2f211c; /* side margin strip              */
+}
+
+/*
+ * ── Page Background ─────────────────────────────────────────
+ */
+body {
+    /* Replace the gradient with a solid colour or custom image */
+    /* background: #your-color; */
+    /* background-image: url('/path/to/bg.jpg'); */
+}
+
+/*
+ * ── Header ──────────────────────────────────────────────────
+ */
+.passport-header {
+    /* background-color: #5c4033; */
+    /* padding: 32px 28px 28px; */
+}
+
+.passport-org {
+    /* Organization name above the title */
+    /* font-size: 0.7rem; */
+    /* letter-spacing: 0.12em; */
+}
+
+.passport-title-light {
+    /* Serif light heading ("Challenge Name") */
+    /* font-size: clamp(1.4rem, 4vw, 1.9rem); */
+}
+
+.passport-title-bold {
+    /* Bold uppercase heading ("Challenge Title") */
+    /* font-size: clamp(2rem, 8vw, 2.8rem); */
+}
+
+/*
+ * ── Scan Instruction Strip ──────────────────────────────────
+ */
+.passport-scan-strip {
+    /* background: var(--passport-cream); */
+    /* font-size: 1rem; */
+}
+
+/*
+ * ── Stamp Grid ──────────────────────────────────────────────
+ */
+.passport-grid {
+    /* background: var(--passport-paper); */
+}
+
+.stamp-slot { /* individual row */ }
+.stamp-slot.collected { /* checked-in state */ }
+.stamp-title { /* location name */ }
+.stamp-desc  { /* short description */ }
+.stamp-check { /* checkmark badge overlay */ }
+
+/*
+ * ── Progress Bar ────────────────────────────────────────────
+ */
+.passport-progress { }
+.progress-bar      { /* track */ }
+.progress-fill     { /* filled portion — background matches --passport-teal */ }
+.progress-text     { /* "X / Y locations" label */ }
+
+/*
+ * ── Buttons ─────────────────────────────────────────────────
+ */
+.passport-btn         { /* base button styles */ }
+.passport-btn-primary { /* filled primary action */ }
+.passport-btn-secondary { /* outline secondary action */ }
+
+/*
+ * ── Modals ──────────────────────────────────────────────────
+ */
+.passport-modal-content { /* modal box */ }
+.passport-modal-content h2 { }
+.passport-modal-close { /* × close button */ }
+{% endset %}
+
 {{ forms.textareaField({
     label: "Custom CSS"|t('stamp-passport'),
-    instructions: "Raw CSS injected at the end of the frontend &lt;head&gt;. Use as an escape hatch for advanced customization. Maximum 10 000 characters."|t('stamp-passport'),
+    instructions: "Raw CSS injected at the end of the frontend &lt;head&gt;. Uncomment and edit the declarations above to override the default theme. Maximum 10 000 characters."|t('stamp-passport'),
     id: 'customCss',
     name: 'customCss',
-    value: settings.customCss ?? '',
-    rows: 10,
+    value: settings.customCss ?? _cssPlaceholder,
+    rows: 20,
     class: 'code',
     maxlength: 10000,
 }) }}

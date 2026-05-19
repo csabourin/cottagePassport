@@ -242,7 +242,7 @@
     {% endif %}
 
     {# ── Custom CSS escape hatch — always last, wins specificity ── #}
-    {% if _s.customCss %}
+    {% if _s.customCssEnabled and _s.customCss %}
     <style id="stamp-passport-custom-css">{{ _s.customCss|raw }}</style>
     {% endif %}
 

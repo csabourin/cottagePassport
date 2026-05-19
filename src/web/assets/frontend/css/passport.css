@@ -222,7 +222,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 }
 
 .passport-logo {
-    width: 100%;
+    width: 50%;
     height: auto;
     border-radius: 0;
     object-fit: contain;
