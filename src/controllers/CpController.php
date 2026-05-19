@@ -653,6 +653,8 @@ class CpController extends Controller
         $settings->showLanguageSwitcher = (bool)$request->getBodyParam('showLanguageSwitcher', true);
         $settings->requireDisclaimerAck = (bool)$request->getBodyParam('requireDisclaimerAck', true);
         $settings->showOrgName = (bool)$request->getBodyParam('showOrgName', true);
+        $settings->showChallengeName = (bool)$request->getBodyParam('showChallengeName', true);
+        $settings->showChallengeTitle = (bool)$request->getBodyParam('showChallengeTitle', true);
 
         // ── QR Code Colors ────────────────────────────────────────────────────
         foreach (['qrForegroundColor', 'qrBackgroundColor'] as $colorField) {

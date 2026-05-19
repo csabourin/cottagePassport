@@ -109,6 +109,12 @@ class Settings extends Model
     /** @var bool Whether the organisation name is displayed in the page header. Default true */
     public bool $showOrgName = true;
 
+    /** @var bool Whether the challenge name (light heading) is displayed in the page header. Default true */
+    public bool $showChallengeName = true;
+
+    /** @var bool Whether the challenge title (bold heading) is displayed in the page header. Default true */
+    public bool $showChallengeTitle = true;
+
     // ── QR Code Appearance ────────────────────────────────────────────────────
     /** @var string|null Foreground (dot) color for generated QR codes. Null → #000000 */
     public ?string $qrForegroundColor = null;

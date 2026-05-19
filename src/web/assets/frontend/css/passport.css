@@ -299,7 +299,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     border-bottom: 1px solid #e0d8cc;
     line-height: 1.5;
     position: relative;
-    z-index: 3;
+    z-index: 1;
 }
 
 /* Keep the strip tucked slightly under an absolute wood header. */

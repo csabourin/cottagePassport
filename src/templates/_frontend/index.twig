@@ -18,7 +18,11 @@
 {% set currentLang = currentSite.language[:2]|lower %}
 {% set activeLogoUrl = (logoAltUrl and currentLang != 'en') ? logoAltUrl : logoUrl %}
 
-{% block title %}{{ settings.pluginName }}{% endblock %}
+{% block title %}
+    {%- set _titleParts = [t.text('challengeName'), t.text('challengeTitle')]|filter(v => v is not empty) -%}
+    {%- set _pageTitle = _titleParts|join(' ')|trim -%}
+    {{ _pageTitle is not empty ? _pageTitle : settings.pluginName }}
+{%- endblock %}
 
 {% block head %}
     <link rel="stylesheet" href="{{ craft.app.assetManager.getPublishedUrl('@csabourin/stamppassport/web/assets/frontend/css/passport.css', true) }}">
@@ -106,8 +110,8 @@
         {% endif %}
 
         <h1 class="passport-title">
-            <span class="passport-title-light">{{ t.text('challengeName') }}</span>
-            <span class="passport-title-bold">{{ t.text('challengeTitle') }}</span>
+            {% if settings.showChallengeName %}<span class="passport-title-light">{{ t.text('challengeName') }}</span>{% endif %}
+            {% if settings.showChallengeTitle %}<span class="passport-title-bold">{{ t.text('challengeTitle') }}</span>{% endif %}
         </h1>
     </header>
 

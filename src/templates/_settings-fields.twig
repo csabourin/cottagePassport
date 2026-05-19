@@ -326,11 +326,28 @@
     on: settings.showLanguageSwitcher,
 }) }}
 
+<h3>{{ "Header Visibility"|t('stamp-passport') }}</h3>
+<p class="instructions">{{ "Control which elements are shown in the page header. Text content for each is set under Display Text."|t('stamp-passport') }}</p>
+
 {{ forms.lightswitchField({
     label: "Show Organisation Name"|t('stamp-passport'),
-    instructions: "Display the organisation name (orgName) below the header logo."|t('stamp-passport'),
+    instructions: "Displays the small uppercase label above the title (the \"Organization Name\" field in Display Text)."|t('stamp-passport'),
     name: 'showOrgName',
     on: settings.showOrgName,
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Show Challenge Name (light heading)"|t('stamp-passport'),
+    instructions: "Displays the first line of the page title in the serif light style (the \"Challenge Name\" field in Display Text — e.g. \"Bucket List\")."|t('stamp-passport'),
+    name: 'showChallengeName',
+    on: settings.showChallengeName,
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Show Challenge Title (bold heading)"|t('stamp-passport'),
+    instructions: "Displays the second line of the page title in bold uppercase (the \"Challenge Title\" field in Display Text — e.g. \"Challenge\")."|t('stamp-passport'),
+    name: 'showChallengeTitle',
+    on: settings.showChallengeTitle,
 }) }}
 
 {{ forms.lightswitchField({
