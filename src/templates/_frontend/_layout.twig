@@ -161,6 +161,9 @@
                 if (!site || site.current || normalized === currentLang) return false;
                 var sep = site.url.indexOf('?') === -1 ? '?' : '&';
                 var targetUrl = site.url + sep + 'lang=' + encodeURIComponent(normalized);
+                sep = '&';
+                var currentQ = params.get('q');
+                if (currentQ) targetUrl += sep + 'q=' + encodeURIComponent(currentQ);
                 persistLangChoice(normalized).then(function () {
                     window.location.replace(targetUrl);
                 }, function () {
