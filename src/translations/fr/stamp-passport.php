@@ -72,7 +72,7 @@ return [
     'Draw Form Handle' => 'Handle du formulaire de tirage',
     'Freeform form handle for the end-of-season draw entry.' => 'Handle du formulaire Freeform pour le tirage de fin de saison.',
     'Sticker Form Handle' => 'Handle du formulaire d\'autocollant',
-    'Freeform form handle for the Memory Makers sticker request.' => 'Handle du formulaire Freeform pour la demande d\'autocollant.',
+    'Freeform form handle for the sticker request.' => 'Handle du formulaire Freeform pour la demande d\'autocollant.',
     'Appearance' => 'Apparence',
     'Header Logo' => 'Logo de l\'en-tête',
     'Circular image displayed at the top of the page header. Recommended: square PNG with transparent background.' => 'Image circulaire affichée en haut de l\'en-tête. Recommandé : PNG carré avec fond transparent.',

@@ -826,7 +826,7 @@
             if (localStorage.getItem('passportStickerSubmitted') !== '1') {
                 if (localStorage.getItem('passportStickerDismissed') !== '1') {
                     showModal('stickerModal');
-                    ga4Event('passport_bucket_list_complete', { stamps: count });
+                    ga4Event('passport_all_complete', { stamps: count });
                 } else {
                     /* Previously dismissed — show reopen button */
                     updateReopenButton('stickerReopenSection', true);

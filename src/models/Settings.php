@@ -34,7 +34,7 @@ class Settings extends Model
     /** @var string|null Freeform form handle for the end-of-season draw entry */
     public ?string $freeformDrawFormHandle = null;
 
-    /** @var string|null Freeform form handle for the sticker / Memory Makers request */
+    /** @var string|null Freeform form handle for the sticker request */
     public ?string $freeformStickerFormHandle = null;
 
     /** @var int|null Asset ID for the primary logo displayed in the page header */
