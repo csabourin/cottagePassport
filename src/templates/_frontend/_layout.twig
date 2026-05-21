@@ -55,14 +55,16 @@
             html.style.visibility = '';
         }
 
-        // Hold paint until language routing decision is complete.
-        html.style.visibility = 'hidden';
-        setTimeout(unlock, 800);
-
         try {
             var currentLang = '{{ currentSite.language[:2] }}'.toLowerCase();
             var sites = {{ sitesJson|json_encode|raw }};
             var params = new URL(window.location.href).searchParams;
+            // For direct QR visits, prefer immediate feedback over hiding the page
+            // while language routing checks local browser storage.
+            if (!params.has('q') && sites.length > 1) {
+                html.style.visibility = 'hidden';
+                setTimeout(unlock, 800);
+            }
             var LS_KEY = 'passport:langChoice';
             var DB_NAME = 'stamp-passport';
             var DB_VERSION = 2;

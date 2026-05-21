@@ -3,6 +3,7 @@
 namespace csabourin\stamppassport\variables;
 
 use Craft;
+use craft\helpers\HtmlPurifier;
 use csabourin\stamppassport\Plugin;
 use csabourin\stamppassport\records\ItemRecord;
 
@@ -64,6 +65,35 @@ class StampPassportVariable
 
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
         return $asset?->getUrl();
+    }
+
+    /**
+     * Sanitize admin-authored HTML before it is rendered on the public frontend.
+     */
+    public function sanitizeHtml(?string $html): string
+    {
+        if ($html === null || $html === '') {
+            return '';
+        }
+
+        return HtmlPurifier::process($html, [
+            'HTML.Allowed' => implode(',', [
+                'p', 'br', 'strong', 'em', 'b', 'i', 'u',
+                'ul', 'ol', 'li',
+                'a[href|target|rel]',
+                'span', 'blockquote', 'hr',
+                'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            ]),
+            'Attr.AllowedFrameTargets' => ['_blank'],
+            'HTML.Nofollow' => true,
+            'HTML.TargetBlank' => true,
+            'URI.AllowedSchemes' => [
+                'http' => true,
+                'https' => true,
+                'mailto' => true,
+                'tel' => true,
+            ],
+        ]);
     }
 
     /**

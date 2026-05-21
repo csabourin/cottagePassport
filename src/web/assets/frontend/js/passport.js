@@ -69,12 +69,24 @@
     }
 
     /* localStorage helpers */
+    function safeLsGet(key) {
+        try { return localStorage.getItem(key); } catch (e) { return null; }
+    }
+
+    function safeLsSet(key, value) {
+        try { localStorage.setItem(key, value); return true; } catch (e) { return false; }
+    }
+
+    function safeLsRemove(key) {
+        try { localStorage.removeItem(key); } catch (e) {}
+    }
+
     function lsWrite(ns, key, data) {
-        try { localStorage.setItem(LS_PREFIX + ns + ':' + key, JSON.stringify(data)); } catch (e) {}
+        safeLsSet(LS_PREFIX + ns + ':' + key, JSON.stringify(data));
     }
     function lsRead(ns, key) {
         try {
-            var raw = localStorage.getItem(LS_PREFIX + ns + ':' + key);
+            var raw = safeLsGet(LS_PREFIX + ns + ':' + key);
             return raw ? JSON.parse(raw) : null;
         } catch (e) { return null; }
     }
@@ -108,7 +120,7 @@
         var normalized = normalizeLang(lang);
         if (!normalized) return;
 
-        try { localStorage.setItem(LANG_LS_KEY, normalized); } catch (e) {}
+        safeLsSet(LANG_LS_KEY, normalized);
 
         if (db) {
             try {
@@ -175,6 +187,10 @@
         return itemsData.find(function (i) { return i.shortCode === code; }) || null;
     }
 
+    function isKnownItemCode(code) {
+        return !!findItemByCode(code);
+    }
+
     /* ═══════════════════════════════════════════
        Contest Progress — UUID & CID Management
        ═══════════════════════════════════════════ */
@@ -212,7 +228,7 @@
         }
 
         var stored = null;
-        try { stored = localStorage.getItem('contest:cid'); } catch (e) {}
+        stored = safeLsGet('contest:cid');
         if (stored && isValidUUID(stored)) {
             return stored;
         }
@@ -223,7 +239,7 @@
     }
 
     function persistCid(cid) {
-        try { localStorage.setItem('contest:cid', cid); } catch (e) {}
+        safeLsSet('contest:cid', cid);
     }
 
     function cleanUrlParams(keys) {
@@ -267,10 +283,10 @@
                 custom: {
                     stampTimestamps: stampTimestamps,
                     formStates: {
-                        drawSubmitted:    localStorage.getItem('passportDrawSubmitted')   === '1',
-                        drawDismissed:    localStorage.getItem('passportDrawDismissed')   === '1',
-                        stickerSubmitted: localStorage.getItem('passportStickerSubmitted') === '1',
-                        stickerDismissed: localStorage.getItem('passportStickerDismissed') === '1'
+                        drawSubmitted:    safeLsGet('passportDrawSubmitted')   === '1',
+                        drawDismissed:    safeLsGet('passportDrawDismissed')   === '1',
+                        stickerSubmitted: safeLsGet('passportStickerSubmitted') === '1',
+                        stickerDismissed: safeLsGet('passportStickerDismissed') === '1'
                     }
                 }
             },
@@ -412,6 +428,7 @@
 
         for (var i = 0; i < steps.length; i++) {
             var code = steps[i];
+            if (!isKnownItemCode(code)) continue;
             var existing = await getStamp(code);
             if (!existing) {
                 await putStamp({
@@ -426,17 +443,17 @@
         var fs = (payload.progress && payload.progress.custom && payload.progress.custom.formStates) || {};
 
         if (fs.drawSubmitted) {
-            localStorage.setItem('passportDrawSubmitted', '1');
-            localStorage.removeItem('passportDrawDismissed');
-        } else if (fs.drawDismissed && localStorage.getItem('passportDrawSubmitted') !== '1') {
-            localStorage.setItem('passportDrawDismissed', '1');
+            safeLsSet('passportDrawSubmitted', '1');
+            safeLsRemove('passportDrawDismissed');
+        } else if (fs.drawDismissed && safeLsGet('passportDrawSubmitted') !== '1') {
+            safeLsSet('passportDrawDismissed', '1');
         }
 
         if (fs.stickerSubmitted) {
-            localStorage.setItem('passportStickerSubmitted', '1');
-            localStorage.removeItem('passportStickerDismissed');
-        } else if (fs.stickerDismissed && localStorage.getItem('passportStickerSubmitted') !== '1') {
-            localStorage.setItem('passportStickerDismissed', '1');
+            safeLsSet('passportStickerSubmitted', '1');
+            safeLsRemove('passportStickerDismissed');
+        } else if (fs.stickerDismissed && safeLsGet('passportStickerSubmitted') !== '1') {
+            safeLsSet('passportStickerDismissed', '1');
         }
     }
 
@@ -446,17 +463,17 @@
 
     function queueOutbox(payload) {
         try {
-            localStorage.setItem('contest:outbox', JSON.stringify(payload));
+            safeLsSet('contest:outbox', JSON.stringify(payload));
         } catch (e) {}
     }
 
     function clearOutbox() {
-        try { localStorage.removeItem('contest:outbox'); } catch (e) {}
+        safeLsRemove('contest:outbox');
     }
 
     function getOutbox() {
         try {
-            var raw = localStorage.getItem('contest:outbox');
+            var raw = safeLsGet('contest:outbox');
             return raw ? JSON.parse(raw) : null;
         } catch (e) { return null; }
     }
@@ -501,15 +518,15 @@
        ═══════════════════════════════════════════ */
 
     function getLastServerRevision() {
-        try { return parseInt(localStorage.getItem('contest:lastServerRevision') || '0', 10); } catch (e) { return 0; }
+        try { return parseInt(safeLsGet('contest:lastServerRevision') || '0', 10); } catch (e) { return 0; }
     }
 
     function setLastServerRevision(rev) {
-        try { localStorage.setItem('contest:lastServerRevision', String(rev)); } catch (e) {}
+        safeLsSet('contest:lastServerRevision', String(rev));
     }
 
     function setLastSyncAt() {
-        try { localStorage.setItem('contest:lastSyncAt', new Date().toISOString()); } catch (e) {}
+        safeLsSet('contest:lastSyncAt', new Date().toISOString());
     }
 
     /* ═══════════════════════════════════════════
@@ -599,10 +616,10 @@
                 }
 
                 var beaconFs = {
-                    drawSubmitted:    localStorage.getItem('passportDrawSubmitted')   === '1',
-                    drawDismissed:    localStorage.getItem('passportDrawDismissed')   === '1',
-                    stickerSubmitted: localStorage.getItem('passportStickerSubmitted') === '1',
-                    stickerDismissed: localStorage.getItem('passportStickerDismissed') === '1'
+                    drawSubmitted:    safeLsGet('passportDrawSubmitted')   === '1',
+                    drawDismissed:    safeLsGet('passportDrawDismissed')   === '1',
+                    stickerSubmitted: safeLsGet('passportStickerSubmitted') === '1',
+                    stickerDismissed: safeLsGet('passportStickerDismissed') === '1'
                 };
                 var hasFormState = beaconFs.drawSubmitted || beaconFs.drawDismissed ||
                                    beaconFs.stickerSubmitted || beaconFs.stickerDismissed;
@@ -769,6 +786,15 @@
         /* Geofence check (if enabled) */
         if (CFG.enableGeofence) {
             showStatus(TXT.checkingLocation || 'Checking your location\u2026');
+            if (!window.isSecureContext) {
+                showStatus('Location requires a secure HTTPS page. Open the passport using the secure site URL.');
+                return;
+            }
+            if (!navigator.geolocation || typeof navigator.geolocation.getCurrentPosition !== 'function') {
+                showStatus(TXT.locationError || 'Location is not available in this browser. Please open the passport in your phone browser and allow location access.');
+                return;
+            }
+
             var pos;
             try {
                 pos = await new Promise(function (resolve, reject) {
@@ -778,11 +804,25 @@
                     });
                 });
             } catch (err) {
-                showStatus(TXT.locationError || 'Could not determine your location. Please allow location access and try again.');
+                var message = TXT.locationError || 'Could not determine your location. Please allow location access and try again.';
+                if (err && err.code === 1) {
+                    message = 'Location permission was denied. Enable location access for this site and scan again.';
+                } else if (err && err.code === 3) {
+                    message = 'Location lookup timed out. Move outdoors or closer to the location and try again.';
+                } else if (!window.isSecureContext) {
+                    message = 'Location requires a secure HTTPS page. Open the passport using the secure site URL.';
+                }
+                showStatus(message);
                 return;
             }
 
-            var result = await apiCollect(item.shortCode, pos.coords.latitude, pos.coords.longitude);
+            var result;
+            try {
+                result = await apiCollect(item.shortCode, pos.coords.latitude, pos.coords.longitude);
+            } catch (err) {
+                showStatus(TXT.checkinFailed || 'Check-in failed. Please check your connection and try again.');
+                return;
+            }
             if (!result.success) {
                 showStatus(result.error || TXT.checkinFailed || 'Check-in failed. Are you at the right location?');
                 ga4Event('passport_geofence_fail', { item_code: item.shortCode, distance: result.distance });
@@ -815,8 +855,8 @@
 
         /* Draw threshold */
         if (count >= CFG.drawThreshold) {
-            if (localStorage.getItem('passportDrawSubmitted') !== '1') {
-                if (localStorage.getItem('passportDrawDismissed') !== '1') {
+            if (safeLsGet('passportDrawSubmitted') !== '1') {
+                if (safeLsGet('passportDrawDismissed') !== '1') {
                     showModal('drawModal');
                     ga4Event('passport_draw_eligible', { stamps: count });
                 } else {
@@ -828,8 +868,8 @@
 
         /* Sticker: all items completed */
         if (count >= itemsData.length && itemsData.length > 0) {
-            if (localStorage.getItem('passportStickerSubmitted') !== '1') {
-                if (localStorage.getItem('passportStickerDismissed') !== '1') {
+            if (safeLsGet('passportStickerSubmitted') !== '1') {
+                if (safeLsGet('passportStickerDismissed') !== '1') {
                     showModal('stickerModal');
                     ga4Event('passport_all_complete', { stamps: count });
                 } else {
@@ -881,6 +921,10 @@
         var modal = el(id);
         if (!modal) return;
         modal._focusTrigger = triggerEl || null;
+        if (modal._focusTrapHandler) {
+            modal.removeEventListener('keydown', modal._focusTrapHandler);
+            modal._focusTrapHandler = null;
+        }
         modal.classList.remove('hidden');
         /* Move focus inside the modal — close button or first focusable */
         var focusable = qsa(FOCUSABLE_SELECTOR, modal);
@@ -906,8 +950,8 @@
 
         /* Track dismissed state for form modals saved in localStorage */
         if (id === 'drawModal') {
-            if (localStorage.getItem('passportDrawSubmitted') !== '1') {
-                localStorage.setItem('passportDrawDismissed', '1');
+            if (safeLsGet('passportDrawSubmitted') !== '1') {
+                safeLsSet('passportDrawDismissed', '1');
                 updateReopenButton('drawReopenSection', true);
                 scheduleSyncDebounced();
             } else {
@@ -915,8 +959,8 @@
             }
         }
         if (id === 'stickerModal') {
-            if (localStorage.getItem('passportStickerSubmitted') !== '1') {
-                localStorage.setItem('passportStickerDismissed', '1');
+            if (safeLsGet('passportStickerSubmitted') !== '1') {
+                safeLsSet('passportStickerDismissed', '1');
                 updateReopenButton('stickerReopenSection', true);
                 scheduleSyncDebounced();
             } else {
@@ -965,8 +1009,8 @@
             var stickerModal = el('stickerModal');
 
             if (drawModal && !drawModal.classList.contains('hidden')) {
-                localStorage.setItem('passportDrawSubmitted', '1');
-                localStorage.removeItem('passportDrawDismissed');
+                safeLsSet('passportDrawSubmitted', '1');
+                safeLsRemove('passportDrawDismissed');
                 updateReopenButton('drawReopenSection', false);
                 ga4Event('passport_draw_submitted');
                 scheduleSyncDebounced();
@@ -974,8 +1018,8 @@
             }
 
             if (stickerModal && !stickerModal.classList.contains('hidden')) {
-                localStorage.setItem('passportStickerSubmitted', '1');
-                localStorage.removeItem('passportStickerDismissed');
+                safeLsSet('passportStickerSubmitted', '1');
+                safeLsRemove('passportStickerDismissed');
                 updateReopenButton('stickerReopenSection', false);
                 ga4Event('passport_sticker_submitted');
                 scheduleSyncDebounced();
@@ -1005,7 +1049,7 @@
 
     function showDisclaimerOnce(callback) {
         var modal = el('disclaimerModal');
-        if (!modal || localStorage.getItem('passportDisclaimerAccepted') === '1' || CFG.requireDisclaimerAck === false) {
+        if (!modal || safeLsGet('passportDisclaimerAccepted') === '1' || CFG.requireDisclaimerAck === false) {
             return callback();
         }
 
@@ -1015,7 +1059,7 @@
         if (!btn) return callback();
 
         btn.addEventListener('click', function () {
-            localStorage.setItem('passportDisclaimerAccepted', '1');
+            safeLsSet('passportDisclaimerAccepted', '1');
             hideModal('disclaimerModal');
             callback();
         }, { once: true });

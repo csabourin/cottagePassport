@@ -156,7 +156,7 @@
                     <span class="stamp-slot-chevron" aria-hidden="true">&#8250;</span>
                 </button>
                 {# Description HTML stored for the detail modal — not displayed inline #}
-                <template id="item-desc-{{ item.id }}">{{ content.description|default('')|raw }}</template>
+                <template id="item-desc-{{ item.id }}">{{ t.sanitizeHtml(content.description|default(''))|raw }}</template>
             </article>
         {% endfor %}
     </section>
@@ -266,7 +266,7 @@
         <div class="passport-modal-content">
             <button class="passport-modal-close" aria-label="{{ 'Close'|t('stamp-passport') }}">&times;</button>
             <h2 id="contestRulesModalTitle">{{ contestRules.linkText|e }}</h2>
-            <div class="contest-rules-body">{{ contestRules.modalContent|default('')|raw }}</div>
+            <div class="contest-rules-body">{{ t.sanitizeHtml(contestRules.modalContent|default(''))|raw }}</div>
             {% if fullRulesEntry %}
             <div class="contest-rules-footer">
                 <a href="{{ fullRulesEntry.url|e }}"
