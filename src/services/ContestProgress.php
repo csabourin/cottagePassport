@@ -4,6 +4,7 @@ namespace csabourin\stamppassport\services;
 
 use Craft;
 use craft\base\Component;
+use craft\db\Query;
 use csabourin\stamppassport\records\ContestProgressRecord;
 
 class ContestProgress extends Component
@@ -323,6 +324,151 @@ class ContestProgress extends Component
             'ok' => true,
             'revision' => $newRevision,
             'serverUpdatedAt' => $now,
+        ];
+    }
+
+    /**
+     * Aggregate contest progress stats for the dashboard.
+     *
+     * Only `payload_json` and `updated_at` are fetched; other columns are not
+     * needed. For very large installs (tens of thousands of rows) consider adding
+     * a denormalised `step_count` column so totals can be SUM()ed in SQL.
+     *
+     * @param string $dateFrom  Optional start date, format Y-m-d
+     * @param string $dateTo    Optional end date, format Y-m-d
+     * @param int    $drawThreshold    Stamps required for draw eligibility
+     * @param int    $totalItemsCount  Total enabled items (for sticker eligibility)
+     * @return array{
+     *   totalVisitors: int,
+     *   totalScans: int,
+     *   qualifyDraw: int,
+     *   qualifyStickers: int,
+     *   weekdayCounts: array,
+     *   last7Days: array,
+     *   last30Days: array,
+     *   locationCounts: array,
+     *   locationWeekdays: array,
+     *   locationLast7: array,
+     *   locationLast30: array,
+     *   endDate: \DateTime,
+     *   last7Start: string,
+     *   last30Start: string,
+     * }
+     */
+    public function getStats(
+        string $dateFrom,
+        string $dateTo,
+        int $drawThreshold,
+        int $totalItemsCount
+    ): array {
+        // totalVisitors is a pure SQL count — no PHP memory needed for that number.
+        $countQuery = (new Query())->from('{{%stamppassport_contest_progress}}');
+        if ($dateFrom !== '') {
+            $countQuery->andWhere(['>=', 'updated_at', $dateFrom . ' 00:00:00']);
+        }
+        if ($dateTo !== '') {
+            $countQuery->andWhere(['<=', 'updated_at', $dateTo . ' 23:59:59']);
+        }
+        $totalVisitors = (int)$countQuery->count();
+
+        // Fetch only the two columns we actually process.
+        $rows = (clone $countQuery)
+            ->select(['payload_json', 'updated_at'])
+            ->all();
+
+        $endDate     = $dateTo !== '' ? new \DateTime($dateTo) : new \DateTime('today');
+        $last7Start  = (clone $endDate)->modify('-6 days')->format('Y-m-d');
+        $last30Start = (clone $endDate)->modify('-29 days')->format('Y-m-d');
+
+        $last7Days  = [];
+        $last30Days = [];
+        $d = new \DateTime($last7Start);
+        while ($d->format('Y-m-d') <= $endDate->format('Y-m-d')) {
+            $last7Days[$d->format('Y-m-d')] = 0;
+            $d->modify('+1 day');
+        }
+        $d = new \DateTime($last30Start);
+        while ($d->format('Y-m-d') <= $endDate->format('Y-m-d')) {
+            $last30Days[$d->format('Y-m-d')] = 0;
+            $d->modify('+1 day');
+        }
+
+        $weekdayKeys   = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        $weekdayCounts = array_fill_keys($weekdayKeys, 0);
+
+        $locationCounts   = [];
+        $locationWeekdays = [];
+        $locationLast7    = [];
+        $locationLast30   = [];
+
+        $totalScans      = 0;
+        $qualifyDraw     = 0;
+        $qualifyStickers = 0;
+
+        foreach ($rows as $row) {
+            $payload = json_decode((string)$row['payload_json'], true);
+            $steps   = $payload['progress']['stepsCompleted'] ?? [];
+            if (!is_array($steps)) {
+                $steps = [];
+            }
+
+            $stepCount    = count($steps);
+            $totalScans  += $stepCount;
+
+            if ($stepCount >= $drawThreshold) {
+                $qualifyDraw++;
+            }
+            if ($totalItemsCount > 0 && $stepCount >= $totalItemsCount) {
+                $qualifyStickers++;
+            }
+
+            $ts      = strtotime((string)$row['updated_at']);
+            $date    = date('Y-m-d', $ts);
+            $weekday = date('l', $ts);
+
+            if (isset($weekdayCounts[$weekday])) {
+                $weekdayCounts[$weekday]++;
+            }
+            if (isset($last7Days[$date])) {
+                $last7Days[$date]++;
+            }
+            if (isset($last30Days[$date])) {
+                $last30Days[$date]++;
+            }
+
+            foreach ($steps as $step) {
+                $code = (string)$step;
+                if ($code === '') {
+                    continue;
+                }
+                $locationCounts[$code] = ($locationCounts[$code] ?? 0) + 1;
+                $locationWeekdays[$code][$weekday] = ($locationWeekdays[$code][$weekday] ?? 0) + 1;
+                if (isset($last7Days[$date])) {
+                    $locationLast7[$code][$date] = ($locationLast7[$code][$date] ?? 0) + 1;
+                }
+                if (isset($last30Days[$date])) {
+                    $locationLast30[$code][$date] = ($locationLast30[$code][$date] ?? 0) + 1;
+                }
+            }
+        }
+
+        arsort($locationCounts);
+
+        return [
+            'totalVisitors'    => $totalVisitors,
+            'totalScans'       => $totalScans,
+            'qualifyDraw'      => $qualifyDraw,
+            'qualifyStickers'  => $qualifyStickers,
+            'weekdayCounts'    => $weekdayCounts,
+            'last7Days'        => $last7Days,
+            'last30Days'       => $last30Days,
+            'locationCounts'   => $locationCounts,
+            'locationWeekdays' => $locationWeekdays,
+            'locationLast7'    => $locationLast7,
+            'locationLast30'   => $locationLast30,
+            'endDate'          => $endDate,
+            'last7Start'       => $last7Start,
+            'last30Start'      => $last30Start,
         ];
     }
 

@@ -276,7 +276,7 @@ class CpController extends Controller
             ? (Craft::$app->getSites()->getSiteByHandle($siteHandle) ?? Craft::$app->getSites()->getPrimarySite())
             : Craft::$app->getSites()->getPrimarySite();
 
-        // Validate optional date params — silently discard malformed or impossible calendar dates.
+        // Silently discard malformed or impossible calendar dates.
         $validateDate = static function (string $val): bool {
             $dt = \DateTime::createFromFormat('Y-m-d', $val);
             $err = \DateTime::getLastErrors();
@@ -289,7 +289,9 @@ class CpController extends Controller
             $dateTo = '';
         }
 
-        // Build shortcode → title map for the selected site
+        $settings = Plugin::$plugin->getSettings();
+
+        // Build shortcode → title map for the selected site.
         $itemRows = (new Query())
             ->select(['i.shortCode', 'ic.title'])
             ->from(['i' => '{{%stamppassport_items}}'])
@@ -300,132 +302,46 @@ class CpController extends Controller
             ->all();
 
         $shortCodeToTitle = [];
-        foreach ($itemRows as $itemRow) {
-            $shortCodeToTitle[(string)$itemRow['shortCode']] = (string)($itemRow['title'] ?? $itemRow['shortCode']);
+        foreach ($itemRows as $row) {
+            $shortCodeToTitle[(string)$row['shortCode']] = (string)($row['title'] ?? $row['shortCode']);
         }
 
-        // Total enabled items (used to determine sticker qualification)
         $totalItemsCount = (int)(new Query())
             ->from('{{%stamppassport_items}}')
             ->where(['enabled' => true])
             ->count();
 
-        // Build query with optional date range
-        $query = (new Query())->from('{{%stamppassport_contest_progress}}');
-        if ($dateFrom !== '') {
-            $query->andWhere(['>=', 'updated_at', $dateFrom . ' 00:00:00']);
-        }
-        if ($dateTo !== '') {
-            $query->andWhere(['<=', 'updated_at', $dateTo . ' 23:59:59']);
-        }
-        $rows = $query->all();
+        $stats = Plugin::$plugin->contestProgress->getStats(
+            $dateFrom,
+            $dateTo,
+            $settings->drawThreshold,
+            $totalItemsCount
+        );
 
-        // Reference end date for rolling windows (last 7 / last 30 days)
-        $endDate      = $dateTo !== '' ? new \DateTime($dateTo) : new \DateTime('today');
-        $last7Start   = (clone $endDate)->modify('-6 days')->format('Y-m-d');
-        $last30Start  = (clone $endDate)->modify('-29 days')->format('Y-m-d');
-
-        // Pre-fill day arrays with zeroes so gaps render correctly in charts
-        $last7Days  = [];
-        $last30Days = [];
-        $d = new \DateTime($last7Start);
-        while ($d->format('Y-m-d') <= $endDate->format('Y-m-d')) {
-            $last7Days[$d->format('Y-m-d')] = 0;
-            $d->modify('+1 day');
-        }
-        $d = new \DateTime($last30Start);
-        while ($d->format('Y-m-d') <= $endDate->format('Y-m-d')) {
-            $last30Days[$d->format('Y-m-d')] = 0;
-            $d->modify('+1 day');
-        }
-
+        // Convert shortcodes to titles and build per-location chart data.
         $weekdayKeys = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        $weekdayCounts = array_fill_keys($weekdayKeys, 0);
-
-        $locationCounts   = []; // code  => total_scans
-        $locationWeekdays = []; // code  => [weekday => count]
-        $locationLast7    = []; // code  => [date => count]
-        $locationLast30   = []; // code  => [date => count]
-
-        $totalScans    = 0;
-        $qualifyDraw   = 0;
-        $qualifyStickers = 0;
-        $drawThreshold = Plugin::$plugin->getSettings()->drawThreshold;
-
-        foreach ($rows as $row) {
-            $payload = json_decode((string)$row['payload_json'], true);
-            $steps   = $payload['progress']['stepsCompleted'] ?? [];
-            if (!is_array($steps)) {
-                $steps = [];
-            }
-
-            $stepCount   = count($steps);
-            $totalScans += $stepCount;
-
-            if ($stepCount >= $drawThreshold) {
-                $qualifyDraw++;
-            }
-            if ($totalItemsCount > 0 && $stepCount >= $totalItemsCount) {
-                $qualifyStickers++;
-            }
-
-            $ts      = strtotime((string)$row['updated_at']);
-            $date    = date('Y-m-d', $ts);
-            $weekday = date('l', $ts);
-
-            if (isset($weekdayCounts[$weekday])) {
-                $weekdayCounts[$weekday]++;
-            }
-            if (isset($last7Days[$date])) {
-                $last7Days[$date]++;
-            }
-            if (isset($last30Days[$date])) {
-                $last30Days[$date]++;
-            }
-
-            foreach ($steps as $step) {
-                $code = (string)$step;
-                if ($code === '') {
-                    continue;
-                }
-
-                $locationCounts[$code] = ($locationCounts[$code] ?? 0) + 1;
-
-                $locationWeekdays[$code][$weekday] = ($locationWeekdays[$code][$weekday] ?? 0) + 1;
-
-                if (isset($last7Days[$date])) {
-                    $locationLast7[$code][$date] = ($locationLast7[$code][$date] ?? 0) + 1;
-                }
-                if (isset($last30Days[$date])) {
-                    $locationLast30[$code][$date] = ($locationLast30[$code][$date] ?? 0) + 1;
-                }
-            }
-        }
-
-        arsort($locationCounts);
-
-        // Convert shortcodes to titles and build per-location chart data
         $locationCountsByTitle = [];
         $locationDataByTitle   = [];
-        foreach ($locationCounts as $code => $count) {
+
+        foreach ($stats['locationCounts'] as $code => $count) {
             $title = $shortCodeToTitle[$code] ?? $code;
             $locationCountsByTitle[$title] = $count;
 
-            $lw = $locationWeekdays[$code] ?? [];
+            $lw = $stats['locationWeekdays'][$code] ?? [];
             $weekdayArr = [];
             foreach ($weekdayKeys as $wd) {
                 $weekdayArr[$wd] = $lw[$wd] ?? 0;
             }
 
-            $l7 = $locationLast7[$code] ?? [];
+            $l7  = $stats['locationLast7'][$code]  ?? [];
             $l7Full = [];
-            foreach (array_keys($last7Days) as $d7) {
+            foreach (array_keys($stats['last7Days']) as $d7) {
                 $l7Full[$d7] = $l7[$d7] ?? 0;
             }
 
-            $l30 = $locationLast30[$code] ?? [];
+            $l30 = $stats['locationLast30'][$code] ?? [];
             $l30Full = [];
-            foreach (array_keys($last30Days) as $d30) {
+            foreach (array_keys($stats['last30Days']) as $d30) {
                 $l30Full[$d30] = $l30[$d30] ?? 0;
             }
 
@@ -436,41 +352,37 @@ class CpController extends Controller
             ];
         }
 
-        // Most visited location
-        $mostVisitedCode  = !empty($locationCounts) ? (string)array_key_first($locationCounts) : null;
+        $mostVisitedCode  = !empty($stats['locationCounts']) ? (string)array_key_first($stats['locationCounts']) : null;
         $mostVisitedTitle = $mostVisitedCode !== null ? ($shortCodeToTitle[$mostVisitedCode] ?? $mostVisitedCode) : null;
-        $mostVisitedCount = $mostVisitedCode !== null ? $locationCounts[$mostVisitedCode] : 0;
+        $mostVisitedCount = $mostVisitedCode !== null ? $stats['locationCounts'][$mostVisitedCode] : 0;
 
-        // Avg visits per site (locations with at least 1 scan)
-        $numSitesWithVisits = count($locationCounts);
-        $avgVisitsPerSite   = $numSitesWithVisits > 0 ? round($totalScans / $numSitesWithVisits, 1) : 0;
-
-        $totalVisitors      = count($rows);
-        $avgScansPerVisitor = $totalVisitors > 0 ? round($totalScans / $totalVisitors, 1) : 0;
+        $numSitesWithVisits = count($stats['locationCounts']);
+        $avgVisitsPerSite   = $numSitesWithVisits > 0 ? round($stats['totalScans'] / $numSitesWithVisits, 1) : 0;
+        $avgScansPerVisitor = $stats['totalVisitors'] > 0 ? round($stats['totalScans'] / $stats['totalVisitors'], 1) : 0;
 
         return $this->renderTemplate('stamp-passport/stats/index', [
-            'settings'           => Plugin::$plugin->getSettings(),
-            'allSites'           => Craft::$app->getSites()->getAllSites(),
-            'currentSite'        => $currentSite,
-            'dateFrom'           => $dateFrom,
-            'dateTo'             => $dateTo,
-            'totalScans'         => $totalScans,
-            'totalVisitors'      => $totalVisitors,
-            'avgScansPerVisitor' => $avgScansPerVisitor,
-            'avgVisitsPerSite'   => $avgVisitsPerSite,
-            'mostVisitedSite'    => $mostVisitedTitle,
-            'mostVisitedCount'   => $mostVisitedCount,
-            'qualifyDraw'        => $qualifyDraw,
-            'qualifyStickers'    => $qualifyStickers,
-            'totalItemsCount'    => $totalItemsCount,
-            'locationCounts'     => $locationCountsByTitle,
-            'weekdayCounts'      => $weekdayCounts,
-            'visitsByDayLast7'   => $last7Days,
-            'visitsByDayLast30'  => $last30Days,
-            'locationDataByTitle'=> $locationDataByTitle,
+            'settings'            => $settings,
+            'allSites'            => Craft::$app->getSites()->getAllSites(),
+            'currentSite'         => $currentSite,
+            'dateFrom'            => $dateFrom,
+            'dateTo'              => $dateTo,
+            'totalScans'          => $stats['totalScans'],
+            'totalVisitors'       => $stats['totalVisitors'],
+            'avgScansPerVisitor'  => $avgScansPerVisitor,
+            'avgVisitsPerSite'    => $avgVisitsPerSite,
+            'mostVisitedSite'     => $mostVisitedTitle,
+            'mostVisitedCount'    => $mostVisitedCount,
+            'qualifyDraw'         => $stats['qualifyDraw'],
+            'qualifyStickers'     => $stats['qualifyStickers'],
+            'totalItemsCount'     => $totalItemsCount,
+            'locationCounts'      => $locationCountsByTitle,
+            'weekdayCounts'       => $stats['weekdayCounts'],
+            'visitsByDayLast7'    => $stats['last7Days'],
+            'visitsByDayLast30'   => $stats['last30Days'],
+            'locationDataByTitle' => $locationDataByTitle,
             // Legacy aliases kept for backward compatibility
-            'totalIndividuals'   => $totalVisitors,
-            'avgLocations'       => $avgScansPerVisitor,
+            'totalIndividuals'    => $stats['totalVisitors'],
+            'avgLocations'        => $avgScansPerVisitor,
         ]);
     }
 

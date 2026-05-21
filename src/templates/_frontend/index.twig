@@ -14,6 +14,10 @@
 {% set checkedMarkerUrl = settings.checkedMarkerAssetId ? craft.stampPassport.imageUrl(settings.checkedMarkerAssetId) : null %}
 {% set bodyBackgroundUrl = settings.bodyBackgroundAssetId ? craft.stampPassport.imageUrl(settings.bodyBackgroundAssetId) : null %}
 
+{# Batch-load all item images in one query to avoid N+1 per slot. #}
+{% set _itemImageIds = items|map(i => i.imageId)|filter|unique %}
+{% set _itemImageAssets = _itemImageIds is not empty ? craft.assets.id(_itemImageIds).indexBy('id').all() : {} %}
+
 {# Resolve which logo to show: use alt logo for non-primary language sites when available #}
 {% set currentLang = currentSite.language[:2]|lower %}
 {% set activeLogoUrl = (logoAltUrl and currentLang != 'en') ? logoAltUrl : logoUrl %}
@@ -26,35 +30,38 @@
 
 {% block head %}
     <link rel="stylesheet" href="{{ craft.app.assetManager.getPublishedUrl('@csabourin/stamppassport/web/assets/frontend/css/passport.css', true) }}">
+    {# CSS url() must NOT use |e (HTML-escape) — it encodes & as &amp; which is invalid CSS.
+       Use |replace to encode only the characters that break CSS url() syntax. #}
     {% if woodPanelUrl %}
     <style>
         .passport-header.has-wood-bg {
-            --passport-wood-img: url('{{ woodPanelUrl|e }}');
+            --passport-wood-img: url("{{ woodPanelUrl|replace({'"': '%22'}) }}");
         }
     </style>
     {% endif %}
     {% if bodyBackgroundUrl %}
+    {% set _bgUrl = bodyBackgroundUrl|replace({'"': '%22'}) %}
     <style>
         body.stamp-passport {
             {% if settings.bodyBackgroundMode == 'tiled' %}
-            background-image: url('{{ bodyBackgroundUrl|e }}');
+            background-image: url("{{ _bgUrl }}");
             background-size: auto;
             background-repeat: repeat;
             background-position: left top;
             {% elseif settings.bodyBackgroundMode == 'repeat-y' %}
-            background-image: url('{{ bodyBackgroundUrl|e }}');
+            background-image: url("{{ _bgUrl }}");
             background-size: {{ settings.bodyBackgroundSize ?? '800px' }};
             background-repeat: repeat-y;
             background-position: center top;
             {% if settings.bodyBackgroundColor %}background-color: {{ settings.bodyBackgroundColor }};{% endif %}
             {% elseif settings.bodyBackgroundMode == 'custom' %}
-            background-image: url('{{ bodyBackgroundUrl|e }}');
+            background-image: url("{{ _bgUrl }}");
             background-size: {{ settings.bodyBackgroundSize ?? '800px' }};
             background-repeat: no-repeat;
             background-position: center top;
             {% if settings.bodyBackgroundColor %}background-color: {{ settings.bodyBackgroundColor }};{% endif %}
             {% else %}
-            background-image: url('{{ bodyBackgroundUrl|e }}');
+            background-image: url("{{ _bgUrl }}");
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center top;
@@ -136,11 +143,8 @@
                         data-item-link-url="{{ content.linkUrl ?? '' }}"
                         data-item-link-text="{{ (content is not null and content.linkText is not empty) ? content.linkText : 'Learn more'|t('stamp-passport') }}">
                     <div class="stamp-image">
-                        {% if item.imageId %}
-                            {% set asset = craft.assets.id(item.imageId).one() %}
-                            {% if asset %}
-                                <img src="{{ asset.getUrl() }}" alt="" loading="lazy">
-                            {% endif %}
+                        {% if item.imageId and _itemImageAssets[item.imageId] is defined %}
+                            <img src="{{ _itemImageAssets[item.imageId].getUrl() }}" alt="" loading="lazy">
                         {% endif %}
                         <div class="stamp-check hidden{{ checkedMarkerUrl ? ' has-image' : '' }}" aria-hidden="true">
                             {% if checkedMarkerUrl %}
@@ -226,7 +230,7 @@
 
     {# ── Draw modal ── #}
     {% if drawHandle %}
-        <div id="drawModal" class="passport-modal hidden" role="dialog" aria-labelledby="drawModalTitle">
+        <div id="drawModal" class="passport-modal hidden" role="dialog" aria-modal="true" aria-labelledby="drawModalTitle">
             <div class="passport-modal-backdrop"></div>
             <div class="passport-modal-content">
                 <button class="passport-modal-close" aria-label="{{ 'Close'|t('stamp-passport') }}">&times;</button>
@@ -241,7 +245,7 @@
 
     {# ── Sticker modal ── #}
     {% if stickerHandle %}
-        <div id="stickerModal" class="passport-modal hidden" role="dialog" aria-labelledby="stickerModalTitle">
+        <div id="stickerModal" class="passport-modal hidden" role="dialog" aria-modal="true" aria-labelledby="stickerModalTitle">
             <div class="passport-modal-backdrop"></div>
             <div class="passport-modal-content">
                 <button class="passport-modal-close" aria-label="{{ 'Close'|t('stamp-passport') }}">&times;</button>
@@ -255,7 +259,7 @@
     {% endif %}
 
     {# ── Contest Rules modal (optional — mirrors strip condition above) ── #}
-{% set fullRulesEntry = contestRules.fullRulesEntryId is defined and contestRules.fullRulesEntryId ? craft.entries.id(contestRules.fullRulesEntryId).one() : null %}
+    {# fullRulesEntry was already fetched above; no second query here. #}
     {% if contestRules.linkText is defined and contestRules.linkText is not empty %}
     <div id="contestRulesModal"
          class="passport-modal hidden"

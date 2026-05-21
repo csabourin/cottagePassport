@@ -3,6 +3,8 @@
 namespace csabourin\stamppassport\controllers;
 
 use Craft;
+use craft\elements\Asset;
+use craft\elements\Entry;
 use craft\web\Controller;
 use csabourin\stamppassport\Plugin;
 use yii\web\Response;
@@ -33,6 +35,30 @@ class ApiController extends Controller
         $siteId = Craft::$app->getSites()->getCurrentSite()->id;
         $items = Plugin::$plugin->items->getEnabledItems($siteId);
 
+        // Batch-load all item images and linked entries to avoid N+1 queries.
+        $imageIds = array_values(array_filter(array_unique(array_column($items, 'imageId'))));
+        $imageAssets = [];
+        if ($imageIds) {
+            foreach (Asset::find()->id($imageIds)->all() as $asset) {
+                $imageAssets[$asset->id] = $asset->getUrl();
+            }
+        }
+
+        $linkEntryIds = [];
+        foreach ($items as $item) {
+            foreach ($item->contents as $c) {
+                if ($c->siteId === $siteId && $c->linkEntryId) {
+                    $linkEntryIds[] = (int)$c->linkEntryId;
+                }
+            }
+        }
+        $linkEntryUrls = [];
+        if ($linkEntryIds) {
+            foreach (Entry::find()->id(array_unique($linkEntryIds))->siteId($siteId)->all() as $entry) {
+                $linkEntryUrls[$entry->id] = $entry->getUrl();
+            }
+        }
+
         $data = [];
         foreach ($items as $item) {
             $content = null;
@@ -42,20 +68,12 @@ class ApiController extends Controller
                     break;
                 }
             }
-            $image = null;
-            if ($item->imageId) {
-                $asset = Craft::$app->getAssets()->getAssetById($item->imageId);
-                if ($asset) {
-                    $image = $asset->getUrl();
-                }
-            }
+
+            $image = $item->imageId ? ($imageAssets[$item->imageId] ?? null) : null;
 
             $linkUrl = $content->linkUrl ?? null;
             if ($content && $content->linkEntryId) {
-                $entry = Craft::$app->getEntries()->getEntryById((int)$content->linkEntryId, $siteId);
-                if ($entry) {
-                    $linkUrl = $entry->getUrl();
-                }
+                $linkUrl = $linkEntryUrls[(int)$content->linkEntryId] ?? $linkUrl;
             }
 
             $data[] = [

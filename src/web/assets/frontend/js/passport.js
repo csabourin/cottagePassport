@@ -211,7 +211,7 @@
         return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
     }
 
-    function initCid() {
+    async function initCid() {
         var params = new URL(window.location.href).searchParams;
         var urlCid = params.get('cid');
 
@@ -222,24 +222,47 @@
         }
 
         if (urlCid && isValidUUID(urlCid)) {
-            persistCid(urlCid);
+            await persistCid(urlCid);
             cleanUrlParams(['cid', 'lang']);
             return urlCid;
         }
 
-        var stored = null;
-        stored = safeLsGet('contest:cid');
+        // 1. localStorage — fastest, synchronous
+        var stored = safeLsGet('contest:cid');
         if (stored && isValidUUID(stored)) {
+            // Backfill IDB in case it was never written (e.g. existing users).
+            await persistCid(stored);
             return stored;
         }
 
+        // 2. IDB fallback — survives localStorage being cleared or blocked
+        if (db) {
+            try {
+                var rec = await idbReq(store('meta').get('cid'));
+                if (rec && rec.value && isValidUUID(rec.value)) {
+                    safeLsSet('contest:cid', rec.value); // restore to localStorage
+                    return rec.value;
+                }
+            } catch (e) {}
+        }
+
+        // 3. Generate fresh CID
         var newCid = generateUUID();
-        persistCid(newCid);
+        await persistCid(newCid);
         return newCid;
     }
 
-    function persistCid(cid) {
+    async function persistCid(cid) {
         safeLsSet('contest:cid', cid);
+        if (db) {
+            try {
+                await idbReq(store('meta', 'readwrite').put({
+                    key: 'cid',
+                    value: cid,
+                    updatedAt: new Date().toISOString()
+                }));
+            } catch (e) {}
+        }
     }
 
     function cleanUrlParams(keys) {
@@ -1190,8 +1213,8 @@
     async function init() {
         await initDB();
 
-        /* Initialize contest ID (from URL, localStorage, or generate new) */
-        contestCid = initCid();
+        /* Initialize contest ID (from URL, localStorage, IDB, or generate new) */
+        contestCid = await initCid();
 
         /* Load items from API */
         try {

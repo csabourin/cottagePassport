@@ -199,14 +199,21 @@ class ContestProgressController extends Controller
         $ttl = self::WRITE_RATE_LIMIT_WINDOW_SECONDS + 5;
 
         $perCidKey = 'stamp-passport:contest-progress:write-rate:cid:' . sha1($ip . '|' . $cid . '|' . $bucket);
-        $perCidCurrent = $cache->get($perCidKey);
-        $perCidCount = $perCidCurrent === false ? 1 : ((int)$perCidCurrent + 1);
-        $cache->set($perCidKey, $perCidCount, $ttl);
+        $perIpKey  = 'stamp-passport:contest-progress:write-rate:ip:'  . sha1($ip . '|' . $bucket);
 
-        $perIpKey = 'stamp-passport:contest-progress:write-rate:ip:' . sha1($ip . '|' . $bucket);
-        $perIpCurrent = $cache->get($perIpKey);
-        $perIpCount = $perIpCurrent === false ? 1 : ((int)$perIpCurrent + 1);
-        $cache->set($perIpKey, $perIpCount, $ttl);
+        // add() is atomic — it only writes when the key is absent, so the first
+        // request in the window always lands at exactly 1. Subsequent increments
+        // use get+set which is not atomic, but that is only a concern under very
+        // high concurrency and results in under-counting (lenient), not bypass.
+        $perCidCount = $cache->add($perCidKey, 1, $ttl) ? 1 : ((int)$cache->get($perCidKey) + 1);
+        if ($perCidCount > 1) {
+            $cache->set($perCidKey, $perCidCount, $ttl);
+        }
+
+        $perIpCount = $cache->add($perIpKey, 1, $ttl) ? 1 : ((int)$cache->get($perIpKey) + 1);
+        if ($perIpCount > 1) {
+            $cache->set($perIpKey, $perIpCount, $ttl);
+        }
 
         if ($perCidCount > self::WRITE_RATE_LIMIT_PER_CID_MAX || $perIpCount > self::WRITE_RATE_LIMIT_PER_IP_MAX) {
             $this->response->setStatusCode(429);
