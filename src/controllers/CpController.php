@@ -14,6 +14,12 @@ use yii\web\Response;
 
 class CpController extends Controller
 {
+    public function beforeAction($action): bool
+    {
+        $this->requireCpAccess();
+        return parent::beforeAction($action);
+    }
+
     /**
      * Items listing page.
      */
@@ -161,6 +167,9 @@ class CpController extends Controller
         if (is_string($ids)) {
             $ids = json_decode($ids, true) ?? [];
         }
+        if (!is_array($ids) || count($ids) > 500) {
+            return $this->asJson(['success' => false]);
+        }
         Plugin::$plugin->items->reorder($ids);
 
         return $this->asJson(['success' => true]);
@@ -267,11 +276,16 @@ class CpController extends Controller
             ? (Craft::$app->getSites()->getSiteByHandle($siteHandle) ?? Craft::$app->getSites()->getPrimarySite())
             : Craft::$app->getSites()->getPrimarySite();
 
-        // Validate optional date params — silently discard malformed values.
-        if ($dateFrom !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFrom)) {
+        // Validate optional date params — silently discard malformed or impossible calendar dates.
+        $validateDate = static function (string $val): bool {
+            $dt = \DateTime::createFromFormat('Y-m-d', $val);
+            $err = \DateTime::getLastErrors();
+            return $dt !== false && (!$err || ($err['warning_count'] === 0 && $err['error_count'] === 0));
+        };
+        if ($dateFrom !== '' && !$validateDate($dateFrom)) {
             $dateFrom = '';
         }
-        if ($dateTo !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateTo)) {
+        if ($dateTo !== '' && !$validateDate($dateTo)) {
             $dateTo = '';
         }
 
@@ -570,10 +584,10 @@ class CpController extends Controller
             $settings->siteRoutePrefixes = $cleanedPrefixes;
         }
         $settings->enableGeofence = (bool)$request->getBodyParam('enableGeofence');
-        $settings->geofenceRadius = (int)$request->getBodyParam('geofenceRadius', 550);
+        $settings->geofenceRadius = max(1, (int)$request->getBodyParam('geofenceRadius', 550));
         $settings->ga4MeasurementId = $request->getBodyParam('ga4MeasurementId') ?: null;
-        $settings->drawThreshold = (int)$request->getBodyParam('drawThreshold', 5);
-        $settings->maxStickers = (int)$request->getBodyParam('maxStickers', 100);
+        $settings->drawThreshold = max(1, (int)$request->getBodyParam('drawThreshold', 5));
+        $settings->maxStickers = max(1, (int)$request->getBodyParam('maxStickers', 100));
         $settings->freeformDrawFormHandle = $request->getBodyParam('freeformDrawFormHandle') ?: null;
         $settings->freeformStickerFormHandle = $request->getBodyParam('freeformStickerFormHandle') ?: null;
 
@@ -608,6 +622,11 @@ class CpController extends Controller
         $settings->bodyBackgroundMode = in_array($bodyBackgroundMode, ['cover', 'tiled', 'custom', 'repeat-y'], true) ? $bodyBackgroundMode : 'cover';
 
         $bodyBackgroundSize = trim((string)$request->getBodyParam('bodyBackgroundSize', $settings->bodyBackgroundSize));
+        // Whitelist safe CSS size tokens to prevent property injection via the style block.
+        if ($bodyBackgroundSize !== '' && !preg_match('/^\d+(\.\d+)?(px|%|vw|vh|vmin|vmax|em|rem)$/', $bodyBackgroundSize)
+            && !in_array($bodyBackgroundSize, ['auto', 'cover', 'contain'], true)) {
+            $bodyBackgroundSize = '';
+        }
         $settings->bodyBackgroundSize = $bodyBackgroundSize !== '' ? $bodyBackgroundSize : '800px';
 
         $bodyBackgroundColor = trim((string)$request->getBodyParam('bodyBackgroundColor', ''));

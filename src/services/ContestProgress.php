@@ -13,6 +13,8 @@ class ContestProgress extends Component
     /** Anonymous write token lifetime in seconds */
     public const WRITE_TOKEN_TTL = 600; // 10 minutes
     private const WRITE_TOKEN_PURPOSE = 'stamp-passport.contest-progress.write-token';
+    private const MAX_STEPS_COMPLETED = 500;
+    private const MAX_STEP_LENGTH = 64;
 
     /**
      * Validate that a string is a valid UUID v4.
@@ -51,6 +53,10 @@ class ContestProgress extends Component
         if (!isset($payload['updatedAt']) || !is_string($payload['updatedAt'])) {
             return 'missing_or_invalid_updated_at';
         }
+        // Must be an ISO 8601 datetime (YYYY-MM-DDTHH:MM:SS prefix)
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/', $payload['updatedAt'])) {
+            return 'missing_or_invalid_updated_at';
+        }
 
         $progress = $payload['progress'];
 
@@ -58,14 +64,26 @@ class ContestProgress extends Component
             return 'missing_or_invalid_steps_completed';
         }
 
+        if (count($progress['stepsCompleted']) > self::MAX_STEPS_COMPLETED) {
+            return 'too_many_steps_completed';
+        }
+
         foreach ($progress['stepsCompleted'] as $step) {
             if (!is_string($step) || $step === '') {
                 return 'invalid_step_in_steps_completed';
+            }
+            if (strlen($step) > self::MAX_STEP_LENGTH) {
+                return 'step_too_long';
             }
         }
 
         if (!isset($progress['score']) || !is_int($progress['score'])) {
             return 'missing_or_invalid_score';
+        }
+
+        $stepCount = count($progress['stepsCompleted']);
+        if ($progress['score'] < 0 || $progress['score'] > $stepCount) {
+            return 'invalid_score';
         }
 
         return null;

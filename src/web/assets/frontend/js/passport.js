@@ -137,8 +137,9 @@
 
     async function fetchLocations() {
         var res = await fetch(CFG.locationsUrl, { headers: { Accept: 'application/json' } });
+        if (!res.ok) throw new Error('Failed to load items. (HTTP ' + res.status + ')');
         var data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to load items.');
+        if (!data.success) throw new Error(data.error || 'Failed to load items.');
         return data.items || [];
     }
 
@@ -148,14 +149,18 @@
             headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
             body: JSON.stringify({ shortCode: shortCode, latitude: lat, longitude: lng }),
         });
-        return res.json();
+        try { return await res.json(); } catch (e) {
+            return { success: false, error: 'Server error (' + res.status + ')' };
+        }
     }
 
     async function apiResolve(shortCode) {
         var res = await fetch(CFG.resolveUrl + '?q=' + encodeURIComponent(shortCode), {
             headers: { Accept: 'application/json' },
         });
-        return res.json();
+        try { return await res.json(); } catch (e) {
+            return { success: false, error: 'Server error (' + res.status + ')' };
+        }
     }
 
     /* ═══════════════════════════════════════════
@@ -1191,10 +1196,11 @@
             }
 
             if (currentItem) {
+                var itemToCollect = currentItem;
                 showDisclaimerOnce(function () {
-                    collectStamp(currentItem).then(function () {
-                        scrollToSlot(currentItem.shortCode);
-                    });
+                    collectStamp(itemToCollect).then(function () {
+                        scrollToSlot(itemToCollect.shortCode);
+                    }).catch(function () {});
                 });
             } else {
                 showStatus(TXT.qrNotRecognized || 'This QR code is not recognized.');

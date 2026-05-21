@@ -95,52 +95,87 @@ class Items extends Component
             $record->sortOrder = $attributes['sortOrder'];
         }
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        // Reject any content keys that don't map to a real site — prevents orphaned
+        // rows and stops callers from writing content to non-existent or inaccessible sites.
+        $validSiteIds = array_map(
+            static fn($s) => $s->id,
+            Craft::$app->getSites()->getAllSites()
+        );
+        $content = array_filter(
+            $content,
+            static fn($siteId) => is_numeric($siteId) && in_array((int)$siteId, $validSiteIds, true),
+            ARRAY_FILTER_USE_KEY
+        );
 
-        try {
-            if (!$record->save()) {
-                $transaction->rollBack();
-                return false;
+        $db = Craft::$app->getDb();
+
+        // For new records, retry a few times on a shortCode collision (unique DB index is
+        // the authoritative guard; the retry closes the TOCTOU window between exists() and INSERT).
+        $maxAttempts = $id ? 1 : 3;
+
+        for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
+            if (!$id && $attempt > 0) {
+                $record->shortCode = $this->_generateShortCode();
             }
 
-            // Save per-site content
-            foreach ($content as $siteId => $fields) {
-                $contentRecord = ItemContentRecord::findOne([
-                    'itemId' => $record->id,
-                    'siteId' => $siteId,
-                ]);
+            $transaction = $db->beginTransaction();
 
-                if (!$contentRecord) {
-                    $contentRecord = new ItemContentRecord();
-                    $contentRecord->itemId = $record->id;
-                    $contentRecord->siteId = (int)$siteId;
-                }
-
-                $contentRecord->title = $fields['title'] ?? null;
-                $contentRecord->description = $fields['description'] ?? null;
-                $contentRecord->linkUrl = $fields['linkUrl'] ?? null;
-                $rawLinkEntryId = $fields['linkEntryId'] ?? null;
-                if (is_array($rawLinkEntryId)) {
-                    $rawLinkEntryId = $rawLinkEntryId[0] ?? null;
-                }
-                $contentRecord->linkEntryId = ((int)$rawLinkEntryId ?: null);
-                $contentRecord->linkText = $fields['linkText'] ?? null;
-
-                if (!$contentRecord->save()) {
+            try {
+                if (!$record->save()) {
                     $transaction->rollBack();
+                    Craft::error('Item save failed: ' . print_r($record->getErrors(), true), __METHOD__);
                     return false;
                 }
-            }
 
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-            Craft::error('Failed to save item: ' . $e->getMessage(), __METHOD__);
-            return false;
+                // Save per-site content
+                foreach ($content as $siteId => $fields) {
+                    $siteId = (int)$siteId;
+                    $contentRecord = ItemContentRecord::findOne([
+                        'itemId' => $record->id,
+                        'siteId' => $siteId,
+                    ]);
+
+                    if (!$contentRecord) {
+                        $contentRecord = new ItemContentRecord();
+                        $contentRecord->itemId = $record->id;
+                        $contentRecord->siteId = $siteId;
+                    }
+
+                    $contentRecord->title = $fields['title'] ?? null;
+                    $contentRecord->description = $fields['description'] ?? null;
+                    $contentRecord->linkUrl = $fields['linkUrl'] ?? null;
+                    $rawLinkEntryId = $fields['linkEntryId'] ?? null;
+                    if (is_array($rawLinkEntryId)) {
+                        $rawLinkEntryId = $rawLinkEntryId[0] ?? null;
+                    }
+                    $contentRecord->linkEntryId = ((int)$rawLinkEntryId ?: null);
+                    $contentRecord->linkText = $fields['linkText'] ?? null;
+
+                    if (!$contentRecord->save()) {
+                        $transaction->rollBack();
+                        return false;
+                    }
+                }
+
+                $transaction->commit();
+                return $record;
+
+            } catch (\yii\db\IntegrityException $e) {
+                $transaction->rollBack();
+                // If this is a new record and we have retries left, regenerate the short code
+                if (!$id && $attempt < $maxAttempts - 1) {
+                    continue;
+                }
+                Craft::error('Failed to save item (integrity constraint): ' . $e->getMessage(), __METHOD__);
+                return false;
+            } catch (\Throwable $e) {
+                $transaction->rollBack();
+                Craft::error('Failed to save item: ' . $e->getMessage(), __METHOD__);
+                return false;
+            }
         }
 
-        return $record;
+        return false;
     }
 
     /**

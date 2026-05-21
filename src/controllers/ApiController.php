@@ -35,7 +35,13 @@ class ApiController extends Controller
 
         $data = [];
         foreach ($items as $item) {
-            $content = $item->contents[0] ?? null;
+            $content = null;
+            foreach ($item->contents as $c) {
+                if ($c->siteId === $siteId) {
+                    $content = $c;
+                    break;
+                }
+            }
             $image = null;
             if ($item->imageId) {
                 $asset = Craft::$app->getAssets()->getAssetById($item->imageId);
@@ -88,8 +94,15 @@ class ApiController extends Controller
 
         $request = Craft::$app->getRequest();
         $shortCode = $request->getRequiredBodyParam('shortCode');
-        $lat = (float)$request->getRequiredBodyParam('latitude');
-        $lng = (float)$request->getRequiredBodyParam('longitude');
+        $rawLat = $request->getRequiredBodyParam('latitude');
+        $rawLng = $request->getRequiredBodyParam('longitude');
+
+        if (!is_numeric($rawLat) || !is_numeric($rawLng)) {
+            throw new \yii\web\BadRequestHttpException('Invalid coordinates.');
+        }
+
+        $lat = (float)$rawLat;
+        $lng = (float)$rawLng;
 
         if (!is_finite($lat) || $lat < -90.0 || $lat > 90.0 ||
             !is_finite($lng) || $lng < -180.0 || $lng > 180.0) {
