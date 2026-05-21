@@ -16,7 +16,7 @@ class CpController extends Controller
 {
     public function beforeAction($action): bool
     {
-        $this->requireCpAccess();
+        $this->requirePermission('accessCp');
         return parent::beforeAction($action);
     }
 
