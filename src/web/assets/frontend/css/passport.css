@@ -1,4 +1,4 @@
-/* ============================================================
+font-family/* ============================================================
    STAMP PASSPORT — Frontend Theme
    Draws from _legacy/styles.css (plaid) and _legacy/styles-cottage.css (wood)
    WCAG 2.2 AA compliant — mobile-first
@@ -377,7 +377,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 .stamp-slot-btn {
     width: 100%;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 16px;
     padding: 16px 20px;
     border: none;
@@ -399,8 +399,8 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 
 /* Item thumbnail */
 .stamp-image {
-    width: 113px;
-    height: 113px;
+    width: 200px;
+    height: 200px;
     flex-shrink: 0;
     background: #e4ddd4;
     border-radius: var(--passport-radius);
@@ -485,8 +485,8 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 }
 
 .stamp-title {
-    font-family: "Playfair Display", Georgia, serif;
-    font-size: 1.1rem;
+    font-family: "Cabin", Arial, Helvetica, sans-serif;
+    font-size: 2.1rem;
     font-weight: 700;
     color: var(--passport-teal);
     margin: 0 0 6px;
@@ -741,6 +741,16 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     padding: .5rem;
     display: flex;
     justify-content: center;
+ }
+
+ .passport-rules-trigger {
+    background: none;
+    border: none;
+    color: var(--passport-teal);
+    text-decoration: underline;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
  }
 
 /* ══════════════════════════════════════════════════════════
