@@ -1,45 +1,27 @@
 {% js %}
 (function () {
-    var btn = document.getElementById('sp-site-btn');
     var links = Array.prototype.slice.call(document.querySelectorAll('.sp-site-link'));
     if (!links.length) return;
 
     links.forEach(function (link) {
         link.addEventListener('click', function (e) {
             e.preventDefault();
-            var href = this.href;
-            var siteName = this.textContent.trim();
+            var targetHref = this.href;
 
-            // Optimistic: update button text immediately
-            if (btn) btn.textContent = siteName;
-
-            fetch(href, { credentials: 'same-origin' })
-                .then(function (r) { return r.text(); })
-                .then(function (html) {
-                    var doc = (new DOMParser()).parseFromString(html, 'text/html');
-
-                    // Swap the main content area
-                    var newContent = doc.getElementById('content');
-                    var oldContent = document.getElementById('content');
-                    if (newContent && oldContent) {
-                        oldContent.innerHTML = newContent.innerHTML;
-                        // Re-initialize Craft UI widgets (element selects, lightswitches, etc.)
-                        if (window.Craft && Craft.initUiElements) {
-                            Craft.initUiElements(oldContent);
-                        }
-                    }
-
-                    // Update active state in the dropdown (links stay in the header, not swapped)
-                    links.forEach(function (l) {
-                        l.classList.toggle('sel', l === link);
-                    });
-
-                    history.pushState(null, '', href);
-                })
-                .catch(function () {
-                    // Fallback to normal navigation
-                    window.location.href = href;
+            // Save the current site's form before navigating so no changes are lost
+            var form = document.querySelector('form[method="post"]');
+            if (form) {
+                fetch(form.action || window.location.href, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    credentials: 'same-origin',
+                    redirect: 'manual',
+                }).finally(function () {
+                    window.location.href = targetHref;
                 });
+            } else {
+                window.location.href = targetHref;
+            }
         });
     });
 })();

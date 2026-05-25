@@ -415,7 +415,8 @@ class CpController extends Controller
         $settings = Plugin::$plugin->getSettings();
 
         $raw     = $request->getBodyParam('contestRules', []);
-        $cleaned = [];
+        // Start from existing saved values so unposted sites are not clobbered
+        $cleaned = is_array($settings->contestRules) ? $settings->contestRules : [];
 
         if (is_array($raw)) {
             foreach ($raw as $handle => $fields) {
@@ -427,7 +428,6 @@ class CpController extends Controller
                 $fullRulesText = trim((string)($fields['fullRulesText'] ?? ''));
                 $fullRulesEntryId = (int)($fields['fullRulesEntryId'][0] ?? 0);
 
-                // Only store entries that have at least a link label
                 if ($linkText !== '') {
                     $cleaned[$handle] = [
                         'linkText'      => $linkText,
@@ -435,6 +435,9 @@ class CpController extends Controller
                         'fullRulesText' => $fullRulesText,
                         'fullRulesEntryId' => $fullRulesEntryId ?: null,
                     ];
+                } else {
+                    // Explicitly clear this site's rules when linkText is removed
+                    unset($cleaned[$handle]);
                 }
             }
         }
