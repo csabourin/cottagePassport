@@ -288,6 +288,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     font-size: clamp(1.4rem, 4vw, 1.9rem);
     font-weight: 400;
     letter-spacing: 0.04em;
+    line-height: 1.75;
 }
 
 .passport-title-bold {
