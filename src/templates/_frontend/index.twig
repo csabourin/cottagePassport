@@ -104,7 +104,7 @@
 
         <div class="passport-header-logo">
             {% if activeLogoUrl %}
-                <img src="{{ activeLogoUrl }}" alt="{{ settings.pluginName }}" class="passport-logo">
+                <img src="{{ activeLogoUrl|e('html_attr') }}" alt="{{ settings.pluginName }}" class="passport-logo">
             {% else %}
                 <div class="passport-logo-placeholder">🍁</div>
             {% endif %}
@@ -140,8 +140,8 @@
                         aria-label="{{ 'Details'|t('stamp-passport') }}: {{ content.title ?? '' }}"
                         aria-haspopup="dialog"
                         data-item-id="{{ item.id }}"
-                        data-item-link-url="{{ content.linkUrl ?? '' }}"
-                        data-item-link-text="{{ (content is not null and content.linkText is not empty) ? content.linkText : 'Learn more'|t('stamp-passport') }}">
+                        data-item-link-url="{{ (content.linkUrl ?? '')|e('html_attr') }}"
+                        data-item-link-text="{{ ((content is not null and content.linkText is not empty) ? content.linkText : 'Learn more'|t('stamp-passport'))|e('html_attr') }}">
                     <div class="stamp-image">
                         {% if item.imageId and _itemImageAssets[item.imageId] is defined %}
                             <img src="{{ _itemImageAssets[item.imageId].getUrl() }}" alt="" loading="lazy">

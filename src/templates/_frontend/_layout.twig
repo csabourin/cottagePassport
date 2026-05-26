@@ -275,7 +275,7 @@
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', '{{ ga4Id }}');
+            gtag('config', '{{ ga4Id|e('js') }}');
         </script>
     {% endif %}
 </head>
