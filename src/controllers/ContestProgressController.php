@@ -82,7 +82,7 @@ class ContestProgressController extends Controller
             'cid' => $record->contest_id,
             'revision' => (int)$record->revision,
             'payload' => json_decode($record->payload_json, true),
-            'serverUpdatedAt' => $record->updated_at,
+            'serverUpdatedAt' => $record->dateUpdated,
             'writeToken' => $writeToken,
         ]);
     }

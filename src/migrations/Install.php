@@ -127,8 +127,9 @@ class Install extends Migration
             'payload_json' => $this->text()->notNull(),
             'payload_hash' => $this->char(64)->notNull(),
             'revision' => $this->integer()->notNull()->defaultValue(1),
-            'updated_at' => $this->dateTime()->notNull(),
-            'created_at' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid()->notNull(),
         ]);
 
         $this->addPrimaryKey(
@@ -138,9 +139,9 @@ class Install extends Migration
         );
 
         $this->createIndex(
-            'idx_stamppassport_contest_progress_updated_at',
+            'idx_stamppassport_contest_progress_dateUpdated',
             '{{%stamppassport_contest_progress}}',
-            'updated_at'
+            'dateUpdated'
         );
     }
 }

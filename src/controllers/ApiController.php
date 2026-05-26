@@ -112,6 +112,12 @@ class ApiController extends Controller
 
         $request = Craft::$app->getRequest();
         $shortCode = $request->getRequiredBodyParam('shortCode');
+
+        if (!is_string($shortCode) || !preg_match('/^[a-z0-9]{1,12}$/i', $shortCode)) {
+            $this->response->setStatusCode(404);
+            return $this->asJson(['success' => false, 'error' => Craft::t('stamp-passport', 'Invalid QR code.')]);
+        }
+
         $rawLat = $request->getRequiredBodyParam('latitude');
         $rawLng = $request->getRequiredBodyParam('longitude');
 
@@ -178,6 +184,12 @@ class ApiController extends Controller
     public function actionResolve(): Response
     {
         $shortCode = Craft::$app->getRequest()->getRequiredQueryParam('q');
+
+        if (!is_string($shortCode) || !preg_match('/^[a-z0-9]{1,12}$/i', $shortCode)) {
+            $this->response->setStatusCode(404);
+            return $this->asJson(['success' => false, 'error' => Craft::t('stamp-passport', 'Invalid QR code.')]);
+        }
+
         $item = Plugin::$plugin->items->getItemByShortCode($shortCode);
 
         if (!$item || !$item->enabled) {

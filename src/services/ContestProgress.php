@@ -256,8 +256,9 @@ class ContestProgress extends Component
             $record->payload_json = $payloadJson;
             $record->payload_hash = $payloadHash;
             $record->revision = 1;
-            $record->updated_at = $now;
-            $record->created_at = $now;
+            $record->dateUpdated = $now;
+            $record->dateCreated = $now;
+            $record->uid = \craft\helpers\StringHelper::UUID();
 
             if (!$record->save(false)) {
                 return ['ok' => false, 'error' => 'save_failed'];
@@ -277,7 +278,7 @@ class ContestProgress extends Component
                 'error' => 'conflict',
                 'serverRevision' => (int)$record->revision,
                 'serverPayload' => json_decode($record->payload_json, true),
-                'serverUpdatedAt' => $record->updated_at,
+                'serverUpdatedAt' => $record->dateUpdated,
             ];
         }
 
@@ -286,7 +287,7 @@ class ContestProgress extends Component
             return [
                 'ok' => true,
                 'revision' => (int)$record->revision,
-                'serverUpdatedAt' => $record->updated_at,
+                'serverUpdatedAt' => $record->dateUpdated,
             ];
         }
 
@@ -299,7 +300,7 @@ class ContestProgress extends Component
                     'payload_json' => $payloadJson,
                     'payload_hash' => $payloadHash,
                     'revision' => $newRevision,
-                    'updated_at' => $now,
+                    'dateUpdated' => $now,
                 ],
                 [
                     'contest_id' => $cid,
@@ -316,7 +317,7 @@ class ContestProgress extends Component
                 'error' => 'conflict',
                 'serverRevision' => (int)$record->revision,
                 'serverPayload' => json_decode($record->payload_json, true),
-                'serverUpdatedAt' => $record->updated_at,
+                'serverUpdatedAt' => $record->dateUpdated,
             ];
         }
 
@@ -330,7 +331,7 @@ class ContestProgress extends Component
     /**
      * Aggregate contest progress stats for the dashboard.
      *
-     * Only `payload_json` and `updated_at` are fetched; other columns are not
+     * Only `payload_json` and `dateUpdated` are fetched; other columns are not
      * needed. For very large installs (tens of thousands of rows) consider adding
      * a denormalised `step_count` column so totals can be SUM()ed in SQL.
      *
@@ -364,16 +365,16 @@ class ContestProgress extends Component
         // totalVisitors is a pure SQL count — no PHP memory needed for that number.
         $countQuery = (new Query())->from('{{%stamppassport_contest_progress}}');
         if ($dateFrom !== '') {
-            $countQuery->andWhere(['>=', 'updated_at', $dateFrom . ' 00:00:00']);
+            $countQuery->andWhere(['>=', 'dateUpdated', $dateFrom . ' 00:00:00']);
         }
         if ($dateTo !== '') {
-            $countQuery->andWhere(['<=', 'updated_at', $dateTo . ' 23:59:59']);
+            $countQuery->andWhere(['<=', 'dateUpdated', $dateTo . ' 23:59:59']);
         }
         $totalVisitors = (int)$countQuery->count();
 
         // Fetch only the two columns we actually process.
         $rows = (clone $countQuery)
-            ->select(['payload_json', 'updated_at'])
+            ->select(['payload_json', 'dateUpdated'])
             ->all();
 
         $endDate     = $dateTo !== '' ? new \DateTime($dateTo) : new \DateTime('today');
@@ -422,7 +423,7 @@ class ContestProgress extends Component
                 $qualifyStickers++;
             }
 
-            $ts      = strtotime((string)$row['updated_at']);
+            $ts      = strtotime((string)$row['dateUpdated']);
             $date    = date('Y-m-d', $ts);
             $weekday = date('l', $ts);
 

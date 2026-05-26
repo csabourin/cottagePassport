@@ -7,14 +7,15 @@
     { label: settings.pluginName, url: url('stamp-passport') },
 ] %}
 
-{# Serialise chart data for JS #}
-{% set jsWeekdayLabels = weekdayCounts|keys|json_encode %}
-{% set jsWeekdayValues = weekdayCounts|values|json_encode %}
-{% set jsLast7Labels   = visitsByDayLast7|keys|json_encode %}
-{% set jsLast7Values   = visitsByDayLast7|values|json_encode %}
-{% set jsLast30Labels  = visitsByDayLast30|keys|json_encode %}
-{% set jsLast30Values  = visitsByDayLast30|values|json_encode %}
-{% set jsLocationData  = locationDataByTitle|json_encode %}
+{# Serialise chart data for JS — JSON_HEX_TAG|JSON_HEX_AMP prevents </script> injection #}
+{% set _jsonFlags = constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') %}
+{% set jsWeekdayLabels = weekdayCounts|keys|json_encode(_jsonFlags) %}
+{% set jsWeekdayValues = weekdayCounts|values|json_encode(_jsonFlags) %}
+{% set jsLast7Labels   = visitsByDayLast7|keys|json_encode(_jsonFlags) %}
+{% set jsLast7Values   = visitsByDayLast7|values|json_encode(_jsonFlags) %}
+{% set jsLast30Labels  = visitsByDayLast30|keys|json_encode(_jsonFlags) %}
+{% set jsLast30Values  = visitsByDayLast30|values|json_encode(_jsonFlags) %}
+{% set jsLocationData  = locationDataByTitle|json_encode(_jsonFlags) %}
 
 {% do view.registerAssetBundle('csabourin\\stamppassport\\web\\assets\\cp\\CpAsset') %}
 

@@ -18,8 +18,9 @@ class m260226_000000_create_contest_progress_table extends Migration
                 'payload_json' => $this->text()->notNull(),
                 'payload_hash' => $this->char(64)->notNull(),
                 'revision' => $this->integer()->notNull()->defaultValue(1),
-                'updated_at' => $this->dateTime()->notNull(),
-                'created_at' => $this->dateTime()->notNull(),
+                'dateUpdated' => $this->dateTime()->notNull(),
+                'dateCreated' => $this->dateTime()->notNull(),
+                'uid' => $this->uid()->notNull(),
             ]);
 
             $this->addPrimaryKey(
@@ -29,9 +30,9 @@ class m260226_000000_create_contest_progress_table extends Migration
             );
 
             $this->createIndex(
-                'idx_stamppassport_contest_progress_updated_at',
+                'idx_stamppassport_contest_progress_dateUpdated',
                 '{{%stamppassport_contest_progress}}',
-                'updated_at'
+                'dateUpdated'
             );
         }
 

@@ -57,7 +57,7 @@
 
         try {
             var currentLang = '{{ currentSite.language[:2] }}'.toLowerCase();
-            var sites = {{ sitesJson|json_encode|raw }};
+            var sites = {{ sitesJson|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP'))|raw }};
             var params = new URL(window.location.href).searchParams;
             // For direct QR visits, prefer immediate feedback over hiding the page
             // while language routing checks local browser storage.
@@ -304,7 +304,7 @@
             showLanguageSwitcher: {{ craft.stampPassport.settings.showLanguageSwitcher ? 'true' : 'false' }},
             requireDisclaimerAck: {{ craft.stampPassport.settings.requireDisclaimerAck ? 'true' : 'false' }},
             lang: '{{ currentSite.language[:2] }}',
-            sites: {{ sitesJson|json_encode|raw }},
+            sites: {{ sitesJson|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP'))|raw }},
             text: {
                 alreadyCheckedIn: '{{ t.text("alreadyCheckedIn")|e("js") }}',
                 checkingLocation: '{{ t.text("checkingLocation")|e("js") }}',

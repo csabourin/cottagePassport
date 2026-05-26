@@ -62,6 +62,11 @@
     {{ forms.textField({ label: textLabels['qrNotRecognized'], name: 'uiText[' ~ currentSite.handle ~ '][qrNotRecognized]', value: settings.uiText[currentSite.handle]['qrNotRecognized'] ?? '', placeholder: defaults['qrNotRecognized'] }) }}
     {{ forms.textField({ label: textLabels['loadError'], name: 'uiText[' ~ currentSite.handle ~ '][loadError]', value: settings.uiText[currentSite.handle]['loadError'] ?? '', placeholder: defaults['loadError'] }) }}
 
+    <hr>
+    <h2>{{ "Social Sharing"|t('stamp-passport') }}</h2>
+    {{ forms.textField({ label: textLabels['ogTitle'], name: 'uiText[' ~ currentSite.handle ~ '][ogTitle]', value: settings.uiText[currentSite.handle]['ogTitle'] ?? '', placeholder: defaults['ogTitle'] }) }}
+    {{ forms.textField({ label: textLabels['ogDescription'], name: 'uiText[' ~ currentSite.handle ~ '][ogDescription]', value: settings.uiText[currentSite.handle]['ogDescription'] ?? '', placeholder: defaults['ogDescription'] }) }}
+
 </form>
 
 {% include 'stamp-passport/_cp-site-switcher-js' %}
