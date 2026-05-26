@@ -24,18 +24,25 @@ class m260526_000000_rename_contest_progress_columns extends Migration
 
         // Rename updated_at → dateUpdated
         if ($schema->getColumn('updated_at') && !$schema->getColumn('dateUpdated')) {
-            // Drop the old index before renaming
-            if ($schema->getIndex('idx_stamppassport_contest_progress_updated_at')) {
+            // Drop the old index — wrap in try/catch because TableSchema has no
+            // index-existence check and the index name may differ across installs.
+            try {
                 $this->dropIndex('idx_stamppassport_contest_progress_updated_at', $table);
+            } catch (\Throwable $e) {
+                // Index didn't exist or had a different name — safe to continue.
             }
 
             $this->renameColumn($table, 'updated_at', 'dateUpdated');
 
-            $this->createIndex(
-                'idx_stamppassport_contest_progress_dateUpdated',
-                $table,
-                'dateUpdated'
-            );
+            try {
+                $this->createIndex(
+                    'idx_stamppassport_contest_progress_dateUpdated',
+                    $table,
+                    'dateUpdated'
+                );
+            } catch (\Throwable $e) {
+                // Index already exists under this name — safe to continue.
+            }
         }
 
         // Rename created_at → dateCreated
@@ -68,11 +75,19 @@ class m260526_000000_rename_contest_progress_columns extends Migration
         $schema = $this->db->getTableSchema($table);
 
         if ($schema->getColumn('dateUpdated') && !$schema->getColumn('updated_at')) {
-            if ($schema->getIndex('idx_stamppassport_contest_progress_dateUpdated')) {
+            try {
                 $this->dropIndex('idx_stamppassport_contest_progress_dateUpdated', $table);
+            } catch (\Throwable $e) {
+                // Index didn't exist — safe to continue.
             }
+
             $this->renameColumn($table, 'dateUpdated', 'updated_at');
-            $this->createIndex('idx_stamppassport_contest_progress_updated_at', $table, 'updated_at');
+
+            try {
+                $this->createIndex('idx_stamppassport_contest_progress_updated_at', $table, 'updated_at');
+            } catch (\Throwable $e) {
+                // Index already exists — safe to continue.
+            }
         }
 
         if ($schema->getColumn('dateCreated') && !$schema->getColumn('created_at')) {
