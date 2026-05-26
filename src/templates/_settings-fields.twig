@@ -43,7 +43,7 @@
     criteria: { kind: 'image' },
     limit: 1,
     elements: logoElements,
-    modalStorageKey: 'stamp-passport.logoAsset',
+    modalStorageKey: 'stamp-passport.assets',
 }) }}
 
 {% set logoAltElements = settings.logoAltAssetId ? craft.assets.id(settings.logoAltAssetId).all() : [] %}
@@ -56,7 +56,7 @@
     criteria: { kind: 'image' },
     limit: 1,
     elements: logoAltElements,
-    modalStorageKey: 'stamp-passport.logoAltAsset',
+    modalStorageKey: 'stamp-passport.assets',
 }) }}
 
 {% set faviconElements = settings.faviconAssetId ? craft.assets.id(settings.faviconAssetId).all() : [] %}
@@ -69,7 +69,7 @@
     criteria: { kind: 'image' },
     limit: 1,
     elements: faviconElements,
-    modalStorageKey: 'stamp-passport.faviconAsset',
+    modalStorageKey: 'stamp-passport.assets',
 }) }}
 
 {% set woodElements = settings.woodPanelAssetId ? craft.assets.id(settings.woodPanelAssetId).all() : [] %}
@@ -82,7 +82,7 @@
     criteria: { kind: 'image' },
     limit: 1,
     elements: woodElements,
-    modalStorageKey: 'stamp-passport.woodPanelAsset',
+    modalStorageKey: 'stamp-passport.assets',
 }) }}
 
 {% set checkedMarkerElements = settings.checkedMarkerAssetId ? craft.assets.id(settings.checkedMarkerAssetId).all() : [] %}
@@ -95,7 +95,7 @@
     criteria: { kind: 'image' },
     limit: 1,
     elements: checkedMarkerElements,
-    modalStorageKey: 'stamp-passport.checkedMarkerAsset',
+    modalStorageKey: 'stamp-passport.assets',
 }) }}
 
 {% set bodyBackgroundElements = settings.bodyBackgroundAssetId ? craft.assets.id(settings.bodyBackgroundAssetId).all() : [] %}
@@ -108,7 +108,7 @@
     criteria: { kind: 'image' },
     limit: 1,
     elements: bodyBackgroundElements,
-    modalStorageKey: 'stamp-passport.bodyBackgroundAsset',
+    modalStorageKey: 'stamp-passport.assets',
 }) }}
 
 {{ forms.selectField({
@@ -171,7 +171,7 @@
     criteria: { kind: 'image' },
     limit: 1,
     elements: footerBackgroundElements,
-    modalStorageKey: 'stamp-passport.footerBackgroundAsset',
+    modalStorageKey: 'stamp-passport.assets',
 }) }}
 
 {{ forms.selectField({
@@ -230,7 +230,7 @@
     criteria: { kind: 'image' },
     limit: 1,
     elements: ogImageElements,
-    modalStorageKey: 'stamp-passport.ogImageAsset',
+    modalStorageKey: 'stamp-passport.assets',
 }) }}
 
 <hr>
@@ -247,7 +247,7 @@
     criteria: { kind: 'image' },
     limit: 1,
     elements: qrCenterElements,
-    modalStorageKey: 'stamp-passport.qrCenterImageAsset',
+    modalStorageKey: 'stamp-passport.assets',
 }) }}
 
 {{ forms.colorField({
