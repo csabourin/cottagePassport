@@ -16,7 +16,7 @@ class CpController extends Controller
 {
     public function beforeAction($action): bool
     {
-        $this->requirePermission('accessCp');
+        $this->requirePermission('stampPassport:manage');
         return parent::beforeAction($action);
     }
 
@@ -466,6 +466,8 @@ class CpController extends Controller
      */
     public function actionSettings(): Response
     {
+        $this->requirePermission('stampPassport:manageSettings');
+
         return $this->renderTemplate('stamp-passport/settings', [
             'settings'     => Plugin::$plugin->getSettings(),
             'freeformForms' => Plugin::$plugin->getFreeformFormOptions(),
@@ -478,6 +480,7 @@ class CpController extends Controller
     public function actionSaveSettings(): ?Response
     {
         $this->requirePostRequest();
+        $this->requirePermission('stampPassport:manageSettings');
 
         $request = Craft::$app->getRequest();
         $settings = Plugin::$plugin->getSettings();

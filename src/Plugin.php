@@ -6,6 +6,8 @@ use Craft;
 use craft\base\Plugin as BasePlugin;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterTemplateRootsEvent;
+use craft\events\RegisterUserPermissionsEvent;
+use craft\services\UserPermissions;
 use craft\web\UrlManager;
 use craft\web\View;
 use craft\web\twig\variables\CraftVariable;
@@ -48,6 +50,7 @@ class Plugin extends BasePlugin
         $this->_registerSiteRoutes();
         $this->_registerSiteTemplateRoot();
         $this->_registerVariables();
+        $this->_registerPermissions();
     }
 
     public function getCpNavItem(): ?array
@@ -61,8 +64,13 @@ class Plugin extends BasePlugin
             'qr-generator' => ['label' => Craft::t('stamp-passport', 'QR Codes'), 'url' => 'stamp-passport/qr-generator'],
             'display-text' => ['label' => Craft::t('stamp-passport', 'Display Text'), 'url' => 'stamp-passport/display-text'],
             'contest-rules' => ['label' => Craft::t('stamp-passport', 'Contest Rules'), 'url' => 'stamp-passport/contest-rules'],
-            'settings' => ['label' => Craft::t('stamp-passport', 'Settings'), 'url' => 'stamp-passport/settings'],
         ];
+
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if ($currentUser && ($currentUser->admin || $currentUser->can('stampPassport:manageSettings'))) {
+            $item['subnav']['settings'] = ['label' => Craft::t('stamp-passport', 'Settings'), 'url' => 'stamp-passport/settings'];
+        }
+
         return $item;
     }
 
@@ -182,6 +190,29 @@ class Plugin extends BasePlugin
             CraftVariable::EVENT_INIT,
             function ($event) {
                 $event->sender->set('stampPassport', StampPassportVariable::class);
+            }
+        );
+    }
+
+    private function _registerPermissions(): void
+    {
+        Event::on(
+            UserPermissions::class,
+            UserPermissions::EVENT_REGISTER_PERMISSIONS,
+            function (RegisterUserPermissionsEvent $event) {
+                $event->permissions[] = [
+                    'heading' => Craft::t('stamp-passport', 'Stamp Passport'),
+                    'permissions' => [
+                        'stampPassport:manage' => [
+                            'label' => Craft::t('stamp-passport', 'Access Stamp Passport'),
+                            'nested' => [
+                                'stampPassport:manageSettings' => [
+                                    'label' => Craft::t('stamp-passport', 'Manage Settings'),
+                                ],
+                            ],
+                        ],
+                    ],
+                ];
             }
         );
     }
