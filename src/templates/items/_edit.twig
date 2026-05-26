@@ -190,6 +190,44 @@
 {# ── CKEditor 5 for the description field (uses craftcms/ckeditor if installed) ── #}
 {% block foot %}
     {{ parent() }}
+    {% js %}
+    (function () {
+        var form = document.getElementById('item-form');
+        if (!form) return;
+
+        // Intercept every non-current site link in the context-menu site switcher.
+        // Save first so changes (including new items without an ID yet) are not lost.
+        document.querySelectorAll('.menu a[href]').forEach(function (link) {
+            if (link.classList.contains('sel')) return;
+            var href = link.getAttribute('href');
+            if (!href || href.indexOf('stamp-passport/items') === -1) return;
+
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                var match = href.match(/[?&]site=([^&#]+)/);
+                if (!match) { window.location.href = href; return; }
+
+                // Remove any stale switchToSite field, then add a fresh one.
+                var old = form.querySelector('input[name="switchToSite"]');
+                if (old) old.parentNode.removeChild(old);
+
+                var input = document.createElement('input');
+                input.type  = 'hidden';
+                input.name  = 'switchToSite';
+                input.value = decodeURIComponent(match[1]);
+                form.appendChild(input);
+
+                // requestSubmit fires the submit event (needed for CKEditor sync).
+                if (form.requestSubmit) {
+                    form.requestSubmit();
+                } else {
+                    form.submit();
+                }
+            });
+        });
+    })();
+    {% endjs %}
     {% if craft.app.plugins.getPlugin('ckeditor') %}
         {# Register CKEditor 5 via the installed craftcms/ckeditor plugin — no external CDN needed #}
         {% do view.registerAssetBundle('craft\\ckeditor\\web\\assets\\ckeditor\\CkeditorAsset') %}

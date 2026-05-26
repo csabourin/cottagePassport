@@ -131,10 +131,16 @@ class CpController extends Controller
 
         Craft::$app->getSession()->setNotice(Craft::t('stamp-passport', 'Item saved.'));
 
-        // Redirect back preserving the active site
-        $siteId = (int)$request->getBodyParam('siteId');
-        $site = $siteId ? Craft::$app->getSites()->getSiteById($siteId) : null;
-        $redirectParams = $site ? ['site' => $site->handle] : [];
+        // If site-switching was requested, redirect to the target site; otherwise preserve the active site.
+        $switchToSiteHandle = $request->getBodyParam('switchToSite');
+        if ($switchToSiteHandle) {
+            $targetSite = Craft::$app->getSites()->getSiteByHandle($switchToSiteHandle);
+            $redirectParams = $targetSite ? ['site' => $targetSite->handle] : [];
+        } else {
+            $siteId = (int)$request->getBodyParam('siteId');
+            $site = $siteId ? Craft::$app->getSites()->getSiteById($siteId) : null;
+            $redirectParams = $site ? ['site' => $site->handle] : [];
+        }
 
         return $this->redirect(UrlHelper::cpUrl('stamp-passport/items/' . $record->id, $redirectParams));
     }
