@@ -128,6 +128,9 @@ class Settings extends Model
     /** @var string|null Background color for generated QR codes. Null → #ffffff */
     public ?string $qrBackgroundColor = null;
 
+    /** @var int Pixel size of generated QR codes sent to QuickChart API. Default 450 */
+    public int $qrSize = 450;
+
     public const TEXT_KEYS = [
         'orgName',
         'challengeName',
@@ -262,6 +265,7 @@ class Settings extends Model
             [['ga4MeasurementId'], 'match', 'pattern' => '/^G-[A-Z0-9]+$/', 'skipOnEmpty' => true],
             [['freeformDrawFormHandle', 'freeformStickerFormHandle'], 'string', 'max' => 100],
             [['qrCenterImageAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
+            [['qrSize'], 'integer', 'min' => 100, 'max' => 1000],
             [['logoAssetId', 'logoAltAssetId', 'woodPanelAssetId', 'checkedMarkerAssetId', 'bodyBackgroundAssetId', 'footerBackgroundAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
             [['bodyBackgroundMode'], 'in', 'range' => ['cover', 'tiled', 'custom', 'repeat-y']],
             [['footerImageDisplay'], 'in', 'range' => ['full', 'content', 'custom']],

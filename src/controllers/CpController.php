@@ -600,7 +600,10 @@ class CpController extends Controller
         $settings->showChallengeName = (bool)$request->getBodyParam('showChallengeName', true);
         $settings->showChallengeTitle = (bool)$request->getBodyParam('showChallengeTitle', true);
 
-        // ── QR Code Colors ────────────────────────────────────────────────────
+        // ── QR Code Appearance ────────────────────────────────────────────────
+        $qrSize = (int)$request->getBodyParam('qrSize', 450);
+        $settings->qrSize = max(100, min(1000, $qrSize));
+
         foreach (['qrForegroundColor', 'qrBackgroundColor'] as $colorField) {
             $val = trim((string)$request->getBodyParam($colorField, ''));
             $val = preg_replace('/[^#0-9a-fA-F]/', '', $val);

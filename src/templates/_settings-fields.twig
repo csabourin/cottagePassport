@@ -250,6 +250,18 @@
     modalStorageKey: 'stamp-passport.assets',
 }) }}
 
+{{ forms.textField({
+    label: "QR Code Size (px)"|t('stamp-passport'),
+    instructions: "Pixel dimensions of generated QR codes sent to the QuickChart API (100–1000). Default: 450."|t('stamp-passport'),
+    id: 'qrSize',
+    name: 'qrSize',
+    value: settings.qrSize ?? 450,
+    type: 'number',
+    min: 100,
+    max: 1000,
+    size: 6,
+}) }}
+
 {{ forms.colorField({
     label: "QR Foreground Color"|t('stamp-passport'),
     instructions: "Color of the QR code dots. Default: #000000 (black). Ensure high contrast with the background color."|t('stamp-passport'),

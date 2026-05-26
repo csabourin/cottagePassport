@@ -40,6 +40,7 @@
     <input type="hidden" id="qr-global-center-image-url" value="{{ (globalQrCenterAsset ? globalQrCenterAsset.url : '')|e('html_attr') }}">
     <input type="hidden" id="qr-fg-color" value="{{ (settings.qrForegroundColor ?? '')|e('html_attr') }}">
     <input type="hidden" id="qr-bg-color" value="{{ (settings.qrBackgroundColor ?? '')|e('html_attr') }}">
+    <input type="hidden" id="qr-size" value="{{ settings.qrSize ?? 450 }}">
 
     {% if items|length %}
         <div id="qr-grid" class="passport-qr-grid">
@@ -107,6 +108,7 @@
     var globalQrCenterImageUrl = globalQrCenterImageUrlInput ? globalQrCenterImageUrlInput.value : '';
     var qrFgColor = (document.getElementById('qr-fg-color') || {}).value || '';
     var qrBgColor = (document.getElementById('qr-bg-color') || {}).value || '';
+    var qrSize = parseInt((document.getElementById('qr-size') || {}).value || '450', 10) || 450;
 
     function toAbsoluteUrl(value) {
         if (!value) {
@@ -125,7 +127,7 @@
             var code = card.dataset.shortcode;
             var scanUrl = baseUrl + '?q=' + encodeURIComponent(code);
             var params = new URLSearchParams({
-                size: '450',
+                size: String(qrSize),
                 text: scanUrl
             });
             var qrCenterImageUrl = toAbsoluteUrl(card.dataset.centerImageUrl || globalQrCenterImageUrl);
