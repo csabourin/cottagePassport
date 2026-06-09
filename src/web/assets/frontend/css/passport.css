@@ -656,8 +656,9 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 }
 
 .passport-modal-content h2 {
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: "Cabin", Arial, Helvetica, sans-serif;
     font-size: 1.5rem;
+    font-weight: 700;
     color: var(--passport-teal-dark);
     margin: 0 0 12px;
 }

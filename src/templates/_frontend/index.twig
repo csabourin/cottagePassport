@@ -18,18 +18,9 @@
 {% set _itemImageIds = items|map(i => i.imageId)|filter|unique %}
 {% set _itemImageAssets = _itemImageIds is not empty ? craft.assets.id(_itemImageIds).indexBy('id').all() : {} %}
 
-{# Build item ID → linkEntryId map across all sites so integrators only set the   #}
-{# linked entry once; current-site value is preferred, any site used as fallback.   #}
-{# craft.entries.id() scoped to the current site resolves the correct translation.  #}
+{# Build item ID → linkEntryId map across all sites so integrators only set the  #}
+{# linked entry once; current-site value is preferred, any site used as fallback. #}
 {% set _itemLinkEntryIdMap = craft.stampPassport.linkEntryIdMap(items|map(i => i.id)) %}
-{% set _linkEntryIds = [] %}
-{% for _eid in _itemLinkEntryIdMap %}{% set _linkEntryIds = _linkEntryIds|merge([_eid]) %}{% endfor %}
-{% set _linkEntryUrls = {} %}
-{% if _linkEntryIds is not empty %}
-    {% for entry in craft.entries.id(_linkEntryIds).all() %}
-        {% set _linkEntryUrls = _linkEntryUrls|merge({(entry.id ~ ''): entry.url}) %}
-    {% endfor %}
-{% endif %}
 
 {# Resolve which logo to show: use alt logo for non-primary language sites when available #}
 {% set currentLang = currentSite.language[:2]|lower %}
@@ -148,7 +139,8 @@
         {% for item in items %}
             {% set content = item.contents[0] ?? null %}
             {% set _effectiveLinkEntryId = _itemLinkEntryIdMap[item.id] ?? null %}
-            {% set _itemLinkUrl = (_effectiveLinkEntryId and _linkEntryUrls[_effectiveLinkEntryId ~ ''] is defined) ? _linkEntryUrls[_effectiveLinkEntryId ~ ''] : (content.linkUrl ?? '') %}
+            {% set _linkEntry = _effectiveLinkEntryId ? craft.entries.id(_effectiveLinkEntryId).one() : null %}
+            {% set _itemLinkUrl = _linkEntry ? (_linkEntry.url ?? '') : (content.linkUrl ?? '') %}
             <article class="stamp-slot" data-id="{{ item.id }}">
                 <button class="stamp-slot-btn"
                         type="button"
