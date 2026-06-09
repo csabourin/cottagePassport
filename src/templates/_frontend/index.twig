@@ -18,6 +18,15 @@
 {% set _itemImageIds = items|map(i => i.imageId)|filter|unique %}
 {% set _itemImageAssets = _itemImageIds is not empty ? craft.assets.id(_itemImageIds).indexBy('id').all() : {} %}
 
+{# Batch-resolve linked entry IDs to URLs to avoid N+1 queries. #}
+{% set _linkEntryIds = items|map(i => (i.contents|first).linkEntryId)|filter|unique %}
+{% set _linkEntryUrls = {} %}
+{% if _linkEntryIds is not empty %}
+    {% for entry in craft.entries.id(_linkEntryIds).all() %}
+        {% set _linkEntryUrls = _linkEntryUrls|merge({(entry.id): entry.url}) %}
+    {% endfor %}
+{% endif %}
+
 {# Resolve which logo to show: use alt logo for non-primary language sites when available #}
 {% set currentLang = currentSite.language[:2]|lower %}
 {% set activeLogoUrl = (logoAltUrl and currentLang != 'en') ? logoAltUrl : logoUrl %}
@@ -134,13 +143,14 @@
     <section class="passport-grid" id="stampGrid">
         {% for item in items %}
             {% set content = item.contents[0] ?? null %}
+            {% set _itemLinkUrl = (content and content.linkEntryId and _linkEntryUrls[content.linkEntryId] is defined) ? _linkEntryUrls[content.linkEntryId] : (content.linkUrl ?? '') %}
             <article class="stamp-slot" data-id="{{ item.id }}">
                 <button class="stamp-slot-btn"
                         type="button"
                         aria-label="{{ 'Details'|t('stamp-passport') }}: {{ content.title ?? '' }}"
                         aria-haspopup="dialog"
                         data-item-id="{{ item.id }}"
-                        data-item-link-url="{{ (content.linkUrl ?? '')|e('html_attr') }}"
+                        data-item-link-url="{{ _itemLinkUrl|e('html_attr') }}"
                         data-item-link-text="{{ ((content is not null and content.linkText is not empty) ? content.linkText : 'Learn more'|t('stamp-passport'))|e('html_attr') }}">
                     <div class="stamp-image">
                         {% if item.imageId and _itemImageAssets[item.imageId] is defined %}
