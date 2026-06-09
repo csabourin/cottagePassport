@@ -97,6 +97,21 @@ class StampPassportVariable
     }
 
     /**
+     * Return a map of item ID → effective linkEntryId for the current site.
+     *
+     * Queries all sites and prefers the current-site value, falling back to
+     * any other site so integrators only need to set the linked entry once.
+     *
+     * @param int[] $itemIds
+     * @return array<int,int>
+     */
+    public function getLinkEntryIdMap(array $itemIds): array
+    {
+        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        return Plugin::$plugin->items->getLinkEntryIdMap($itemIds, $siteId);
+    }
+
+    /**
      * Return the action URL for the API collect endpoint.
      */
     public function collectActionUrl(): string

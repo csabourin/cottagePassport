@@ -4,6 +4,7 @@ namespace csabourin\stamppassport\services;
 
 use Craft;
 use craft\base\Component;
+use craft\db\Query;
 use craft\helpers\StringHelper;
 use csabourin\stamppassport\records\ItemRecord;
 use csabourin\stamppassport\records\ItemContentRecord;
@@ -176,6 +177,45 @@ class Items extends Component
         }
 
         return false;
+    }
+
+    /**
+     * Return a map of item ID → linkEntryId across all sites.
+     *
+     * Prefers the given site's value so current-site overrides still work;
+     * falls back to any other site so integrators only need to set the
+     * linked entry once and all languages resolve their own version.
+     *
+     * @param int[] $itemIds
+     * @param int   $preferredSiteId
+     * @return array<int,int>
+     */
+    public function getLinkEntryIdMap(array $itemIds, int $preferredSiteId): array
+    {
+        if (empty($itemIds)) {
+            return [];
+        }
+
+        $rows = (new Query())
+            ->from('{{%stamppassport_items_content}}')
+            ->select(['itemId', 'siteId', 'linkEntryId'])
+            ->where(['itemId' => $itemIds])
+            ->andWhere(['not', ['linkEntryId' => null]])
+            ->all();
+
+        $map = [];
+        foreach ($rows as $row) {
+            $itemId  = (int)$row['itemId'];
+            $siteId  = (int)$row['siteId'];
+            $entryId = (int)$row['linkEntryId'];
+
+            // Prefer the current site's value; accept any other site as fallback.
+            if (!isset($map[$itemId]) || $siteId === $preferredSiteId) {
+                $map[$itemId] = $entryId;
+            }
+        }
+
+        return $map;
     }
 
     /**
