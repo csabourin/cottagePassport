@@ -23,7 +23,7 @@
 {% set _linkEntryUrls = {} %}
 {% if _linkEntryIds is not empty %}
     {% for entry in craft.entries.id(_linkEntryIds).all() %}
-        {% set _linkEntryUrls = _linkEntryUrls|merge({(entry.id): entry.url}) %}
+        {% set _linkEntryUrls = _linkEntryUrls|merge({(entry.id ~ ''): entry.url}) %}
     {% endfor %}
 {% endif %}
 
@@ -143,7 +143,7 @@
     <section class="passport-grid" id="stampGrid">
         {% for item in items %}
             {% set content = item.contents[0] ?? null %}
-            {% set _itemLinkUrl = (content and content.linkEntryId and _linkEntryUrls[content.linkEntryId] is defined) ? _linkEntryUrls[content.linkEntryId] : (content.linkUrl ?? '') %}
+            {% set _itemLinkUrl = (content and content.linkEntryId and _linkEntryUrls[content.linkEntryId ~ ''] is defined) ? _linkEntryUrls[content.linkEntryId ~ ''] : (content.linkUrl ?? '') %}
             <article class="stamp-slot" data-id="{{ item.id }}">
                 <button class="stamp-slot-btn"
                         type="button"
