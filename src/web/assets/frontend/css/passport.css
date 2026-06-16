@@ -19,7 +19,7 @@
     --passport-focus:      #2b6b8a;
     --passport-wood-max-width: 800px;
     --passport-wood-ratio-w: 480;
-    --passport-wood-ratio-h: 307;
+    --passport-wood-ratio-h: 380;
     --passport-scan-overlap: 18px;
     --passport-cloth-side-color: #2f211c;
 }
@@ -143,9 +143,11 @@ body.has-footer-bg--custom .passport-footer-bg {
     position: relative;
 }
 
-main.passport-main > div, main.passport-main > section, main.passport-main > header {
-    box-shadow: 5px 5px 25px rgba(0,0,0,0.8);
-    border-radius:.5rem;
+main.passport-main > div,
+main.passport-main > section > .stamp-slot,
+main.passport-main > header {
+    box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.8);
+    border-radius: .5rem;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -183,7 +185,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     background-color: transparent;
     box-shadow:none;
     border-radius:0;
-    aspect-ratio: 480 / 307;
+    aspect-ratio: 480 / 380;
     top: 0;
     width: min(100vw, var(--passport-wood-max-width));
     max-width: none;
@@ -231,7 +233,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 
 /* ── Header logo — banner image, 50% of header width, language-specific ── */
 .passport-header-logo {
-    width: 50%;
+    width: 100%;
     max-width: 520px;
     min-width: 120px;
     margin: 0 auto 12px;
@@ -288,18 +290,18 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
     font-size: clamp(1.4rem, 4vw, 1.9rem);
     font-weight: 400;
     letter-spacing: 0.04em;
-    line-height: 1.75;
+    line-height: unset;
 }
 
 .passport-title-bold {
     display: block;
     font-family: "Cabin", "Segoe UI", Arial, sans-serif;
-    font-size: clamp(2rem, 8vw, 2.8rem);
-    line-height: 2.5rem;
+    font-size: clamp(1.5rem, 8vw, 2.5rem);
+    line-height: unset;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    padding: 1.2rem;
+    padding: 1.2rem 0;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -308,6 +310,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
    ══════════════════════════════════════════════════════════ */
 .passport-scan-strip {
     background: var(--passport-cream);
+    margin-top: 2rem;
     padding: 16px 24px;
     text-align: center;
     font-size: 1rem;
@@ -345,7 +348,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
    ITEM LIST
    ══════════════════════════════════════════════════════════ */
 .passport-grid {
-    background: var(--passport-paper);
+    background: unset;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -354,6 +357,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 /* Each item row */
 .stamp-slot {
     display: block;
+    margin-bottom: 10px;
     border-bottom: 1px solid #ede5d8;
     background: var(--passport-paper);
     position: relative;
@@ -487,7 +491,7 @@ main.passport-main > div, main.passport-main > section, main.passport-main > hea
 
 .stamp-title {
     font-family: "Cabin", Arial, Helvetica, sans-serif;
-    font-size: 2.1rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--passport-teal);
     margin: 0 0 6px;

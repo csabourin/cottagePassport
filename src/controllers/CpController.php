@@ -654,4 +654,72 @@ class CpController extends Controller
 
         return $this->redirectToPostedUrl();
     }
+
+    /**
+     * Reset collected stats (POST, AJAX).
+     *
+     * Permanently deletes contest-progress rows — the data that powers the Stats
+     * dashboard. Item definitions and settings are left untouched. Optionally
+     * scoped to a `dateUpdated` range (inclusive) via `dateFrom`/`dateTo`, which
+     * lets pre-launch test data be wiped without touching later real activity;
+     * with both blank, every row is removed. Guarded by a typed double-
+     * confirmation in the CP UI; still requires the settings management
+     * permission server-side.
+     */
+    public function actionResetStats(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+        $this->requirePermission('stampPassport:manageSettings');
+
+        $request = Craft::$app->getRequest();
+
+        // Require the client to echo an explicit confirmation token so a stray
+        // POST cannot wipe data on its own.
+        $confirm = (string)$request->getBodyParam('confirm', '');
+        if ($confirm !== 'RESET') {
+            return $this->asJson([
+                'success' => false,
+                'error'   => Craft::t('stamp-passport', 'Confirmation token missing.'),
+            ]);
+        }
+
+        $dateFrom = trim((string)$request->getBodyParam('dateFrom', ''));
+        $dateTo   = trim((string)$request->getBodyParam('dateTo', ''));
+
+        // Reject malformed dates rather than silently dropping the bound, which
+        // could widen the delete beyond what the operator confirmed.
+        $validateDate = static function (string $val): bool {
+            $dt  = \DateTime::createFromFormat('Y-m-d', $val);
+            $err = \DateTime::getLastErrors();
+            return $dt !== false && (!$err || ($err['warning_count'] === 0 && $err['error_count'] === 0));
+        };
+        if (($dateFrom !== '' && !$validateDate($dateFrom)) || ($dateTo !== '' && !$validateDate($dateTo))) {
+            return $this->asJson([
+                'success' => false,
+                'error'   => Craft::t('stamp-passport', 'Invalid date range.'),
+            ]);
+        }
+
+        $condition = ['and'];
+        if ($dateFrom !== '') {
+            $condition[] = ['>=', 'dateUpdated', $dateFrom . ' 00:00:00'];
+        }
+        if ($dateTo !== '') {
+            $condition[] = ['<=', 'dateUpdated', $dateTo . ' 23:59:59'];
+        }
+        // An ['and'] with no extra clauses deletes everything.
+        if (count($condition) === 1) {
+            $condition = '';
+        }
+
+        $deleted = Craft::$app->getDb()->createCommand()
+            ->delete('{{%stamppassport_contest_progress}}', $condition)
+            ->execute();
+
+        return $this->asJson([
+            'success' => true,
+            'deleted' => $deleted,
+        ]);
+    }
 }

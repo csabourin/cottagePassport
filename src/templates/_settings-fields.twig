@@ -465,6 +465,13 @@
     --passport-radius:          4px;     /* global border-radius           */
     --passport-focus:           #2b6b8a; /* focus-visible outline colour   */
     --passport-cloth-side-color:#2f211c; /* side margin strip              */
+    --passport-wood-max-width:  800px;
+    --passport-wood-ratio-w:    480;     /* unitless: used in layout calc  */
+    --passport-wood-ratio-h:    380;     /* unitless: used in layout calc  */
+}
+
+.passport-header-logo {
+    width: 100%;
 }
 
 /*
@@ -493,17 +500,21 @@ body {
 .passport-title-light {
     /* Serif light heading ("Challenge Name") */
     /* font-size: clamp(1.4rem, 4vw, 1.9rem); */
+    line-height: unset;
 }
 
 .passport-title-bold {
     /* Bold uppercase heading ("Challenge Title") */
-    /* font-size: clamp(2rem, 8vw, 2.8rem); */
+    padding: 1.2rem 0;
+    font-size: clamp(1.5rem, 8vw, 2.5rem);
+    line-height: unset;
 }
 
 /*
  * ── Scan Instruction Strip ──────────────────────────────────
  */
 .passport-scan-strip {
+    margin-top: 2rem;
     /* background: var(--passport-cream); */
     /* font-size: 1rem; */
 }
@@ -512,12 +523,19 @@ body {
  * ── Stamp Grid ──────────────────────────────────────────────
  */
 .passport-grid {
-    /* background: var(--passport-paper); */
+    background: unset;
 }
 
-.stamp-slot { /* individual row */ }
+main.passport-main > div,
+main.passport-main > section > .stamp-slot,
+main.passport-main > header {
+    box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.8);
+    border-radius: .5rem;
+}
+
+.stamp-slot { margin-bottom: 10px; }
 .stamp-slot.collected { /* checked-in state */ }
-.stamp-title { /* location name */ }
+.stamp-title { font-size: 1.75rem; }
 .stamp-desc  { /* short description */ }
 .stamp-check { /* checkmark badge overlay */ }
 
@@ -546,7 +564,7 @@ body {
 
 {{ forms.textareaField({
     label: "Custom CSS"|t('stamp-passport'),
-    instructions: "Raw CSS injected at the end of the frontend &lt;head&gt;. Uncomment and edit the declarations above to override the default theme. Maximum 10 000 characters."|t('stamp-passport'),
+    instructions: "Raw CSS injected at the end of the frontend &lt;head&gt;. Use the comments below to find common classes, then edit or add declarations to customize the theme. Maximum 10 000 characters."|t('stamp-passport'),
     id: 'customCss',
     name: 'customCss',
     value: settings.customCss ?? _cssPlaceholder,
@@ -554,5 +572,108 @@ body {
     class: 'code',
     maxlength: 10000,
 }) }}
+
+<hr>
+
+<h2 style="color:#cf1124">{{ "Danger Zone"|t('stamp-passport') }}</h2>
+
+<div class="sp-danger-zone" style="border:1px solid #f5c2c7;border-radius:5px;padding:18px 20px;background:#fcf0f0;max-width:600px">
+    <h3 style="margin-top:0">{{ "Reset stats"|t('stamp-passport') }}</h3>
+    <p class="instructions" style="margin-bottom:14px">
+        {{ "Permanently deletes visitors' collected progress — the data shown on the Stats dashboard. Item definitions, display text, and settings are not affected. This cannot be undone."|t('stamp-passport') }}
+    </p>
+
+    <p class="instructions" style="margin-bottom:8px">
+        {{ "Optionally limit the reset to a date range (by last activity). Leave both blank to wipe everything — e.g. set an end date just before launch to clear test data only."|t('stamp-passport') }}
+    </p>
+    <div class="flex" style="gap:16px;margin-bottom:14px">
+        <div class="field">
+            <div class="heading"><label for="sp-reset-date-from">{{ "From"|t('stamp-passport') }}</label></div>
+            <div class="input"><input type="date" id="sp-reset-date-from" class="text"></div>
+        </div>
+        <div class="field">
+            <div class="heading"><label for="sp-reset-date-to">{{ "To"|t('stamp-passport') }}</label></div>
+            <div class="input"><input type="date" id="sp-reset-date-to" class="text"></div>
+        </div>
+    </div>
+
+    <button type="button" id="sp-reset-stats-btn" class="btn"
+            style="background:#cf1124;border-color:#cf1124;color:#fff">
+        {{ "Reset stats"|t('stamp-passport') }}
+    </button>
+    <span id="sp-reset-stats-spinner" class="spinner hidden"></span>
+</div>
+
+{% js %}
+(function () {
+    var btn = document.getElementById('sp-reset-stats-btn');
+    if (!btn) return;
+    var spinner  = document.getElementById('sp-reset-stats-spinner');
+    var fromInput = document.getElementById('sp-reset-date-from');
+    var toInput   = document.getElementById('sp-reset-date-to');
+
+    btn.addEventListener('click', function () {
+        var dateFrom = fromInput ? fromInput.value.trim() : '';
+        var dateTo   = toInput ? toInput.value.trim() : '';
+
+        if (dateFrom && dateTo && dateFrom > dateTo) {
+            Craft.cp.displayError(Craft.t('stamp-passport',
+                'The "From" date must be on or before the "To" date.'));
+            return;
+        }
+
+        // Describe the scope so the operator confirms exactly what gets wiped.
+        var scope;
+        if (dateFrom && dateTo) {
+            scope = Craft.t('stamp-passport', 'stats last updated between {from} and {to}',
+                { from: dateFrom, to: dateTo });
+        } else if (dateFrom) {
+            scope = Craft.t('stamp-passport', 'stats last updated on or after {from}', { from: dateFrom });
+        } else if (dateTo) {
+            scope = Craft.t('stamp-passport', 'stats last updated on or before {to}', { to: dateTo });
+        } else {
+            scope = Craft.t('stamp-passport', 'ALL stats');
+        }
+
+        // First confirmation — a simple "are you sure?".
+        if (!window.confirm(Craft.t('stamp-passport',
+            'Reset {scope}? This permanently deletes the affected progress.', { scope: scope }))) {
+            return;
+        }
+
+        // Second confirmation — must type the word RESET, not just click OK.
+        var typed = window.prompt(Craft.t('stamp-passport',
+            'This cannot be undone. Type RESET (in capitals) to confirm.'));
+        if (typed === null) return; // cancelled
+        if (typed.trim() !== 'RESET') {
+            Craft.cp.displayError(Craft.t('stamp-passport',
+                'Stats were not reset — confirmation text did not match.'));
+            return;
+        }
+
+        btn.setAttribute('disabled', 'disabled');
+        if (spinner) spinner.classList.remove('hidden');
+
+        Craft.sendActionRequest('POST', 'stamp-passport/cp/reset-stats', {
+            data: { confirm: 'RESET', dateFrom: dateFrom, dateTo: dateTo }
+        }).then(function (response) {
+            if (response.data && response.data.success) {
+                var n = response.data.deleted || 0;
+                Craft.cp.displayNotice(Craft.t('stamp-passport',
+                    'Stats reset — {n} record(s) deleted.', { n: n }));
+            } else {
+                var msg = (response.data && response.data.error)
+                    || Craft.t('stamp-passport', 'Could not reset stats.');
+                Craft.cp.displayError(msg);
+            }
+        }).catch(function () {
+            Craft.cp.displayError(Craft.t('stamp-passport', 'Could not reset stats.'));
+        }).finally(function () {
+            btn.removeAttribute('disabled');
+            if (spinner) spinner.classList.add('hidden');
+        });
+    });
+}());
+{% endjs %}
 
 </div>{# /tab-advanced #}
