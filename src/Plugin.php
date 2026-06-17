@@ -13,6 +13,7 @@ use craft\web\View;
 use craft\web\twig\variables\CraftVariable;
 use csabourin\stamppassport\models\Settings;
 use csabourin\stamppassport\services\ContestProgress;
+use csabourin\stamppassport\services\Draw;
 use csabourin\stamppassport\services\Items;
 use csabourin\stamppassport\variables\StampPassportVariable;
 use Solspace\Freeform\Freeform as FreeformPlugin;
@@ -23,13 +24,14 @@ use yii\base\Event;
  *
  * @property Items $items
  * @property ContestProgress $contestProgress
+ * @property Draw $draw
  * @property Settings $settings
  */
 class Plugin extends BasePlugin
 {
     public static Plugin $plugin;
 
-    public string $schemaVersion = '1.1.0';
+    public string $schemaVersion = '1.2.0';
     public bool $hasCpSettings = true;
     public bool $hasCpSection = true;
 
@@ -44,6 +46,7 @@ class Plugin extends BasePlugin
         $this->setComponents([
             'items' => Items::class,
             'contestProgress' => ContestProgress::class,
+            'draw' => Draw::class,
         ]);
 
         $this->_registerCpRoutes();
@@ -60,6 +63,7 @@ class Plugin extends BasePlugin
         $item['iconMask'] = __DIR__ . '/icon.svg';
         $item['subnav'] = [
             'stats' => ['label' => Craft::t('stamp-passport', 'Dashboard'), 'url' => 'stamp-passport/stats'],
+            'draw' => ['label' => Craft::t('stamp-passport', 'Draw'), 'url' => 'stamp-passport/draw'],
             'items' => ['label' => Craft::t('stamp-passport', 'Items'), 'url' => 'stamp-passport/items'],
             'qr-generator' => ['label' => Craft::t('stamp-passport', 'QR Codes'), 'url' => 'stamp-passport/qr-generator'],
             'display-text' => ['label' => Craft::t('stamp-passport', 'Display Text'), 'url' => 'stamp-passport/display-text'],
@@ -135,6 +139,7 @@ class Plugin extends BasePlugin
                 $event->rules['stamp-passport/display-text'] = 'stamp-passport/cp/display-text';
                 $event->rules['stamp-passport/contest-rules'] = 'stamp-passport/cp/contest-rules';
                 $event->rules['stamp-passport/stats'] = 'stamp-passport/cp/stats';
+                $event->rules['stamp-passport/draw'] = 'stamp-passport/cp/draw';
                 $event->rules['stamp-passport/settings'] = 'stamp-passport/cp/settings';
             }
         );

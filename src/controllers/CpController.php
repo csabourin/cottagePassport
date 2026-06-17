@@ -9,6 +9,7 @@ use craft\web\Controller;
 use csabourin\stamppassport\models\Settings;
 use csabourin\stamppassport\Plugin;
 use csabourin\stamppassport\records\ItemRecord;
+use csabourin\stamppassport\services\Draw;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -390,6 +391,137 @@ class CpController extends Controller
             'totalIndividuals'    => $stats['totalVisitors'],
             'avgLocations'        => $avgScansPerVisitor,
         ]);
+    }
+
+    /**
+     * Weighted prize-draw tool (read-only view + history).
+     */
+    public function actionDraw(): Response
+    {
+        $request  = Craft::$app->getRequest();
+        $settings = Plugin::$plugin->getSettings();
+        $draw     = Plugin::$plugin->draw;
+
+        $formHandle    = (string)($settings->freeformDrawFormHandle ?? '');
+        $dateFrom      = (string)($request->getQueryParam('dateFrom') ?? '');
+        $dateTo        = (string)($request->getQueryParam('dateTo')   ?? '');
+        $weightingMode = (string)($request->getQueryParam('weightingMode') ?? Draw::WEIGHTING_TOTAL);
+
+        [$dateFrom, $dateTo] = $this->_validateDateRange($dateFrom, $dateTo);
+        if (!$draw->isWeightingMode($weightingMode)) {
+            $weightingMode = Draw::WEIGHTING_TOTAL;
+        }
+
+        $pool = $formHandle !== ''
+            ? $draw->buildPool($formHandle, $settings->drawThreshold, $weightingMode, $dateFrom, $dateTo)
+            : null;
+
+        $resultId     = (int)($request->getQueryParam('result') ?? 0);
+        $latestResult = $resultId > 0 ? $draw->getResultById($resultId) : null;
+        $latestVerify = $latestResult ? $draw->verify($latestResult) : null;
+
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $canDraw = $currentUser && ($currentUser->admin || $currentUser->can('stampPassport:manageSettings'));
+
+        return $this->renderTemplate('stamp-passport/draw/index', [
+            'settings'          => $settings,
+            'allSites'          => Craft::$app->getSites()->getAllSites(),
+            'formHandle'        => $formHandle,
+            'pool'              => $pool,
+            'weightingMode'     => $weightingMode,
+            'dateFrom'          => $dateFrom,
+            'dateTo'            => $dateTo,
+            'latestResult'      => $latestResult,
+            'latestVerify'      => $latestVerify,
+            'history'           => $draw->recentResults(20),
+            'freeformInstalled' => Craft::$app->getPlugins()->getPlugin('freeform') !== null,
+            'canDraw'           => $canDraw,
+        ]);
+    }
+
+    /**
+     * Run a weighted draw (POST). Requires the settings-management permission and an
+     * explicit confirmation token so a stray POST cannot trigger a draw.
+     */
+    public function actionDrawRun(): Response
+    {
+        $this->requirePostRequest();
+        $this->requirePermission('stampPassport:manageSettings');
+
+        $request  = Craft::$app->getRequest();
+        $settings = Plugin::$plugin->getSettings();
+        $draw     = Plugin::$plugin->draw;
+
+        $formHandle    = (string)($settings->freeformDrawFormHandle ?? '');
+        $dateFrom      = (string)($request->getBodyParam('dateFrom') ?? '');
+        $dateTo        = (string)($request->getBodyParam('dateTo')   ?? '');
+        $weightingMode = (string)($request->getBodyParam('weightingMode') ?? Draw::WEIGHTING_TOTAL);
+
+        [$dateFrom, $dateTo] = $this->_validateDateRange($dateFrom, $dateTo);
+        if (!$draw->isWeightingMode($weightingMode)) {
+            $weightingMode = Draw::WEIGHTING_TOTAL;
+        }
+
+        // Preserve the active filters across the redirect.
+        $redirectParams = array_filter([
+            'dateFrom'      => $dateFrom,
+            'dateTo'        => $dateTo,
+            'weightingMode' => $weightingMode,
+        ], static fn($v) => $v !== '');
+
+        if ($formHandle === '') {
+            Craft::$app->getSession()->setError(Craft::t('stamp-passport', 'No draw form is configured in Settings.'));
+            return $this->redirect(UrlHelper::cpUrl('stamp-passport/draw', $redirectParams));
+        }
+
+        if ((string)$request->getBodyParam('confirm', '') !== 'DRAW') {
+            Craft::$app->getSession()->setError(Craft::t('stamp-passport', 'Confirmation token missing.'));
+            return $this->redirect(UrlHelper::cpUrl('stamp-passport/draw', $redirectParams));
+        }
+
+        $result = $draw->drawWinner(
+            $formHandle,
+            $settings->drawThreshold,
+            $weightingMode,
+            $dateFrom,
+            $dateTo,
+            Craft::$app->getUser()->getId()
+        );
+
+        if (!$result['ok']) {
+            $messages = [
+                'freeform_unavailable' => Craft::t('stamp-passport', 'Could not read draw submissions. Is Freeform installed and the draw form configured?'),
+                'no_eligible_entries'  => Craft::t('stamp-passport', 'No eligible entries to draw from. Ensure the “contestCid” hidden field is added to the draw form.'),
+                'save_failed'          => Craft::t('stamp-passport', 'Could not save the draw result.'),
+            ];
+            Craft::$app->getSession()->setError($messages[$result['error']] ?? Craft::t('stamp-passport', 'Could not run the draw.'));
+            return $this->redirect(UrlHelper::cpUrl('stamp-passport/draw', $redirectParams));
+        }
+
+        Craft::$app->getSession()->setNotice(Craft::t('stamp-passport', 'Winner drawn.'));
+        $redirectParams['result'] = $result['resultId'];
+        return $this->redirect(UrlHelper::cpUrl('stamp-passport/draw', $redirectParams));
+    }
+
+    /**
+     * Validate an optional Y-m-d date range, blanking malformed values.
+     *
+     * @return array{0:string,1:string}
+     */
+    private function _validateDateRange(string $dateFrom, string $dateTo): array
+    {
+        $validateDate = static function (string $val): bool {
+            $dt  = \DateTime::createFromFormat('Y-m-d', $val);
+            $err = \DateTime::getLastErrors();
+            return $dt !== false && (!$err || ($err['warning_count'] === 0 && $err['error_count'] === 0));
+        };
+        if ($dateFrom !== '' && !$validateDate($dateFrom)) {
+            $dateFrom = '';
+        }
+        if ($dateTo !== '' && !$validateDate($dateTo)) {
+            $dateTo = '';
+        }
+        return [$dateFrom, $dateTo];
     }
 
     /**

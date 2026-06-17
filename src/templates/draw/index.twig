@@ -1,0 +1,238 @@
+{% extends "_layouts/cp" %}
+
+{% set title = "Draw"|t('stamp-passport') %}
+{% set selectedSubnavItem = 'draw' %}
+
+{% set crumbs = [
+    { label: settings.pluginName, url: url('stamp-passport') },
+] %}
+
+{% set weightingOptions = [
+    { label: 'Total stamps'|t('stamp-passport'), value: 'total' },
+    { label: 'Stamps beyond threshold'|t('stamp-passport'), value: 'bonus' },
+] %}
+
+{% set reasonLabels = {
+    no_cid:          'No participant ID on submission'|t('stamp-passport'),
+    not_found:       'No matching progress record'|t('stamp-passport'),
+    below_threshold: 'Below the draw threshold'|t('stamp-passport'),
+    duplicate:       'Duplicate entry (same participant)'|t('stamp-passport'),
+} %}
+
+{% block content %}
+<div id="sp-draw">
+
+{# ── Preconditions ───────────────────────────────────────────────── #}
+{% if not freeformInstalled %}
+    <div class="pane" style="border-left:4px solid #cf1124;margin-bottom:1.5rem;">
+        <p style="margin:0;">{{ 'Freeform is not installed, so draw submissions cannot be read.'|t('stamp-passport') }}</p>
+    </div>
+{% endif %}
+
+{% if formHandle == '' %}
+    <div class="pane" style="border-left:4px solid #e5a823;margin-bottom:1.5rem;">
+        <p style="margin:0;">
+            {{ 'No draw form is configured. Choose a Draw Form under'|t('stamp-passport') }}
+            <a href="{{ url('stamp-passport/settings') }}">{{ 'Settings'|t('stamp-passport') }}</a>.
+        </p>
+    </div>
+{% elseif pool and not pool.freeformAvailable %}
+    <div class="pane" style="border-left:4px solid #e5a823;margin-bottom:1.5rem;">
+        <p style="margin:0;">{{ 'Draw submissions are currently unavailable. Confirm Freeform is enabled and the draw form handle is correct.'|t('stamp-passport') }}</p>
+    </div>
+{% endif %}
+
+{# ── Winner reveal (after a draw) ────────────────────────────────── #}
+{% if latestResult %}
+    {% set winnerUrl = (freeformInstalled and latestResult.winnerSubmissionId)
+        ? cpUrl('freeform/submissions/' ~ latestResult.winnerSubmissionId) : null %}
+    <div class="pane" style="border-top:4px solid #2d5a27;margin-bottom:2rem;padding:1.5rem;">
+        <h2 style="margin:0 0 .5rem;">🎉 {{ 'Winner drawn'|t('stamp-passport') }}</h2>
+        <p style="margin:.25rem 0;">
+            <strong>{{ 'Participant ID:'|t('stamp-passport') }}</strong>
+            <code>{{ latestResult.winnerCid }}</code>
+        </p>
+        {% if winnerUrl %}
+            <p style="margin:.25rem 0;">
+                <a class="btn submit" href="{{ winnerUrl }}">{{ 'View submission & contact info'|t('stamp-passport') }}</a>
+            </p>
+        {% elseif latestResult.winnerSubmissionId %}
+            <p class="light" style="margin:.25rem 0;">{{ 'Submission ID:'|t('stamp-passport') }} {{ latestResult.winnerSubmissionId }}</p>
+        {% endif %}
+        <p class="light" style="margin:.5rem 0 0;font-size:.85em;">
+            {{ 'Drawn from {eligible} eligible entrants ({ballots} ballots) on {date}.'|t('stamp-passport', {
+                eligible: latestResult.eligibleCount,
+                ballots:  latestResult.totalBallots,
+                date:     latestResult.dateDrawn|date('Y-m-d H:i')
+            }) }}
+            {% if latestVerify and latestVerify.ok %}
+                {% if latestVerify.matches %}
+                    <span style="color:#2d5a27;">✓ {{ 'Result re-verified from seed.'|t('stamp-passport') }}</span>
+                {% else %}
+                    <span style="color:#cf1124;">⚠ {{ 'Re-verification mismatch.'|t('stamp-passport') }}</span>
+                {% endif %}
+            {% endif %}
+        </p>
+    </div>
+{% endif %}
+
+{# ── Filters ─────────────────────────────────────────────────────── #}
+<form method="get" action="" style="margin-bottom:1.5rem;">
+    <div style="display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;">
+        <div>
+            <label class="heading">{{ 'From'|t('stamp-passport') }}</label>
+            <input type="date" name="dateFrom" value="{{ dateFrom }}" class="text">
+        </div>
+        <div>
+            <label class="heading">{{ 'To'|t('stamp-passport') }}</label>
+            <input type="date" name="dateTo" value="{{ dateTo }}" class="text">
+        </div>
+        <div>
+            <label class="heading">{{ 'Chances per participant'|t('stamp-passport') }}</label>
+            <div class="select">
+                <select name="weightingMode">
+                    {% for opt in weightingOptions %}
+                        <option value="{{ opt.value }}"{{ weightingMode == opt.value ? ' selected' : '' }}>{{ opt.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+            <button type="submit" class="btn submit">{{ 'Apply'|t }}</button>
+            {% if dateFrom or dateTo or weightingMode != 'total' %}
+                <a href="{{ url('stamp-passport/draw') }}" class="btn">{{ 'Clear'|t }}</a>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+{% if pool and pool.freeformAvailable %}
+    {# ── Pool summary ────────────────────────────────────────────── #}
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:1.5rem;">
+        <div class="pane" style="padding:1.25rem 1.5rem;">
+            <h3 style="font-weight:700;margin:0 0 .25rem;">{{ 'Eligible Entrants'|t('stamp-passport') }}</h3>
+            <p style="font-size:2.5em;font-weight:700;margin:0;color:#2d5a27;">{{ pool.eligible|length }}</p>
+            <p class="light" style="margin:.4rem 0 0;font-size:.85em;">
+                {{ '{n}+ stamps required'|t('stamp-passport', { n: pool.drawThreshold }) }}
+            </p>
+        </div>
+        <div class="pane" style="padding:1.25rem 1.5rem;">
+            <h3 style="font-weight:700;margin:0 0 .25rem;">{{ 'Total Ballots'|t('stamp-passport') }}</h3>
+            <p style="font-size:2.5em;font-weight:700;margin:0;color:#2b6b8a;">{{ pool.totalBallots }}</p>
+            <p class="light" style="margin:.4rem 0 0;font-size:.85em;">
+                {{ weightingMode == 'bonus' ? 'Weighted by stamps beyond threshold'|t('stamp-passport') : 'Weighted by total stamps'|t('stamp-passport') }}
+            </p>
+        </div>
+        <div class="pane" style="padding:1.25rem 1.5rem;">
+            <h3 style="font-weight:700;margin:0 0 .25rem;">{{ 'Submissions'|t('stamp-passport') }}</h3>
+            <p style="font-size:2.5em;font-weight:700;margin:0;">{{ pool.submissionsTotal }}</p>
+            <p class="light" style="margin:.4rem 0 0;font-size:.85em;">
+                {{ '{n} excluded'|t('stamp-passport', { n: pool.excluded|length }) }}
+            </p>
+        </div>
+    </div>
+
+    {# ── Draw action ─────────────────────────────────────────────── #}
+    <div class="pane" style="margin-bottom:2rem;padding:1.5rem;">
+        {% if canDraw %}
+            {% if pool.eligible|length > 0 %}
+                <form id="sp-draw-form" method="post" action="">
+                    {{ csrfInput() }}
+                    {{ actionInput('stamp-passport/cp/draw-run') }}
+                    <input type="hidden" name="confirm" value="DRAW">
+                    <input type="hidden" name="dateFrom" value="{{ dateFrom }}">
+                    <input type="hidden" name="dateTo" value="{{ dateTo }}">
+                    <input type="hidden" name="weightingMode" value="{{ weightingMode }}">
+                    <button type="submit" class="btn submit large">{{ 'Draw a winner'|t('stamp-passport') }}</button>
+                    <span class="light" style="margin-left:.75rem;">
+                        {{ 'Picks one winner weighted by stamp count. The result is recorded and re-verifiable.'|t('stamp-passport') }}
+                    </span>
+                </form>
+            {% else %}
+                <p style="margin:0;" class="light">{{ 'No eligible entrants yet.'|t('stamp-passport') }}</p>
+            {% endif %}
+        {% else %}
+            <p style="margin:0;" class="light">{{ 'You do not have permission to run a draw.'|t('stamp-passport') }}</p>
+        {% endif %}
+    </div>
+
+    {# ── Excluded entries ────────────────────────────────────────── #}
+    {% if pool.excluded|length > 0 %}
+        <h2>{{ 'Excluded entries'|t('stamp-passport') }}</h2>
+        <div class="pane" style="margin-bottom:2rem;">
+            <table class="data fullwidth">
+                <thead>
+                    <tr>
+                        <th>{{ 'Reason'|t('stamp-passport') }}</th>
+                        <th>{{ 'Count'|t('stamp-passport') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reason, count in pool.excludedCounts %}
+                        {% if count > 0 %}
+                            <tr>
+                                <td>{{ reasonLabels[reason] ?? reason }}</td>
+                                <td>{{ count }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endif %}
+
+{# ── Draw history ────────────────────────────────────────────────── #}
+{% if history|length > 0 %}
+    <h2>{{ 'Draw history'|t('stamp-passport') }}</h2>
+    <div class="pane">
+        <table class="data fullwidth">
+            <thead>
+                <tr>
+                    <th>{{ 'Date'|t('stamp-passport') }}</th>
+                    <th>{{ 'Winner ID'|t('stamp-passport') }}</th>
+                    <th>{{ 'Eligible'|t('stamp-passport') }}</th>
+                    <th>{{ 'Ballots'|t('stamp-passport') }}</th>
+                    <th>{{ 'Weighting'|t('stamp-passport') }}</th>
+                    <th>{{ 'Drawn by'|t('stamp-passport') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in history %}
+                    {% set drawnBy = result.drawnByUserId ? craft.users.id(result.drawnByUserId).status(null).one() : null %}
+                    {% set winnerUrl = (freeformInstalled and result.winnerSubmissionId)
+                        ? cpUrl('freeform/submissions/' ~ result.winnerSubmissionId) : null %}
+                    <tr>
+                        <td><a href="{{ url('stamp-passport/draw', { result: result.id }) }}">{{ result.dateDrawn|date('Y-m-d H:i') }}</a></td>
+                        <td>
+                            {% if winnerUrl %}
+                                <a href="{{ winnerUrl }}"><code>{{ result.winnerCid }}</code></a>
+                            {% else %}
+                                <code>{{ result.winnerCid }}</code>
+                            {% endif %}
+                        </td>
+                        <td>{{ result.eligibleCount }}</td>
+                        <td>{{ result.totalBallots }}</td>
+                        <td>{{ result.weightingMode == 'bonus' ? 'Beyond threshold'|t('stamp-passport') : 'Total stamps'|t('stamp-passport') }}</td>
+                        <td>{{ drawnBy ? drawnBy.friendlyName : '—' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+</div>
+
+{% js %}
+(function(){
+    var form = document.getElementById('sp-draw-form');
+    if (!form) return;
+    form.addEventListener('submit', function(e){
+        if (!window.confirm('{{ 'Draw a winner now? This will be recorded in the draw history.'|t('stamp-passport')|e('js') }}')) {
+            e.preventDefault();
+        }
+    });
+})();
+{% endjs %}
+{% endblock %}

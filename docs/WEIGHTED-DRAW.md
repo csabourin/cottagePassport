@@ -46,10 +46,30 @@ No API contracts or the contest-sync protocol were touched.
 
 ---
 
-## Piece 3 — Admin weighted-draw tool (plan)
+## Piece 3 — Admin weighted-draw tool ✅ implemented (integrity hardening still pending)
 
 A CP screen that selects a winner from eligible draw entries, weighted by stamp
 count, with an auditable, reproducible result. This is item 3.1 in `todo.md`.
+
+**Shipped:**
+- Migration + `stamppassport_draw_results` table (audit log: seed, pool snapshot, winner)
+  — `src/migrations/m260617_000000_create_draw_results_table.php`, also in `Install`.
+- `Draw` service — `src/services/Draw.php`: pool builder (Freeform-guarded), seeded
+  weighted selection, result persistence, and `verify()` (re-runs from the stored seed).
+- CP controller actions `actionDraw` / `actionDrawRun` + a **Draw** subnav item and route.
+- CP view `src/templates/draw/index.twig`: pool summary, date + weighting filters,
+  draw button (confirmation-gated), winner reveal with a link to the Freeform
+  submission, excluded-entries breakdown, and a re-verifiable draw history.
+- Weighting modes: `total` (default) and `bonus` (stamps beyond threshold), chosen per draw.
+- Degrades gracefully when Freeform is absent or the draw form is unconfigured.
+
+**Still pending (do before a real-prize draw):** the integrity hardening in §3.6 below —
+the contest-sync endpoint still trusts self-reported stamps, and weighting raises the
+incentive to fabricate them.
+
+---
+
+### Original plan (for reference)
 
 ### 3.1 Constraints & principles
 

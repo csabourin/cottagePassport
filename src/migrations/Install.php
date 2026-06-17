@@ -11,11 +11,13 @@ class Install extends Migration
         $this->_createItemsTable();
         $this->_createItemsContentTable();
         $this->_createContestProgressTable();
+        $this->_createDrawResultsTable();
         return true;
     }
 
     public function safeDown(): bool
     {
+        $this->dropTableIfExists('{{%stamppassport_draw_results}}');
         $this->dropTableIfExists('{{%stamppassport_contest_progress}}');
         $this->dropTableIfExists('{{%stamppassport_items_content}}');
         $this->dropTableIfExists('{{%stamppassport_items}}');
@@ -143,5 +145,39 @@ class Install extends Migration
             '{{%stamppassport_contest_progress}}',
             'dateUpdated'
         );
+    }
+
+    private function _createDrawResultsTable(): void
+    {
+        $table = '{{%stamppassport_draw_results}}';
+
+        if ($this->db->tableExists($table)) {
+            return;
+        }
+
+        $this->createTable($table, [
+            'id' => $this->primaryKey(),
+            'formHandle' => $this->string(100)->notNull(),
+            'weightingMode' => $this->string(20)->notNull()->defaultValue('total'),
+            'drawThreshold' => $this->integer()->notNull()->defaultValue(0),
+            'dateFrom' => $this->string(20)->null(),
+            'dateTo' => $this->string(20)->null(),
+            'seed' => $this->string(32)->notNull(),
+            'eligibleCount' => $this->integer()->notNull()->defaultValue(0),
+            'totalBallots' => $this->integer()->notNull()->defaultValue(0),
+            'winnerCid' => $this->char(36)->null(),
+            'winnerSubmissionId' => $this->integer()->null(),
+            'poolSnapshotJson' => $this->longText()->null(),
+            'drawnByUserId' => $this->integer()->null(),
+            'dateDrawn' => $this->dateTime()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+
+        $this->createIndex(null, $table, 'dateDrawn');
+        $this->createIndex(null, $table, 'formHandle');
+
+        $this->addForeignKey(null, $table, 'drawnByUserId', '{{%users}}', 'id', 'SET NULL');
     }
 }
