@@ -39,6 +39,7 @@
 {% elseif pool and not pool.freeformAvailable %}
     <div class="pane" style="border-left:4px solid #e5a823;margin-bottom:1.5rem;">
         <p style="margin:0;">{{ 'Draw submissions are currently unavailable. Confirm Freeform is enabled and the draw form handle is correct.'|t('stamp-passport') }}</p>
+        <p class="light" style="margin:.5rem 0 0;font-size:.85em;">{{ 'Configured draw form handle:'|t('stamp-passport') }} <code>{{ formHandle }}</code></p>
     </div>
 {% endif %}
 
@@ -107,6 +108,12 @@
 </form>
 
 {% if pool and pool.freeformAvailable %}
+    {# ── Which form is being read (removes "wrong form" ambiguity) ── #}
+    <p class="light" style="margin:0 0 1rem;">
+        {{ 'Reading entries from draw form:'|t('stamp-passport') }}
+        <strong>{{ pool.formName }}</strong> (<code>{{ pool.formHandle }}</code>)
+    </p>
+
     {# ── Pool summary ────────────────────────────────────────────── #}
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:1.5rem;">
         <div class="pane" style="padding:1.25rem 1.5rem;">

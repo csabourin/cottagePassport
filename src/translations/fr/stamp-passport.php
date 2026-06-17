@@ -127,6 +127,8 @@ return [
     'Freeform is not installed, so draw submissions cannot be read.' => "Freeform n'est pas installé; les soumissions du tirage ne peuvent pas être lues.",
     'No draw form is configured. Choose a Draw Form under' => 'Aucun formulaire de tirage configuré. Choisissez un formulaire de tirage dans',
     'Draw submissions are currently unavailable. Confirm Freeform is enabled and the draw form handle is correct.' => "Les soumissions du tirage sont indisponibles. Vérifiez que Freeform est activé et que le handle du formulaire est correct.",
+    'Configured draw form handle:' => 'Handle du formulaire de tirage configuré :',
+    'Reading entries from draw form:' => 'Lecture des inscriptions du formulaire de tirage :',
     'Winner drawn' => 'Gagnant tiré',
     'Participant ID:' => 'Identifiant du participant :',
     'View submission & contact info' => 'Voir la soumission et les coordonnées',

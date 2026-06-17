@@ -65,6 +65,7 @@ class Draw extends Component
         $result = [
             'freeformAvailable' => true,
             'formHandle'        => $formHandle,
+            'formName'          => '',
             'weightingMode'     => $weightingMode,
             'drawThreshold'     => $drawThreshold,
             'submissionsTotal'  => 0,
@@ -84,7 +85,17 @@ class Draw extends Component
             return $result;
         }
 
-        $submissions = $this->fetchDrawSubmissions($formHandle);
+        // Resolve the configured handle to a concrete Freeform form first. If it does
+        // not resolve, bail out — never fall through to Freeform's "all forms" behaviour,
+        // which would read OTHER forms' submissions (e.g. the sticker form).
+        $form = $this->resolveFreeformForm($formHandle);
+        if ($form === null) {
+            $result['freeformAvailable'] = false;
+            return $result;
+        }
+        $result['formName'] = $form['name'];
+
+        $submissions = $this->fetchDrawSubmissions($form['id']);
         if ($submissions === null) {
             $result['freeformAvailable'] = false;
             return $result;
@@ -294,31 +305,73 @@ class Draw extends Component
     }
 
     /**
-     * Read draw-form submissions via Freeform's element API, returning each
-     * submission's id and its `contestCid` value.
+     * Resolve a Freeform form handle to its id and name, directly from the
+     * freeform_forms table (version-tolerant, matches how the settings dropdown is built).
      *
-     * Returns null (not an empty array) when Freeform is unavailable or the read
-     * fails, so callers can distinguish "no entrants" from "can't read entrants".
+     * Returns null when Freeform is absent or the handle matches no form — in which
+     * case callers must NOT query submissions, to avoid reading every form's data.
+     *
+     * @return array{id:int,name:string}|null
+     */
+    private function resolveFreeformForm(string $handle): ?array
+    {
+        if ($handle === '' || Craft::$app->getPlugins()->getPlugin('freeform') === null) {
+            return null;
+        }
+
+        try {
+            $row = (new Query())
+                ->select(['id', 'name'])
+                ->from('{{%freeform_forms}}')
+                ->where(['handle' => $handle])
+                ->one();
+
+            if (!$row || empty($row['id'])) {
+                Craft::warning(
+                    "Stamp Passport: draw form handle '{$handle}' did not resolve to a Freeform form.",
+                    __METHOD__
+                );
+                return null;
+            }
+
+            return ['id' => (int)$row['id'], 'name' => (string)($row['name'] ?? $handle)];
+        } catch (\Throwable $e) {
+            Craft::warning('Stamp Passport: could not resolve Freeform form: ' . $e->getMessage(), __METHOD__);
+            return null;
+        }
+    }
+
+    /**
+     * Read submissions for a specific Freeform form id via the element API, returning
+     * each submission's id and its `contestCid` value.
+     *
+     * Returns null (not an empty array) when the read fails, so callers can distinguish
+     * "no entrants" from "can't read entrants".
      *
      * @return array<int,array{id:int,cid:string}>|null
      */
-    private function fetchDrawSubmissions(string $formHandle): ?array
+    private function fetchDrawSubmissions(int $formId): ?array
     {
         $class = self::FREEFORM_SUBMISSION_CLASS;
 
-        if (Craft::$app->getPlugins()->getPlugin('freeform') === null || !class_exists($class)) {
+        if (!class_exists($class)) {
             return null;
         }
 
         try {
             /** @var \craft\elements\db\ElementQueryInterface $query */
             $query = $class::find()
-                ->form($formHandle)
+                ->formId($formId)
                 ->isSpam(0)
                 ->limit(null);
 
             $out = [];
             foreach ($query->all() as $submission) {
+                // Defense in depth: never accept a submission belonging to another form.
+                if ((int)$submission->formId !== $formId) {
+                    continue;
+                }
+
                 $cidValue = '';
                 try {
                     $field = $submission->getFieldCollection()->get(self::CID_FIELD_HANDLE);
