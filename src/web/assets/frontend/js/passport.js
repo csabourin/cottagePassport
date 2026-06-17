@@ -940,6 +940,25 @@
        Modals
        ═══════════════════════════════════════════ */
 
+    /**
+     * Stamp the participant's CID onto the hidden `contestCid` field of the
+     * draw/sticker Freeform forms so each submission can be correlated back to
+     * its contest progress record at draw time (for weighted selection).
+     *
+     * Requires a Freeform Hidden field with the exact handle `contestCid` on the
+     * form; if absent, this is a harmless no-op.
+     */
+    function populateContestCidFields() {
+        if (!contestCid) return;
+        ['drawFormContainer', 'stickerFormContainer'].forEach(function (containerId) {
+            var container = el(containerId);
+            if (!container) return;
+            qsa('input[name="contestCid"]', container).forEach(function (input) {
+                input.value = contestCid;
+            });
+        });
+    }
+
     function showModal(id, triggerEl) {
         var modal = el(id);
         if (!modal) return;
@@ -948,6 +967,9 @@
             modal.removeEventListener('keydown', modal._focusTrapHandler);
             modal._focusTrapHandler = null;
         }
+        /* Refresh the CID stamp each time a form modal opens, so the value is
+           current even if Freeform re-rendered the form after initial load. */
+        if (id === 'drawModal' || id === 'stickerModal') populateContestCidFields();
         modal.classList.remove('hidden');
         /* Move focus inside the modal — close button or first focusable */
         var focusable = qsa(FOCUSABLE_SELECTOR, modal);
@@ -1238,6 +1260,10 @@
 
         /* Bind modal interactions */
         bindModals();
+
+        /* Stamp the CID onto the draw/sticker forms now that the CID is known
+           (also refreshed on each form-modal open via showModal). */
+        populateContestCidFields();
 
         /* Bind reopen form buttons */
         bindReopenButtons();
