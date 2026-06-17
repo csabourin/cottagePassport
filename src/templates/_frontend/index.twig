@@ -22,6 +22,15 @@
 {# linked entry once; current-site value is preferred, any site used as fallback. #}
 {% set _itemLinkEntryIdMap = craft.stampPassport.linkEntryIdMap(items|map(i => i.id)) %}
 
+{# Batch-resolve all linked entry URLs in one query (avoids an N+1 per item below). #}
+{% set _linkEntryIds = _itemLinkEntryIdMap|values|filter|unique %}
+{% set _linkEntryUrlMap = {} %}
+{% if _linkEntryIds is not empty %}
+    {% for _linkEntry in craft.entries.id(_linkEntryIds).siteId(currentSite.id).all() %}
+        {% set _linkEntryUrlMap = _linkEntryUrlMap|merge({ (_linkEntry.id): (_linkEntry.url ?? '') }) %}
+    {% endfor %}
+{% endif %}
+
 {# Resolve which logo to show: use alt logo for non-primary language sites when available #}
 {% set currentLang = currentSite.language[:2]|lower %}
 {% set activeLogoUrl = (logoAltUrl and currentLang != 'en') ? logoAltUrl : logoUrl %}
@@ -139,8 +148,9 @@
         {% for item in items %}
             {% set content = item.contents[0] ?? null %}
             {% set _effectiveLinkEntryId = _itemLinkEntryIdMap[item.id] ?? null %}
-            {% set _linkEntry = _effectiveLinkEntryId ? craft.entries.id(_effectiveLinkEntryId).one() : null %}
-            {% set _itemLinkUrl = _linkEntry ? (_linkEntry.url ?? '') : (content.linkUrl ?? '') %}
+            {% set _itemLinkUrl = (_effectiveLinkEntryId and _linkEntryUrlMap[_effectiveLinkEntryId] is defined)
+                ? _linkEntryUrlMap[_effectiveLinkEntryId]
+                : (content.linkUrl ?? '') %}
             <article class="stamp-slot" data-id="{{ item.id }}">
                 <button class="stamp-slot-btn"
                         type="button"
@@ -295,7 +305,7 @@
     {% endif %}
 
     {# ── Disclaimer modal (shown once) ── #}
-    <div id="disclaimerModal" class="passport-modal hidden" role="dialog" aria-labelledby="disclaimerTitle">
+    <div id="disclaimerModal" class="passport-modal hidden" role="dialog" aria-modal="true" aria-labelledby="disclaimerTitle">
         <div class="passport-modal-backdrop"></div>
         <div class="passport-modal-content">
             <h2 id="disclaimerTitle">{{ t.text('disclaimerTitle') }}</h2>

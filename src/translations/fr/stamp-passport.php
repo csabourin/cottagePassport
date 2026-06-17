@@ -108,4 +108,9 @@ return [
 
     // ── JS error prefix (passed via config) ──
     'Error: ' => 'Erreur : ',
+
+    // ── JS geolocation error messages (passed via config) ──
+    'Location permission was denied. Enable location access for this site and scan again.' => "L'accès à la localisation a été refusé. Autorisez la localisation pour ce site et scannez de nouveau.",
+    'Location lookup timed out. Move outdoors or closer to the location and try again.' => "La localisation a expiré. Déplacez-vous à l'extérieur ou plus près de l'emplacement et réessayez.",
+    'Location requires a secure HTTPS page. Open the passport using the secure site URL.' => "La localisation nécessite une page HTTPS sécurisée. Ouvrez le passeport à partir de l'adresse sécurisée du site.",
 ];

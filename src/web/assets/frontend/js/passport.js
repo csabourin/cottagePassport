@@ -810,7 +810,7 @@
         if (CFG.enableGeofence) {
             showStatus(TXT.checkingLocation || 'Checking your location\u2026');
             if (!window.isSecureContext) {
-                showStatus('Location requires a secure HTTPS page. Open the passport using the secure site URL.');
+                showStatus(TXT.locationInsecure || 'Location requires a secure HTTPS page. Open the passport using the secure site URL.');
                 return;
             }
             if (!navigator.geolocation || typeof navigator.geolocation.getCurrentPosition !== 'function') {
@@ -829,11 +829,11 @@
             } catch (err) {
                 var message = TXT.locationError || 'Could not determine your location. Please allow location access and try again.';
                 if (err && err.code === 1) {
-                    message = 'Location permission was denied. Enable location access for this site and scan again.';
+                    message = TXT.locationDenied || 'Location permission was denied. Enable location access for this site and scan again.';
                 } else if (err && err.code === 3) {
-                    message = 'Location lookup timed out. Move outdoors or closer to the location and try again.';
+                    message = TXT.locationTimeout || 'Location lookup timed out. Move outdoors or closer to the location and try again.';
                 } else if (!window.isSecureContext) {
-                    message = 'Location requires a secure HTTPS page. Open the passport using the secure site URL.';
+                    message = TXT.locationInsecure || 'Location requires a secure HTTPS page. Open the passport using the secure site URL.';
                 }
                 showStatus(message);
                 return;
@@ -1277,8 +1277,14 @@
         /* Check thresholds for returning visitors */
         await checkThresholds();
 
-        /* Register beforeunload sync */
-        window.addEventListener('beforeunload', syncBeforeUnload);
+        /* Register teardown sync. beforeunload is unreliable on mobile (iOS Safari
+           often skips it when the user backgrounds the app or locks the screen), so
+           we flush on pagehide and on visibilitychange→hidden, which are the signals
+           mobile browsers honour. Avoiding beforeunload also keeps the page bfcache-eligible. */
+        window.addEventListener('pagehide', syncBeforeUnload);
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'hidden') syncBeforeUnload();
+        });
 
         /* Register online event to flush outbox */
         window.addEventListener('online', function () {
