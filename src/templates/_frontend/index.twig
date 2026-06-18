@@ -18,18 +18,11 @@
 {% set _itemImageIds = items|map(i => i.imageId)|filter|unique %}
 {% set _itemImageAssets = _itemImageIds is not empty ? craft.assets.id(_itemImageIds).indexBy('id').all() : {} %}
 
-{# Build item ID → linkEntryId map across all sites so integrators only set the  #}
-{# linked entry once; current-site value is preferred, any site used as fallback. #}
-{% set _itemLinkEntryIdMap = craft.stampPassport.linkEntryIdMap(items|map(i => i.id)) %}
-
-{# Batch-resolve all linked entry URLs in one query (avoids an N+1 per item below). #}
-{% set _linkEntryIds = _itemLinkEntryIdMap|values|filter|unique %}
-{% set _linkEntryUrlMap = {} %}
-{% if _linkEntryIds is not empty %}
-    {% for _linkEntry in craft.entries.id(_linkEntryIds).siteId(currentSite.id).all() %}
-        {% set _linkEntryUrlMap = _linkEntryUrlMap|merge({ (_linkEntry.id): (_linkEntry.url ?? '') }) %}
-    {% endfor %}
-{% endif %}
+{# Resolve item ID → linked-entry URL for the current site (batched in PHP).      #}
+{# Integrators select the linked entry once: the current-site value is preferred  #}
+{# and any other site is used as a fallback, with each language resolving its own  #}
+{# localized URL. Built server-side because Twig's |merge renumbers integer keys. #}
+{% set _itemLinkUrlMap = craft.stampPassport.linkEntryUrlMap(items|map(i => i.id)) %}
 
 {# Resolve which logo to show: use alt logo for non-primary language sites when available #}
 {% set currentLang = currentSite.language[:2]|lower %}
@@ -147,10 +140,7 @@
     <section class="passport-grid" id="stampGrid">
         {% for item in items %}
             {% set content = item.contents[0] ?? null %}
-            {% set _effectiveLinkEntryId = _itemLinkEntryIdMap[item.id] ?? null %}
-            {% set _itemLinkUrl = (_effectiveLinkEntryId and _linkEntryUrlMap[_effectiveLinkEntryId] is defined)
-                ? _linkEntryUrlMap[_effectiveLinkEntryId]
-                : (content.linkUrl ?? '') %}
+            {% set _itemLinkUrl = _itemLinkUrlMap[item.id] ?? (content.linkUrl ?? '') %}
             <article class="stamp-slot" data-id="{{ item.id }}">
                 <button class="stamp-slot-btn"
                         type="button"

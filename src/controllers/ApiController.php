@@ -4,7 +4,6 @@ namespace csabourin\stamppassport\controllers;
 
 use Craft;
 use craft\elements\Asset;
-use craft\elements\Entry;
 use craft\web\Controller;
 use csabourin\stamppassport\Plugin;
 use yii\web\Response;
@@ -44,20 +43,10 @@ class ApiController extends Controller
             }
         }
 
-        $linkEntryIds = [];
-        foreach ($items as $item) {
-            foreach ($item->contents as $c) {
-                if ($c->siteId === $siteId && $c->linkEntryId) {
-                    $linkEntryIds[] = (int)$c->linkEntryId;
-                }
-            }
-        }
-        $linkEntryUrls = [];
-        if ($linkEntryIds) {
-            foreach (Entry::find()->id(array_unique($linkEntryIds))->siteId($siteId)->all() as $entry) {
-                $linkEntryUrls[$entry->id] = $entry->getUrl();
-            }
-        }
+        // Resolve item ID → linked-entry URL with cross-site fallback so the
+        // linked entry only needs to be selected once per item.
+        $itemIds = array_map(static fn($item) => (int)$item->id, $items);
+        $linkEntryUrlByItem = Plugin::$plugin->items->getLinkEntryUrlMap($itemIds, $siteId);
 
         $data = [];
         foreach ($items as $item) {
@@ -71,10 +60,7 @@ class ApiController extends Controller
 
             $image = $item->imageId ? ($imageAssets[$item->imageId] ?? null) : null;
 
-            $linkUrl = $content->linkUrl ?? null;
-            if ($content && $content->linkEntryId) {
-                $linkUrl = $linkEntryUrls[(int)$content->linkEntryId] ?? $linkUrl;
-            }
+            $linkUrl = $linkEntryUrlByItem[(int)$item->id] ?? ($content->linkUrl ?? null);
 
             $data[] = [
                 'id' => $item->id,

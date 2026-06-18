@@ -5,6 +5,7 @@ namespace csabourin\stamppassport\services;
 use Craft;
 use craft\base\Component;
 use craft\db\Query;
+use craft\elements\Entry;
 use craft\helpers\StringHelper;
 use csabourin\stamppassport\records\ItemRecord;
 use csabourin\stamppassport\records\ItemContentRecord;
@@ -212,6 +213,49 @@ class Items extends Component
             // Prefer the current site's value; accept any other site as fallback.
             if (!isset($map[$itemId]) || $siteId === $preferredSiteId) {
                 $map[$itemId] = $entryId;
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * Return a map of item ID → resolved linked-entry URL for the given site.
+     *
+     * Resolves each item's effective linkEntryId (current site preferred, any
+     * other site as fallback) to that entry's URL in the given site. Entry
+     * element IDs are shared across sites, so integrators only need to select
+     * the linked entry once and every language resolves its own localized URL.
+     *
+     * Built in PHP (not Twig) because Twig's |merge filter renumbers integer
+     * array keys, which silently breaks an item-ID/entry-ID keyed lookup.
+     *
+     * @param int[]    $itemIds
+     * @param int|null $siteId
+     * @return array<int,string>  item ID => URL
+     */
+    public function getLinkEntryUrlMap(array $itemIds, ?int $siteId = null): array
+    {
+        $siteId = $siteId ?? Craft::$app->getSites()->getCurrentSite()->id;
+
+        $entryIdByItem = $this->getLinkEntryIdMap($itemIds, $siteId);
+        if (empty($entryIdByItem)) {
+            return [];
+        }
+
+        $urlByEntryId = [];
+        $entryIds = array_values(array_unique($entryIdByItem));
+        foreach (Entry::find()->id($entryIds)->siteId($siteId)->all() as $entry) {
+            $url = $entry->getUrl();
+            if ($url) {
+                $urlByEntryId[(int)$entry->id] = $url;
+            }
+        }
+
+        $map = [];
+        foreach ($entryIdByItem as $itemId => $entryId) {
+            if (isset($urlByEntryId[$entryId])) {
+                $map[(int)$itemId] = $urlByEntryId[$entryId];
             }
         }
 
