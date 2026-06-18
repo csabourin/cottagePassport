@@ -134,7 +134,10 @@
     </div>
 
     {# ── Status area for scan feedback (JS-populated, announced to AT) ── #}
-    <section id="statusSection" class="passport-status hidden" role="status" aria-live="polite" aria-atomic="true"></section>
+    <section id="statusSection" class="passport-status hidden" role="status" aria-live="polite" aria-atomic="true">
+        <span class="passport-status-msg"></span>
+        <button type="button" class="passport-status-close" aria-label="{{ 'Dismiss'|t('stamp-passport') }}">&times;</button>
+    </section>
 
     {# ── Item list ── #}
     <section class="passport-grid" id="stampGrid">

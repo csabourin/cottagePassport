@@ -810,11 +810,11 @@
         if (CFG.enableGeofence) {
             showStatus(TXT.checkingLocation || 'Checking your location\u2026');
             if (!window.isSecureContext) {
-                showStatus(TXT.locationInsecure || 'Location requires a secure HTTPS page. Open the passport using the secure site URL.');
+                showStatus(TXT.locationInsecure || 'Location requires a secure HTTPS page. Open the passport using the secure site URL.', 'error');
                 return;
             }
             if (!navigator.geolocation || typeof navigator.geolocation.getCurrentPosition !== 'function') {
-                showStatus(TXT.locationError || 'Location is not available in this browser. Please open the passport in your phone browser and allow location access.');
+                showStatus(TXT.locationError || 'Location is not available in this browser. Please open the passport in your phone browser and allow location access.', 'error');
                 return;
             }
 
@@ -835,7 +835,7 @@
                 } else if (!window.isSecureContext) {
                     message = TXT.locationInsecure || 'Location requires a secure HTTPS page. Open the passport using the secure site URL.';
                 }
-                showStatus(message);
+                showStatus(message, 'error');
                 return;
             }
 
@@ -843,11 +843,11 @@
             try {
                 result = await apiCollect(item.shortCode, pos.coords.latitude, pos.coords.longitude);
             } catch (err) {
-                showStatus(TXT.checkinFailed || 'Check-in failed. Please check your connection and try again.');
+                showStatus(TXT.checkinFailed || 'Check-in failed. Please check your connection and try again.', 'error');
                 return;
             }
             if (!result.success) {
-                showStatus(result.error || TXT.checkinFailed || 'Check-in failed. Are you at the right location?');
+                showStatus(result.error || TXT.checkinFailed || 'Check-in failed. Are you at the right location?', 'error');
                 ga4Event('passport_geofence_fail', { item_code: item.shortCode, distance: result.distance });
                 return;
             }
@@ -1221,11 +1221,54 @@
        Status
        ═══════════════════════════════════════════ */
 
-    function showStatus(msg) {
+    var statusTimer = null;
+    var statusHideTimer = null;
+
+    function showStatus(msg, type) {
         var section = el('statusSection');
         if (!section) return;
-        section.textContent = msg;
+
+        var msgNode = section.querySelector('.passport-status-msg');
+        if (msgNode) { msgNode.textContent = msg; }
+        else { section.textContent = msg; }
+
+        /* 'error' renders the toast in a red warning colour; default is teal. */
+        section.classList.toggle('passport-status--error', type === 'error');
+
+        /* Cancel any pending hide and reveal as a slide-in toast. */
+        if (statusHideTimer) { clearTimeout(statusHideTimer); statusHideTimer = null; }
         section.classList.remove('hidden');
+        /* Force reflow so the transition runs from the off-screen state. */
+        void section.offsetWidth;
+        section.classList.add('is-visible');
+
+        /* Auto-dismiss after at least 3s, unless dismissed sooner. */
+        if (statusTimer) { clearTimeout(statusTimer); }
+        statusTimer = setTimeout(hideStatus, 3000);
+    }
+
+    function hideStatus() {
+        var section = el('statusSection');
+        if (!section) return;
+        if (statusTimer) { clearTimeout(statusTimer); statusTimer = null; }
+        section.classList.remove('is-visible');
+        /* Remove from layout/AT once the slide-out transition has finished. */
+        if (statusHideTimer) { clearTimeout(statusHideTimer); }
+        statusHideTimer = setTimeout(function () {
+            if (!section.classList.contains('is-visible')) {
+                section.classList.add('hidden');
+            }
+            statusHideTimer = null;
+        }, 300);
+    }
+
+    function bindStatusDismiss() {
+        var section = el('statusSection');
+        if (!section) return;
+        var closeBtn = section.querySelector('.passport-status-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', hideStatus);
+        }
     }
 
     /* ═══════════════════════════════════════════
@@ -1242,7 +1285,7 @@
         try {
             itemsData = await fetchLocations();
         } catch (err) {
-            showStatus(TXT.loadError || 'Could not load passport data. Please try again later.');
+            showStatus(TXT.loadError || 'Could not load passport data. Please try again later.', 'error');
             return;
         }
 
@@ -1271,6 +1314,9 @@
         /* Bind item detail buttons (full row click → detail modal) */
         bindItemDetailButtons();
 
+        /* Bind status toast dismiss button */
+        bindStatusDismiss();
+
         /* Bind language switch links */
         bindLanguageSwitchLinks();
 
@@ -1296,7 +1342,7 @@
                     }).catch(function () {});
                 });
             } else {
-                showStatus(TXT.qrNotRecognized || 'This QR code is not recognized.');
+                showStatus(TXT.qrNotRecognized || 'This QR code is not recognized.', 'error');
             }
         }
 
@@ -1344,10 +1390,10 @@
     /* Boot */
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function () {
-            init().catch(function (err) { showStatus((TXT.errorPrefix || 'Error: ') + err.message); });
+            init().catch(function (err) { showStatus((TXT.errorPrefix || 'Error: ') + err.message, 'error'); });
         });
     } else {
-        init().catch(function (err) { showStatus((TXT.errorPrefix || 'Error: ') + err.message); });
+        init().catch(function (err) { showStatus((TXT.errorPrefix || 'Error: ') + err.message, 'error'); });
     }
 
 })();

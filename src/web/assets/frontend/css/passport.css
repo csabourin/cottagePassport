@@ -335,14 +335,79 @@ main.passport-main > header {
    STATUS (JS-populated scan feedback)
    #fff on #2b6b8a: 7.8:1 ✓ AA
    ══════════════════════════════════════════════════════════ */
+/* Scan-feedback toast: fixed at the top of the viewport, slides in from the
+   top, floats above the page so it stays visible after the auto-scroll to the
+   scanned item. Same teal/white colours as before. */
 .passport-status {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    z-index: 9000;
+    box-sizing: border-box;
+    width: 75vw;
+    max-width: 600px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     text-align: center;
-    padding: 12px 20px;
+    padding: 14px 16px 14px 20px;
+    border-radius: 10px;
     background: var(--passport-teal);
     color: #fff;
     font-size: 1rem;
     font-weight: 600;
     line-height: 1.45;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
+    /* Hidden state: lifted above the viewport, non-interactive. */
+    transform: translate(-50%, -150%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.passport-status.is-visible {
+    transform: translate(-50%, 0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Error/warning variant — red bg, white text (≈5.9:1, WCAG AA). */
+.passport-status--error {
+    background: #b3261e;
+}
+
+.passport-status-msg {
+    flex: 1;
+    min-width: 0;
+}
+
+.passport-status-close {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin: -8px -6px -8px 0;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #fff;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.passport-status-close:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .passport-status {
+        transition: opacity 0.3s ease;
+        transform: translate(-50%, 0);
+    }
 }
 
 /* ══════════════════════════════════════════════════════════
