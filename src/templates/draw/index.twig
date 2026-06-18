@@ -44,36 +44,45 @@
 {% endif %}
 
 {# ── Winner reveal (after a draw) ────────────────────────────────── #}
-{% if latestResult %}
-    {% set winnerUrl = (freeformInstalled and latestResult.winnerSubmissionId)
-        ? cpUrl('freeform/submissions/' ~ latestResult.winnerSubmissionId) : null %}
+{% if latestResults is defined and latestResults|length > 0 %}
     <div class="pane" style="border-top:4px solid #2d5a27;margin-bottom:2rem;padding:1.5rem;">
-        <h2 style="margin:0 0 .5rem;">🎉 {{ 'Winner drawn'|t('stamp-passport') }}</h2>
-        <p style="margin:.25rem 0;">
-            <strong>{{ 'Participant ID:'|t('stamp-passport') }}</strong>
-            <code>{{ latestResult.winnerCid }}</code>
-        </p>
-        {% if winnerUrl %}
-            <p style="margin:.25rem 0;">
-                <a class="btn submit" href="{{ winnerUrl }}">{{ 'View submission & contact info'|t('stamp-passport') }}</a>
-            </p>
-        {% elseif latestResult.winnerSubmissionId %}
-            <p class="light" style="margin:.25rem 0;">{{ 'Submission ID:'|t('stamp-passport') }} {{ latestResult.winnerSubmissionId }}</p>
-        {% endif %}
-        <p class="light" style="margin:.5rem 0 0;font-size:.85em;">
-            {{ 'Drawn from {eligible} eligible entrants ({ballots} ballots) on {date}.'|t('stamp-passport', {
-                eligible: latestResult.eligibleCount,
-                ballots:  latestResult.totalBallots,
-                date:     latestResult.dateDrawn|date('Y-m-d H:i')
-            }) }}
-            {% if latestVerify and latestVerify.ok %}
-                {% if latestVerify.matches %}
-                    <span style="color:#2d5a27;">✓ {{ 'Result re-verified from seed.'|t('stamp-passport') }}</span>
-                {% else %}
-                    <span style="color:#cf1124;">⚠ {{ 'Re-verification mismatch.'|t('stamp-passport') }}</span>
-                {% endif %}
-            {% endif %}
-        </p>
+        <h2 style="margin:0 0 .75rem;">
+            🎉 {{ latestResults|length == 1
+                ? 'Winner drawn'|t('stamp-passport')
+                : '{n} winners drawn'|t('stamp-passport', { n: latestResults|length }) }}
+        </h2>
+        {% for entry in latestResults %}
+            {% set res = entry.result %}
+            {% set verify = entry.verify %}
+            {% set winnerUrl = (freeformInstalled and res.winnerSubmissionId)
+                ? cpUrl('freeform/submissions/' ~ res.winnerSubmissionId) : null %}
+            <div style="padding:.75rem 0;{% if not loop.last %}border-bottom:1px solid #e3e5e8;{% endif %}">
+                <p style="margin:.25rem 0;">
+                    {% if latestResults|length > 1 %}<strong>{{ loop.index }}.</strong> {% endif %}
+                    <strong>{{ 'Participant ID:'|t('stamp-passport') }}</strong>
+                    <code>{{ res.winnerCid }}</code>
+                    {% if winnerUrl %}
+                        <a class="btn small" style="margin-left:.5rem;" href="{{ winnerUrl }}">{{ 'View submission & contact info'|t('stamp-passport') }}</a>
+                    {% elseif res.winnerSubmissionId %}
+                        <span class="light" style="margin-left:.5rem;">{{ 'Submission ID:'|t('stamp-passport') }} {{ res.winnerSubmissionId }}</span>
+                    {% endif %}
+                </p>
+                <p class="light" style="margin:.25rem 0 0;font-size:.85em;">
+                    {{ 'Drawn from {eligible} eligible entrants ({ballots} ballots) on {date}.'|t('stamp-passport', {
+                        eligible: res.eligibleCount,
+                        ballots:  res.totalBallots,
+                        date:     res.dateDrawn|date('Y-m-d H:i')
+                    }) }}
+                    {% if verify and verify.ok %}
+                        {% if verify.matches %}
+                            <span style="color:#2d5a27;">✓ {{ 'Result re-verified from seed.'|t('stamp-passport') }}</span>
+                        {% else %}
+                            <span style="color:#cf1124;">⚠ {{ 'Re-verification mismatch.'|t('stamp-passport') }}</span>
+                        {% endif %}
+                    {% endif %}
+                </p>
+            </div>
+        {% endfor %}
     </div>
 {% endif %}
 
@@ -150,9 +159,15 @@
                     <input type="hidden" name="dateFrom" value="{{ dateFrom }}">
                     <input type="hidden" name="dateTo" value="{{ dateTo }}">
                     <input type="hidden" name="weightingMode" value="{{ weightingMode }}">
-                    <button type="submit" class="btn submit large">{{ 'Draw a winner'|t('stamp-passport') }}</button>
+                    <button type="submit" class="btn submit large">
+                        {{ (prizeCount|default(1)) > 1
+                            ? 'Draw {n} winners'|t('stamp-passport', { n: prizeCount })
+                            : 'Draw a winner'|t('stamp-passport') }}
+                    </button>
                     <span class="light" style="margin-left:.75rem;">
-                        {{ 'Picks one winner weighted by stamp count. The result is recorded and re-verifiable.'|t('stamp-passport') }}
+                        {{ (prizeCount|default(1)) > 1
+                            ? 'Picks {n} distinct winners weighted by stamp count. Nobody can win more than once. Each result is recorded and re-verifiable.'|t('stamp-passport', { n: prizeCount })
+                            : 'Picks one winner weighted by stamp count. The result is recorded and re-verifiable.'|t('stamp-passport') }}
                     </span>
                 </form>
             {% else %}
@@ -236,7 +251,10 @@
     var form = document.getElementById('sp-draw-form');
     if (!form) return;
     form.addEventListener('submit', function(e){
-        if (!window.confirm('{{ 'Draw a winner now? This will be recorded in the draw history.'|t('stamp-passport')|e('js') }}')) {
+        var msg = {{ (prizeCount|default(1)) > 1
+            ? 'Draw {n} winners now? This will be recorded in the draw history.'|t('stamp-passport', { n: prizeCount })|json_encode|raw
+            : 'Draw a winner now? This will be recorded in the draw history.'|t('stamp-passport')|json_encode|raw }};
+        if (!window.confirm(msg)) {
             e.preventDefault();
         }
     });

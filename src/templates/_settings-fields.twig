@@ -428,6 +428,16 @@
 }) }}
 
 {{ forms.textField({
+    label: "Number of Prizes to Draw"|t('stamp-passport'),
+    instructions: "How many winners to pick in a single draw run. The draw selects this many distinct participants; nobody can win more than once across all draws."|t('stamp-passport'),
+    name: 'drawPrizeCount',
+    value: settings.drawPrizeCount,
+    type: 'number',
+    min: 1,
+    size: 5,
+}) }}
+
+{{ forms.textField({
     label: "Contest Version"|t('stamp-passport'),
     instructions: "Bump this string when contest rules change and progress from a previous season should be treated as incompatible. Changing this value does not erase stored progress — it is included in synced payloads so the frontend can detect version mismatches."|t('stamp-passport'),
     name: 'contestVersion',

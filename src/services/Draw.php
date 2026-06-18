@@ -223,6 +223,128 @@ class Draw extends Component
     }
 
     /**
+     * Run a multi-prize weighted draw: pick up to $prizeCount distinct winners in
+     * one operation and persist an auditable result row for each.
+     *
+     * No participant (contestCid) can win more than once: anyone who already won a
+     * previously recorded draw is excluded from the pool, and each pick removes its
+     * winner before the next. Draws fewer than $prizeCount when the eligible pool
+     * runs out. Each saved row keeps its own seed + snapshot so it stays
+     * independently re-verifiable.
+     *
+     * @return array{ok:bool, error?:string, results?:array<int,array{resultId:int,winner:array}>, resultIds?:int[], drawnCount?:int, requestedCount?:int, eligibleCount?:int}
+     */
+    public function drawWinners(
+        string $formHandle,
+        int $drawThreshold,
+        int $prizeCount,
+        string $weightingMode = self::WEIGHTING_TOTAL,
+        string $dateFrom = '',
+        string $dateTo = '',
+        ?int $userId = null
+    ): array {
+        $prizeCount = max(1, $prizeCount);
+
+        $pool = $this->buildPool($formHandle, $drawThreshold, $weightingMode, $dateFrom, $dateTo);
+
+        if (!$pool['freeformAvailable']) {
+            return ['ok' => false, 'error' => 'freeform_unavailable'];
+        }
+
+        // Exclude anyone who has already won a recorded draw so nobody wins twice.
+        $alreadyWon = $this->previousWinnerCids();
+        $remaining = array_values(array_filter(
+            $pool['eligible'],
+            static fn($e) => !isset($alreadyWon[$e['cid']])
+        ));
+
+        if ($remaining === []) {
+            return ['ok' => false, 'error' => 'no_eligible_entries'];
+        }
+
+        $results   = [];
+        $resultIds = [];
+
+        for ($i = 0; $i < $prizeCount && $remaining !== []; $i++) {
+            $seed   = (string)random_int(1, PHP_INT_MAX);
+            $winner = $this->weightedPick($remaining, $seed);
+            if ($winner === null) {
+                break;
+            }
+
+            // Snapshot the pool used for *this* pick (the still-remaining entrants).
+            $snapshot = array_map(
+                static fn($e) => ['cid' => $e['cid'], 'weight' => $e['weight']],
+                $remaining
+            );
+            $snapshotJson = json_encode($snapshot, JSON_UNESCAPED_SLASHES);
+            if ($snapshotJson === false) {
+                $snapshotJson = null;
+            }
+
+            $record = new DrawResultRecord();
+            $record->formHandle         = $formHandle;
+            $record->weightingMode      = $pool['weightingMode'];
+            $record->drawThreshold      = $pool['drawThreshold'];
+            $record->dateFrom           = $dateFrom !== '' ? $dateFrom : null;
+            $record->dateTo             = $dateTo !== '' ? $dateTo : null;
+            $record->seed               = $seed;
+            $record->eligibleCount      = count($remaining);
+            $record->totalBallots       = (int)array_sum(array_column($remaining, 'weight'));
+            $record->winnerCid          = $winner['cid'];
+            $record->winnerSubmissionId = $winner['submissionId'];
+            $record->poolSnapshotJson   = $snapshotJson;
+            $record->drawnByUserId      = $userId;
+            $record->dateDrawn          = gmdate('Y-m-d H:i:s');
+
+            if (!$record->save()) {
+                Craft::error('Stamp Passport: failed to save draw result: ' . print_r($record->getErrors(), true), __METHOD__);
+                // If nothing saved yet, surface the error; otherwise keep the winners we have.
+                if ($resultIds === []) {
+                    return ['ok' => false, 'error' => 'save_failed'];
+                }
+                break;
+            }
+
+            $results[]   = ['resultId' => (int)$record->id, 'winner' => $winner];
+            $resultIds[] = (int)$record->id;
+
+            // Remove this winner so they cannot be picked again in this run.
+            $winnerCid = $winner['cid'];
+            $remaining = array_values(array_filter(
+                $remaining,
+                static fn($e) => $e['cid'] !== $winnerCid
+            ));
+        }
+
+        return [
+            'ok'             => true,
+            'results'        => $results,
+            'resultIds'      => $resultIds,
+            'drawnCount'     => count($resultIds),
+            'requestedCount' => $prizeCount,
+            'eligibleCount'  => count($pool['eligible']),
+        ];
+    }
+
+    /**
+     * CIDs that have already won any recorded draw, as a set keyed by cid.
+     *
+     * @return array<string,true>
+     */
+    private function previousWinnerCids(): array
+    {
+        $set = [];
+        foreach (DrawResultRecord::find()->select(['winnerCid'])->column() as $cid) {
+            $cid = (string)$cid;
+            if ($cid !== '') {
+                $set[$cid] = true;
+            }
+        }
+        return $set;
+    }
+
+    /**
      * Re-run the selection from a stored result's seed + snapshot and report whether
      * it reproduces the recorded winner (auditability).
      *

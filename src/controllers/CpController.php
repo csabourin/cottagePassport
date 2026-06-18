@@ -416,9 +416,31 @@ class CpController extends Controller
             ? $draw->buildPool($formHandle, $settings->drawThreshold, $weightingMode, $dateFrom, $dateTo)
             : null;
 
-        $resultId     = (int)($request->getQueryParam('result') ?? 0);
-        $latestResult = $resultId > 0 ? $draw->getResultById($resultId) : null;
-        $latestVerify = $latestResult ? $draw->verify($latestResult) : null;
+        // Winners to reveal: a comma-separated `results` list from a multi-prize run,
+        // falling back to a single legacy `result` id.
+        $resultIds = [];
+        $resultsParam = (string)($request->getQueryParam('results') ?? '');
+        if ($resultsParam !== '') {
+            foreach (explode(',', $resultsParam) as $rid) {
+                $rid = (int)trim($rid);
+                if ($rid > 0) {
+                    $resultIds[] = $rid;
+                }
+            }
+        } elseif ((int)($request->getQueryParam('result') ?? 0) > 0) {
+            $resultIds[] = (int)$request->getQueryParam('result');
+        }
+
+        $latestResults = [];
+        foreach (array_unique($resultIds) as $rid) {
+            $record = $draw->getResultById($rid);
+            if ($record) {
+                $latestResults[] = [
+                    'result' => $record,
+                    'verify' => $draw->verify($record),
+                ];
+            }
+        }
 
         $currentUser = Craft::$app->getUser()->getIdentity();
         $canDraw = $currentUser && ($currentUser->admin || $currentUser->can('stampPassport:manageSettings'));
@@ -431,8 +453,8 @@ class CpController extends Controller
             'weightingMode'     => $weightingMode,
             'dateFrom'          => $dateFrom,
             'dateTo'            => $dateTo,
-            'latestResult'      => $latestResult,
-            'latestVerify'      => $latestVerify,
+            'prizeCount'        => (int)$settings->drawPrizeCount,
+            'latestResults'     => $latestResults,
             'history'           => $draw->recentResults(20),
             'freeformInstalled' => Craft::$app->getPlugins()->getPlugin('freeform') !== null,
             'canDraw'           => $canDraw,
@@ -479,9 +501,10 @@ class CpController extends Controller
             return $this->redirect(UrlHelper::cpUrl('stamp-passport/draw', $redirectParams));
         }
 
-        $result = $draw->drawWinner(
+        $result = $draw->drawWinners(
             $formHandle,
             $settings->drawThreshold,
+            (int)$settings->drawPrizeCount,
             $weightingMode,
             $dateFrom,
             $dateTo,
@@ -491,15 +514,21 @@ class CpController extends Controller
         if (!$result['ok']) {
             $messages = [
                 'freeform_unavailable' => Craft::t('stamp-passport', 'Could not read draw submissions. Is Freeform installed and the draw form configured?'),
-                'no_eligible_entries'  => Craft::t('stamp-passport', 'No eligible entries to draw from. Ensure the “contestCid” hidden field is added to the draw form.'),
+                'no_eligible_entries'  => Craft::t('stamp-passport', 'No eligible entries to draw from. Ensure the “contestCid” hidden field is added to the draw form, and that not everyone has already won.'),
                 'save_failed'          => Craft::t('stamp-passport', 'Could not save the draw result.'),
             ];
             Craft::$app->getSession()->setError($messages[$result['error']] ?? Craft::t('stamp-passport', 'Could not run the draw.'));
             return $this->redirect(UrlHelper::cpUrl('stamp-passport/draw', $redirectParams));
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('stamp-passport', 'Winner drawn.'));
-        $redirectParams['result'] = $result['resultId'];
+        $drawnCount = (int)($result['drawnCount'] ?? 0);
+        $requested  = (int)($result['requestedCount'] ?? $drawnCount);
+        if ($drawnCount < $requested) {
+            Craft::$app->getSession()->setNotice(Craft::t('stamp-passport', 'Drew {n} winner(s). Fewer than requested — the eligible pool ran out.', ['n' => $drawnCount]));
+        } else {
+            Craft::$app->getSession()->setNotice(Craft::t('stamp-passport', 'Drew {n} winner(s).', ['n' => $drawnCount]));
+        }
+        $redirectParams['results'] = implode(',', $result['resultIds'] ?? []);
         return $this->redirect(UrlHelper::cpUrl('stamp-passport/draw', $redirectParams));
     }
 
@@ -644,6 +673,7 @@ class CpController extends Controller
         $settings->ga4MeasurementId = $request->getBodyParam('ga4MeasurementId') ?: null;
         $settings->drawThreshold = max(1, (int)$request->getBodyParam('drawThreshold', 5));
         $settings->maxStickers = max(1, (int)$request->getBodyParam('maxStickers', 100));
+        $settings->drawPrizeCount = max(1, (int)$request->getBodyParam('drawPrizeCount', 1));
         $settings->freeformDrawFormHandle = $request->getBodyParam('freeformDrawFormHandle') ?: null;
         $settings->freeformStickerFormHandle = $request->getBodyParam('freeformStickerFormHandle') ?: null;
 
