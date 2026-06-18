@@ -128,6 +128,16 @@ class StampPassportVariable
     }
 
     /**
+     * Whether every available sticker has been claimed (max submissions reached).
+     *
+     * Usage: {% if craft.stampPassport.stickersSoldOut %}…{% endif %}
+     */
+    public function getStickersSoldOut(): bool
+    {
+        return Plugin::$plugin->stickers->isSoldOut();
+    }
+
+    /**
      * Return the action URL for the API collect endpoint.
      */
     public function collectActionUrl(): string

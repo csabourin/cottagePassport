@@ -15,6 +15,7 @@ use csabourin\stamppassport\models\Settings;
 use csabourin\stamppassport\services\ContestProgress;
 use csabourin\stamppassport\services\Draw;
 use csabourin\stamppassport\services\Items;
+use csabourin\stamppassport\services\Stickers;
 use csabourin\stamppassport\variables\StampPassportVariable;
 use Solspace\Freeform\Freeform as FreeformPlugin;
 use yii\base\Event;
@@ -25,6 +26,7 @@ use yii\base\Event;
  * @property Items $items
  * @property ContestProgress $contestProgress
  * @property Draw $draw
+ * @property Stickers $stickers
  * @property Settings $settings
  */
 class Plugin extends BasePlugin
@@ -47,6 +49,7 @@ class Plugin extends BasePlugin
             'items' => Items::class,
             'contestProgress' => ContestProgress::class,
             'draw' => Draw::class,
+            'stickers' => Stickers::class,
         ]);
 
         $this->_registerCpRoutes();

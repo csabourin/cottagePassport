@@ -257,10 +257,16 @@
             <div class="passport-modal-content">
                 <button class="passport-modal-close" aria-label="{{ 'Close'|t('stamp-passport') }}">&times;</button>
                 <h2 id="stickerModalTitle">{{ t.text('stickerModalTitle') }}</h2>
-                <p>{{ t.text('stickerModalBody') }}</p>
-                <div id="stickerFormContainer">
-                    {{ craft.freeform.form(stickerHandle).render() }}
-                </div>
+                {% if craft.stampPassport.stickersSoldOut %}
+                    {# Max sticker requests reached — show the admin-authored message #}
+                    {# instead of the form. HTML is sanitized like item descriptions.  #}
+                    <div class="passport-sticker-soldout">{{ t.sanitizeHtml(t.text('stickerSoldOutBody'))|raw }}</div>
+                {% else %}
+                    <p>{{ t.text('stickerModalBody') }}</p>
+                    <div id="stickerFormContainer">
+                        {{ craft.freeform.form(stickerHandle).render() }}
+                    </div>
+                {% endif %}
             </div>
         </div>
     {% endif %}
