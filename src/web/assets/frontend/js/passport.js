@@ -1242,9 +1242,9 @@
         void section.offsetWidth;
         section.classList.add('is-visible');
 
-        /* Auto-dismiss after at least 3s, unless dismissed sooner. */
+        /* Auto-dismiss after at least 10s, unless dismissed sooner. */
         if (statusTimer) { clearTimeout(statusTimer); }
-        statusTimer = setTimeout(hideStatus, 3000);
+        statusTimer = setTimeout(hideStatus, 10000);
     }
 
     function hideStatus() {

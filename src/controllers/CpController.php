@@ -445,6 +445,9 @@ class CpController extends Controller
         $currentUser = Craft::$app->getUser()->getIdentity();
         $canDraw = $currentUser && ($currentUser->admin || $currentUser->can('stampPassport:manageSettings'));
 
+        $drawDate        = (string)($settings->drawDate ?? '');
+        $drawDateReached = $this->_drawDateReached($drawDate);
+
         return $this->renderTemplate('stamp-passport/draw/index', [
             'settings'          => $settings,
             'allSites'          => Craft::$app->getSites()->getAllSites(),
@@ -458,6 +461,8 @@ class CpController extends Controller
             'history'           => $draw->recentResults(20),
             'freeformInstalled' => Craft::$app->getPlugins()->getPlugin('freeform') !== null,
             'canDraw'           => $canDraw,
+            'drawDate'          => $drawDate,
+            'drawDateReached'   => $drawDateReached,
         ]);
     }
 
@@ -498,6 +503,14 @@ class CpController extends Controller
 
         if ((string)$request->getBodyParam('confirm', '') !== 'DRAW') {
             Craft::$app->getSession()->setError(Craft::t('stamp-passport', 'Confirmation token missing.'));
+            return $this->redirect(UrlHelper::cpUrl('stamp-passport/draw', $redirectParams));
+        }
+
+        // Enforce the activation date server-side so a stray/early POST cannot run a draw too soon.
+        if (!$this->_drawDateReached((string)($settings->drawDate ?? ''))) {
+            Craft::$app->getSession()->setError(Craft::t('stamp-passport', 'The draw cannot be run before the activation date ({date}).', [
+                'date' => $settings->drawDate,
+            ]));
             return $this->redirect(UrlHelper::cpUrl('stamp-passport/draw', $redirectParams));
         }
 
@@ -551,6 +564,21 @@ class CpController extends Controller
             $dateTo = '';
         }
         return [$dateFrom, $dateTo];
+    }
+
+    /**
+     * Whether the configured draw activation date has arrived (in the app timezone).
+     * A blank/unset date means there is no restriction.
+     */
+    private function _drawDateReached(string $drawDate): bool
+    {
+        if ($drawDate === '') {
+            return true;
+        }
+        $tz    = new \DateTimeZone(Craft::$app->getTimeZone());
+        $today = (new \DateTime('now', $tz))->format('Y-m-d');
+        // Y-m-d strings compare correctly lexicographically.
+        return $today >= $drawDate;
     }
 
     /**
@@ -674,6 +702,14 @@ class CpController extends Controller
         $settings->drawThreshold = max(1, (int)$request->getBodyParam('drawThreshold', 5));
         $settings->maxStickers = max(1, (int)$request->getBodyParam('maxStickers', 100));
         $settings->drawPrizeCount = max(1, (int)$request->getBodyParam('drawPrizeCount', 1));
+
+        $drawDate = trim((string)$request->getBodyParam('drawDate', ''));
+        // Accept only a well-formed Y-m-d date; blank clears the restriction.
+        $dt = $drawDate !== '' ? \DateTime::createFromFormat('Y-m-d', $drawDate) : null;
+        $dtErr = \DateTime::getLastErrors();
+        $settings->drawDate = ($dt !== false && $dt !== null
+            && (!$dtErr || ($dtErr['warning_count'] === 0 && $dtErr['error_count'] === 0)))
+            ? $drawDate : null;
         $settings->freeformDrawFormHandle = $request->getBodyParam('freeformDrawFormHandle') ?: null;
         $settings->freeformStickerFormHandle = $request->getBodyParam('freeformStickerFormHandle') ?: null;
 

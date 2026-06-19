@@ -438,6 +438,15 @@
 }) }}
 
 {{ forms.textField({
+    label: "Draw Activation Date"|t('stamp-passport'),
+    instructions: "The “Draw a winner” button on the Draw page stays disabled until this date arrives, preventing the draw from being run too soon. Leave blank to allow drawing at any time."|t('stamp-passport'),
+    name: 'drawDate',
+    value: settings.drawDate,
+    type: 'date',
+    size: 15,
+}) }}
+
+{{ forms.textField({
     label: "Contest Version"|t('stamp-passport'),
     instructions: "Bump this string when contest rules change and progress from a previous season should be treated as incompatible. Changing this value does not erase stored progress — it is included in synced payloads so the frontend can detect version mismatches."|t('stamp-passport'),
     name: 'contestVersion',

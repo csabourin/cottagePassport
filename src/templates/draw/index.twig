@@ -151,7 +151,15 @@
     {# ── Draw action ─────────────────────────────────────────────── #}
     <div class="pane" style="margin-bottom:2rem;padding:1.5rem;">
         {% if canDraw %}
-            {% if pool.eligible|length > 0 %}
+            {% if not (drawDateReached|default(true)) %}
+                <p style="margin:0 0 .25rem;font-weight:700;">⏳ {{ 'The draw is not open yet.'|t('stamp-passport') }}</p>
+                <p style="margin:0;" class="light">
+                    {{ 'Drawing is disabled until the activation date set in {settingsLink}.'|t('stamp-passport', {
+                        settingsLink: '<a href="' ~ url('stamp-passport/settings') ~ '">' ~ 'Settings'|t('stamp-passport') ~ '</a>'
+                    })|raw }}
+                    {{ 'Opens on {date}.'|t('stamp-passport', { date: drawDate }) }}
+                </p>
+            {% elseif pool.eligible|length > 0 %}
                 <form id="sp-draw-form" method="post" action="">
                     {{ csrfInput() }}
                     {{ actionInput('stamp-passport/cp/draw-run') }}
@@ -252,10 +260,20 @@
     if (!form) return;
     form.addEventListener('submit', function(e){
         var msg = {{ (prizeCount|default(1)) > 1
-            ? 'Draw {n} winners now? This will be recorded in the draw history.'|t('stamp-passport', { n: prizeCount })|json_encode|raw
-            : 'Draw a winner now? This will be recorded in the draw history.'|t('stamp-passport')|json_encode|raw }};
+            ? 'Draw {n} winners now? This is permanent and will be recorded in the draw history.'|t('stamp-passport', { n: prizeCount })|json_encode|raw
+            : 'Draw a winner now? This is permanent and will be recorded in the draw history.'|t('stamp-passport')|json_encode|raw }};
+        // First confirmation — a simple "are you sure?".
         if (!window.confirm(msg)) {
             e.preventDefault();
+            return;
+        }
+        // Second confirmation — must type DRAW so an accidental click cannot run the draw.
+        var typed = window.prompt({{ 'To confirm, type DRAW (in capitals).'|t('stamp-passport')|json_encode|raw }});
+        if (typed === null || typed.trim() !== 'DRAW') {
+            e.preventDefault();
+            if (typed !== null && window.Craft && Craft.cp) {
+                Craft.cp.displayError({{ 'Draw not run — confirmation text did not match.'|t('stamp-passport')|json_encode|raw }});
+            }
         }
     });
 })();

@@ -133,6 +133,22 @@
         {{ t.text('scanInstructions') }}
     </div>
 
+            {# ── Contest Rules strip (optional — shown only when linkText is configured for this site) ── #}
+    {% set contestRules = settings.contestRules[currentSite.handle] ?? {} %}
+{% set fullRulesEntry = contestRules.fullRulesEntryId is defined and contestRules.fullRulesEntryId ? craft.entries.id(contestRules.fullRulesEntryId).one() : null %}
+    {% if contestRules.linkText is defined and contestRules.linkText is not empty %}
+    <div class="passport-contest-rules-strip">
+        <button type="button"
+                class="passport-rules-trigger"
+                id="contestRulesTrigger"
+                aria-haspopup="dialog"
+                aria-controls="contestRulesModal"
+                data-open-modal="contestRulesModal">
+            {{ contestRules.linkText|e }}
+        </button>
+    </div>
+    {% endif %}
+
     {# ── Status area for scan feedback (JS-populated, announced to AT) ── #}
     <section id="statusSection" class="passport-status hidden" role="status" aria-live="polite" aria-atomic="true">
         <span class="passport-status-msg"></span>
@@ -200,22 +216,6 @@
     <div id="stickerReopenSection" class="passport-reopen hidden">
         <button id="stickerReopenBtn" type="button" class="passport-btn passport-btn-secondary" aria-haspopup="dialog">
             {{ 'Reopen sticker request form'|t('stamp-passport') }}
-        </button>
-    </div>
-    {% endif %}
-
-        {# ── Contest Rules strip (optional — shown only when linkText is configured for this site) ── #}
-    {% set contestRules = settings.contestRules[currentSite.handle] ?? {} %}
-{% set fullRulesEntry = contestRules.fullRulesEntryId is defined and contestRules.fullRulesEntryId ? craft.entries.id(contestRules.fullRulesEntryId).one() : null %}
-    {% if contestRules.linkText is defined and contestRules.linkText is not empty %}
-    <div class="passport-contest-rules-strip">
-        <button type="button"
-                class="passport-rules-trigger"
-                id="contestRulesTrigger"
-                aria-haspopup="dialog"
-                aria-controls="contestRulesModal"
-                data-open-modal="contestRulesModal">
-            {{ contestRules.linkText|e }}
         </button>
     </div>
     {% endif %}

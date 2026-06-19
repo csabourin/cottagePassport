@@ -34,6 +34,9 @@ class Settings extends Model
     /** @var int Number of prizes/winners to draw per run (each a distinct participant) */
     public int $drawPrizeCount = 1;
 
+    /** @var string|null Date (Y-m-d) on/after which the draw may be run. Null/blank = no restriction */
+    public ?string $drawDate = null;
+
     /** @var string|null Freeform form handle for the end-of-season draw entry */
     public ?string $freeformDrawFormHandle = null;
 
@@ -270,6 +273,7 @@ class Settings extends Model
             [['drawThreshold'], 'integer', 'min' => 1],
             [['maxStickers'], 'integer', 'min' => 0],
             [['drawPrizeCount'], 'integer', 'min' => 1],
+            [['drawDate'], 'date', 'format' => 'php:Y-m-d', 'skipOnEmpty' => true],
             [['ga4MeasurementId'], 'match', 'pattern' => '/^G-[A-Z0-9]+$/', 'skipOnEmpty' => true],
             [['freeformDrawFormHandle', 'freeformStickerFormHandle'], 'string', 'max' => 100],
             [['qrCenterImageAssetId'], 'integer', 'min' => 1, 'skipOnEmpty' => true],
